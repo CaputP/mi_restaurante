@@ -8,9 +8,9 @@ function TestimonialCard ({testimonio}){
             </div>
             
             <div className="testimonial-content">
-                <p>{testimonio.calificacion}</p>
+                <p className="stars">{testimonio.calificacion}</p>
                 <h3>{testimonio.nombre}</h3>
-                <p>{testimonio.comentario}</p>
+                <p className="comment">{testimonio.comentario}</p>
           
             </div>
 
