@@ -31,6 +31,14 @@ const testimonials = [
         calificacion: "⭐⭐⭐⭐⭐",
         comentario: "Excelente atención y un ambiente muy agradable para toda la familia."
     },
+
+    {
+        id: 4,
+        nombre: "Piero Gil.",
+        foto: avatar4,
+        calificacion: "⭐⭐⭐⭐⭐",
+        comentario: "Excelente atención y un ambiente muy agradable para toda la familia."
+    },
 ]
 
 export default testimonials;

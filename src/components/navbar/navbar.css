@@ -43,10 +43,17 @@
     font-size: 1.2rem;
 }
 
+.logo:hover h2 {
+    color: #ffd54f;
+}
+
 .logo {
     display: flex;
     align-items: center;
     gap: 15px;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .logo img {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"; // 1. MODIFICADO: Importamos useEffect
 import { FaBars, FaTimes } from "react-icons/fa";
+import {Link} from "react-router-dom"
 import "./navbar.css";
 import logo from "../../assets/images/logo.png";
 
@@ -33,41 +34,74 @@ function Navbar({ titulo }) {
     }, []);
 
     const menu = [
-        "Inicio",
-        "Menu",
-        "Eventos",
-        "Nosotros",
-        "Reservas",
-        "Contacto",
-        "Iniciar Sesion"
+        {
+            nombre: "Inicio",
+            enlace: "#inicio",
+            tipo: "scroll"
+        },
+        {
+            nombre: "Menu",
+            enlace: "#platos",
+            tipo: "scroll"
+        },
+        {
+            nombre: "Eventos",
+            enlace: "#eventos",
+            tipo: "scroll"
+        },
+        {
+            nombre: "Nosotros",
+            enlace: "#historia",
+            tipo: "scroll"
+        },
+        {
+            nombre: "Reservas",
+            enlace: "/reservations",
+            tipo: "ruta"
+        },
+        {
+            nombre: "Contacto",
+            enlace: "#ubicacion",
+            tipo: "scroll"
+        },
+        {
+            nombre: "Iniciar Sesion",
+            enlace: "/login",
+            tipo: "ruta"
+        },
     ];
 
     return (
         /* 2. MODIFICADO: Añadimos dinámicamente la clase 'scrolled' si el estado es true */
         <nav className={`navbar ${scrolled ? "scrolled" : ""}`}> 
-            <div className="logo">
-                <img 
-                    src={logo}
-                    alt="logo del restaurante" 
-                />
-                <h2>{titulo}</h2>
-            </div>
-
+            <a
+            href="#inicio"
+            className="logo"
+            aria-label="Ir al inicio"
+            onClick={() => setMenuAbierto(false)}
+            >
+            <img src={logo} alt="" />
+            <h2>{titulo}</h2>
+            </a>
             <button className="menu-toggle" onClick={toggleMenu} aria-label="Abrir menú">
                 {menuAbierto ? <FaTimes /> : <FaBars />}
-            </button>
+            </button >
 
-            <ul className={`nav-links ${menuAbierto ? "activo" : ""}`}>
-                {
-                    menu.map((opcion, indice) => (
-                        <li key={indice} onClick={toggleMenu}>
-                            <a href={`#${opcion.toLowerCase()}`}>
-                                {opcion}
-                            </a>
-                        </li>
-                    ))
-                }
-            </ul>
+                <ul className={`nav-links ${menuAbierto ? "activo" : ""}`}>
+                {menu.map((opcion) => (
+                    <li key={opcion.nombre}>
+                    {opcion.tipo === "ruta" ? (
+                        <Link to={opcion.enlace} onClick={() => setMenuAbierto(false)}>
+                        {opcion.nombre}
+                        </Link>
+                    ) : (
+                        <a href={opcion.enlace} onClick={() => setMenuAbierto(false)}>
+                        {opcion.nombre}
+                        </a>
+                    )}
+                    </li>
+                ))}
+                </ul>
         </nav>
     );
 }
