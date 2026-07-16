@@ -1,0 +1,143 @@
+/* ==========================================================================
+   1. ESTILOS BASE (Mobile First - Por defecto para celulares)
+   ========================================================================== */
+
+.hero {
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.hero-overlay {
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px; /* NUEVO: Evita que el texto choque con los bordes de la pantalla en móviles */
+}
+
+.hero-content {
+    text-align: center;
+    color: white;
+    max-width: 600px; /* NUEVO: Controla que el texto no sea infinitamente ancho */
+}
+
+.hero-content h1 {
+    font-size: 32px; /* CAMBIADO: Un tamaño ideal y legible para celulares */
+    margin-bottom: 15px;
+    line-height: 1.2; /* NUEVO: Evita que se encimen las líneas de texto si se divide en dos renglones */
+}
+
+.hero-content p {
+    font-size: 16px; /* CAMBIADO: Legible y balanceado para celular */
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.hero-buttons {
+    display: flex;
+    flex-direction: column; /* CAMBIADO: En móviles es mejor que los botones estén uno abajo del otro */
+    gap: 15px;
+    justify-content: center;
+    align-items: center; /* NUEVO: Centra los botones en móviles */
+}
+
+.btn-primary {
+    width: 100%; /* NUEVO: En celulares, un botón ancho es mucho más fácil de presionar */
+    max-width: 280px; /* NUEVO: Evita que el botón se estire de forma exagerada */
+    padding: 14px 25px; /* CAMBIADO: Un poco más compacto */
+    border: none;
+    border-radius: 10px;
+    background: #355e3b;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: .3s;
+}
+
+.btn-primary:hover {
+    background: #4B7B50;
+    transform: translateY(-3px);
+}
+
+.btn-secondary {
+    width: 100%; /* NUEVO: Hace juego con el botón primario */
+    max-width: 280px;
+    padding: 14px 25px;
+    border: 2px solid white;
+    border-radius: 10px;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: .3s;
+}
+
+.btn-secondary:hover {
+    background: white;
+    color: #355E3B;
+    transform: translateY(-3px);
+}
+
+.hero-arrow-container {
+    font-size: 30px; /* CAMBIADO: Flecha un poco más pequeña en móvil */
+    margin-top: 40px; /* CAMBIADO: Menos espacio arriba para no empujarla fuera de la pantalla */
+    color: white;
+    cursor: pointer;
+    animation: floating 2s infinite;
+}
+
+.hero-arrow {
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.hero-arrow:hover {
+    transform: scale(1.3);
+}
+
+@keyframes floating {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(12px); }
+    100% { transform: translateY(0); }
+}
+
+
+/* ==========================================================================
+   2. MEDIA QUERY (Para Tablets y Computadoras - Ancho mínimo: 768px)
+   ========================================================================== */
+@media (min-width: 768px) {
+    .hero-content {
+        max-width: 800px; /* Permitimos más ancho para que luzca en pantallas grandes */
+    }
+
+    .hero-content h1 {
+        font-size: 60px; /* RESTAURADO: Tu tamaño gigante original para PC */
+        margin-bottom: 20px;
+    }
+
+    .hero-content p {
+        font-size: 22px; /* RESTAURADO: Tu tamaño original */
+        margin-bottom: 40px;
+    }
+
+    .hero-buttons {
+        flex-direction: row; /* RESTAURADO: Los botones vuelven a estar uno al lado del otro */
+        gap: 20px;
+    }
+
+    .btn-primary, 
+    .btn-secondary {
+        width: auto; /* Desactiva el 100% de ancho del móvil */
+        padding: 15px 35px; /* RESTAURADO: Tu relleno original */
+    }
+}

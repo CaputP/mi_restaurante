@@ -1,0 +1,68 @@
+/* ==========================================================================
+   1. ESTILOS BASE (Mobile First - Por defecto para celulares)
+   ========================================================================== */
+
+.featured-dishes {
+    padding: 50px 20px;
+    background: #f8f8f8;
+}
+
+.featured-dishes-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.featured-dishes-container h2 {
+    text-align: center; /* Mantiene el título centrado */
+    font-size: 2rem; 
+    color: #355E3B;
+    margin-bottom: 30px; 
+}
+
+.dishes-grid {
+    display: grid;
+    grid-template-columns: 1fr; 
+    gap: 20px; 
+}
+
+
+/* ==========================================================================
+   2. MEDIA QUERY (Para Tablets - Ancho mínimo: 600px)
+   ========================================================================== */
+@media (min-width: 600px) {
+    .dishes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+
+    .featured-dishes-container h2 {
+        font-size: 2.4rem; /* Escalamos el título sutilmente manteniendo el centrado */
+    }
+    
+    /* 
+       Se eliminó:
+       .featured-dishes h2 { text-align: left; } 
+       De esta forma no se interrumpe el centrado heredado de los estilos base.
+    */
+}
+
+
+/* ==========================================================================
+   3. MEDIA QUERY (Para Laptops y PC - Ancho mínimo: 1024px)
+   ========================================================================== */
+@media (min-width: 1024px) {
+    .featured-dishes {
+        padding: 50px 40px; /* Alineamos el padding con tus otros componentes */
+    }
+
+    .featured-dishes-container h2 {
+        font-size: 2.8rem; /* Recupera su tamaño original de 2.8rem */
+        margin-bottom: 50px; /* Tu margen original de 50px */
+    }
+
+    .dishes-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px; 
+    }
+}

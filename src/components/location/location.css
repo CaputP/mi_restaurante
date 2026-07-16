@@ -1,0 +1,153 @@
+/* ==========================================================================
+   1. ESTILOS BASE (Mobile First - Por defecto para celulares)
+   ========================================================================== */
+
+.location {
+    /* CAMBIADO: Reducimos un poco el padding vertical para pantallas pequeñas */
+    padding: 50px 20px;
+    background: #ffffff;
+}
+
+.location-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.location-container h2 {
+    text-align: center;
+    /* CAMBIADO: Tamaño de título ideal para móviles */
+    font-size: 2rem; 
+    color: #355E3B;
+    /* CAMBIADO: Menor margen inferior para agrupar mejor los elementos */
+    margin-bottom: 30px; 
+}
+
+.location-content {
+    display: flex;
+    /* CAMBIADO: En celulares, los elementos se apilan verticalmente (Mapa arriba, info abajo) */
+    flex-direction: column; 
+    gap: 30px; /* Reducimos la separación entre el mapa y las tarjetas */
+}
+
+.location-map {
+    width: 100%;
+    flex: none; /* Desactivamos el comportamiento de crecimiento en móvil */
+}
+
+.location-map iframe {
+    width: 100%;
+    /* CAMBIADO: Un alto de 320px es perfecto en móviles para que no 
+       se adueñe de toda la pantalla ni interrumpa el scroll del usuario */
+    height: 320px; 
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.1);
+}
+
+.location-info {
+    width: 100%;
+    flex: none;
+    display: grid;
+    /* NUEVO: En móvil, las 4 tarjetas de datos se verán hermosas en 2 columnas */
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 15px; /* Espacio uniforme entre ellas */
+}
+
+.info-item {
+    background: #fff;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid #f0f0f0; /* Un borde sutil para destacar sobre el fondo blanco */
+    box-shadow: 0 6px 15px rgba(0,0,0,.05);
+}
+
+.info-item p {
+    color: #666;
+    line-height: 1.5;
+    font-size: 0.9rem; /* Texto legible sin saturar la tarjeta */
+    margin: 0 0 5px 0;
+}
+
+.info-item p:last-child {
+    margin-bottom: 0;
+}
+
+/* Envuelve el icono y el título de la tarjeta para alinearlos horizontalmente */
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Separación entre el icono y el texto */
+    margin-bottom: 10px;
+}
+
+/* Modificamos tu h3 original para que no tenga margen inferior propio */
+.info-item h3 {
+    color: #355E3B;
+    margin-bottom: 0; /* Quitamos el margen para que se alinee bien verticalmente con el icono */
+    font-size: 1.1rem;
+}
+
+/* Estilo general para los iconos de React */
+.info-icon {
+    font-size: 1.3rem; /* Tamaño óptimo del icono */
+    color: #355E3B; /* Color verde rústico de tu marca */
+    flex-shrink: 0; /* Evita que el icono se deforme o se encoja */
+}
+
+/* Estilo opcional para que el icono de WhatsApp brille en su verde característico */
+.info-icon.whatsapp-color {
+    color: #25D366; 
+}
+
+/* ==========================================================================
+   2. MEDIA QUERY (Para Tablets - Ancho mínimo: 768px)
+   ========================================================================== */
+@media (min-width: 768px) {
+    .location-content {
+        /* RESTAURADO: El mapa y la info vuelven a estar uno al lado del otro */
+        flex-direction: row; 
+        gap: 40px; /* Tu gap original */
+        align-items: stretch; /* Ambos elementos tendrán la misma altura vertical */
+    }
+
+    .location-map {
+        flex: 2; /* Tu proporción original */
+    }
+
+    .location-map iframe {
+        height: 100%; /* Toma dinámicamente la altura completa que defina el contenedor */
+        min-height: 450px; /* Evita que colapse */
+    }
+
+    .location-info {
+        flex: 1; /* Tu proporción original */
+        /* Cambiamos las tarjetas a una sola columna ordenada junto al mapa */
+        grid-template-columns: 1fr; 
+        gap: 20px;
+    }
+
+    .info-item {
+        border: none; /* Quitamos el borde en pantallas grandes */
+        box-shadow: 0 6px 15px rgba(0,0,0,.08); /* Tu sombra original */
+    }
+}
+
+
+/* ==========================================================================
+   3. MEDIA QUERY (Para Laptops y PC - Ancho mínimo: 1024px)
+   ========================================================================== */
+@media (min-width: 1024px) {
+    .location {
+        padding: 50px 40px; /* RESTAURADO: Tu padding original para pantallas grandes */
+    }
+
+    .location-container h2 {
+        font-size: 2.8rem; /* RESTAURADO: Tu tamaño gigante original */
+        margin-bottom: 50px; /* RESTAURADO: Tu margen original */
+    }
+
+    .location-map iframe {
+        height: 500px; /* RESTAURADO: Tu alto de 500px original para el mapa */
+    }
+}
