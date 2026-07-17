@@ -4,18 +4,54 @@
     justify-content: center;
     align-items: center;
     padding: 24px;
-    background-color: #f5f5f5;
+    background-color: #f8fafc;
+    position: relative; /* Necesario para posicionar los objetos de fondo */
+    overflow: hidden; /* Esconde los fragmentos de los objetos que salgan de la pantalla */
+}
+
+/* Objeto 1: Círculo difuminado verde rústico arriba a la derecha */
+/* Objeto 1: Círculo sólido verde rústico claro arriba a la derecha */
+.login-page::before {
+    content: "";
+    position: absolute;
+    width: 450px;
+    height: 450px;
+    top: -100px;
+    right: -100px;
+    border-radius: 50%;
+    /* Color sólido con opacidad muy baja y clara (0.05 para que sea sutil) */
+    background-color: rgba(53, 94, 59, 0.2); 
+    filter: none; /* 👈 Quitamos el difuminado para que la figura sea sólida */
+    z-index: 1;
+}
+
+/* Objeto 2: Círculo sólido cálido claro abajo a la izquierda */
+.login-page::after {
+    content: "";
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    bottom: -80px;
+    left: -80px;
+    border-radius: 50%;
+    /* Color sólido cálido muy claro */
+    background-color: rgba(53, 94, 59, 0.1); 
+    filter: none; /* 👈 Quitamos el difuminado */
+    z-index: 1;
 }
 
 .login-container {
     display: flex;
     background: white;
     border-radius: 20px;
-    box-shadow: 0 15px 40px rgba(0,0,0,.15);
+    /* Aumentamos levemente la sombra de la tarjeta para que resalte sobre el nuevo fondo */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
     width: 900px;
     max-width: 100%;
     height: 550px; /* Le damos una altura fija para que se vea genial de forma dividida */
     overflow: hidden;
+    position: relative;
+    z-index: 2; /* 👈 Esto hace que quede encima de las sombras del fondo */
 }
 
 /* Sección de la imagen (Izquierda) */
@@ -36,14 +72,33 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.50); /* Filtro oscuro para leer bien el texto blanco */
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.65) 0%, rgba(53, 94, 59, 0.4) 100%); /* Degradado sutil con tu verde rústico #355e3b */
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     flex-direction: column;
     color: white; /* Texto blanco sobre el fondo oscuro */
-    padding: 20px;
     text-align: center;
+    padding: 50px 40px 40px 40px;
+}
+
+/* Contenedor del logo en el panel de la izquierda */
+.login-sidebar-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 50px;
+}
+
+/* Estilo para que el logo se vea estilizado y fino */
+.login-sidebar-logo img {
+    height: 100px;          /* Altura ideal para que destaque sin comerse toda la pantalla */
+    width: auto;           /* Mantiene la proporción perfecta del logo */
+    object-fit: contain;   
+    /* El truco mágico: le da una sombra blanca/brillante muy suave detrás 
+       para que resalte increíble sobre el fondo oscuro de la foto */
+    filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.5)); 
 }
 
 .login-image-overlay h2 {
@@ -51,13 +106,19 @@
     margin-bottom: 12px;
     letter-spacing: 1px;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Sombra más pronunciada para resaltar de la foto */
+    /* Efecto de sombra premium para que el texto flote sobre la imagen */
+    text-shadow: 0px 4px 12px rgba(0, 0, 0, 0.8), 0px 2px 4px rgba(0, 0, 0, 0.5); 
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3); /* Línea divisoria sutil debajo del logo */
+    padding-bottom: 12px;
+    width: 85%;
+    max-width: 320px;
 }
 
 .login-image-overlay p {
     font-size: 1rem;
     font-weight:500;
-    color: #f0f0f0;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+    color: #f1f5f9;
+    text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.7);
 }
 
 /* Corregido: Creado contenedor para el formulario (Derecha) */
@@ -181,58 +242,122 @@
 .google-btn-container > div {
     width: 100% !important;
 }
+
+/* Estilos para el texto de intercambio entre Login y Registro */
+.toggle-form-text {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #666666;
+}
+
+.toggle-form-text span {
+    color: #355e3b; /* Usa el verde rústico del restaurante */
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.toggle-form-text span:hover {
+    color: #2b4c31; /* Un verde más oscuro al hacer hover */
+}
+
 /* ==========================================================================
-   Estilos Responsive (Media Queries)
+   Estilos Responsive (Media Queries Actualizado)
    ========================================================================== */
 
 /* Para Tablets y pantallas medianas (Menos de 768px) */
 @media (max-width: 768px) {
     .login-container {
-        flex-direction: column; /* Cambia el diseño dividido a vertical (uno abajo del otro) */
+        flex-direction: column; /* Diseño vertical */
         width: 100%;
-        max-width: 480px; /* Se acopla mejor al ancho de una tablet o celular grande */
-        height: auto; /* Quitamos la altura fija de 550px para que crezca según el contenido */
-        min-height: 600px;
+        max-width: 460px; 
+        height: auto; /* Quitamos la altura fija para que se adapte al registro */
+        min-height: auto; /* 👈 Cambiado a auto para evitar desbordes */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 
     .login-image {
-        height: 180px; /* Le asignamos una altura fija a la sección de la imagen */
-        flex: none; /* Desactivamos el comportamiento flex original */
+        height: 220px; /* 👈 Un toque más de altura para que el logo respire mejor */
+        flex: none; 
+    }
+
+    .login-image-overlay {
+        padding: 30px 20px; /* Reducimos paddings para ganar espacio vertical */
+        justify-content: center; /* Centramos el logo y texto en modo responsive */
+    }
+
+    .login-sidebar-logo {
+        margin-bottom: 15px; /* Menos espacio abajo del logo */
+    }
+
+    .login-sidebar-logo img {
+        height: 70px; /* 👈 Achicamos un poco el logo en tablets para dar espacio al texto */
     }
 
     .login-image-overlay h2 {
-        font-size: 1.5rem; /* Reducimos un poco el texto en pantallas pequeñas */
+        font-size: 1.6rem; 
+        margin-top: 5px;
+        padding-bottom: 6px;
+        margin-bottom: 6px;
+    }
+
+    .login-image-overlay p {
+        font-size: 0.9rem;
     }
 
     .login-content {
-        padding: 32px 24px; /* Ajustamos los espacios internos */
+        padding: 35px 30px; /* Espaciado cómodo para el formulario */
     }
 }
 
 /* Para Celulares pequeños (Menos de 480px) */
 @media (max-width: 480px) {
     .login-page {
-        padding: 12px; /* Menos espacio en los bordes de la pantalla del celular */
+        padding: 12px; 
     }
 
     .login-container {
-        border-radius: 12px; /* Suavizamos un poco las esquinas en celulares */
-        box-shadow: 0 8px 24px rgba(0,0,0,.1);
+        border-radius: 16px; 
     }
 
-    /* OPCIONAL: Si prefieres ocultar la imagen por completo en celulares 
-       para que entren directo al formulario de login, descomenta la siguiente línea: */
-    /* .login-image { display: none; } */
+    /* 💡 RECOMENDACIÓN: Ocultamos el texto secundario de la foto en celular 
+       para que el usuario vaya directo a lo importante sin hacer tanto scroll */
+    .login-image-overlay h2, 
+    .login-image-overlay p { 
+        display: none; 
+    }
 
-    .login-form h1 {
-        font-size: 1.5rem;
+    .login-image {
+        height: 110px; /* 👈 Espacio exclusivo y compacto solo para coronar con el logo */
+    }
+
+    .login-image-overlay {
+        padding: 15px;
+    }
+
+    .login-sidebar-logo {
+        margin-bottom: 0;
+    }
+
+    .login-sidebar-logo img {
+        height: 65px; /* Logo compacto y elegante en el tope */
     }
 
     .login-content {
         padding: 24px 16px;
     }
+
+    .login-form h1 {
+        font-size: 1.6rem;
+    }
     
     .form-group input {
-        padding: 14px; /* Hacemos los inputs un toque más altos para facilitar el toque con el dedo */
+        padding: 14px; /* Inputs más altos y fáciles de presionar en pantallas táctiles */
+    }
+
+    .toggle-form-text {
+        margin-top: 12px;
     }
 }
