@@ -50,15 +50,12 @@
     font-size: 2.2rem;
     margin-bottom: 12px;
     letter-spacing: 1px;
-    text-transform: uppercase;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Sombra más pronunciada para resaltar de la foto */
 }
 
 .login-image-overlay p {
     font-size: 1rem;
-    font-weight: 30000;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    font-weight:500;
     color: #f0f0f0;
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
 }
