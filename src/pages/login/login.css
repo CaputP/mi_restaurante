@@ -1,0 +1,241 @@
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    background-color: #f5f5f5;
+}
+
+.login-container {
+    display: flex;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,.15);
+    width: 900px;
+    max-width: 100%;
+    height: 550px; /* Le damos una altura fija para que se vea genial de forma dividida */
+    overflow: hidden;
+}
+
+/* Sección de la imagen (Izquierda) */
+.login-image {
+    flex: 1;
+    display: flex;
+    position: relative;
+    /* Corregido: Agregada la función url() */
+    background-image: url("../../assets/images/gallery/parque.png"); 
+    background-size: cover;
+    background-position: center;
+}
+
+/* Corregido: Nombre cambiado para que coincida con el componente de React */
+.login-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.50); /* Filtro oscuro para leer bien el texto blanco */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: white; /* Texto blanco sobre el fondo oscuro */
+    padding: 20px;
+    text-align: center;
+}
+
+.login-image-overlay h2 {
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Sombra más pronunciada para resaltar de la foto */
+}
+
+.login-image-overlay p {
+    font-size: 1rem;
+    font-weight: 30000;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #f0f0f0;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Corregido: Creado contenedor para el formulario (Derecha) */
+.login-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+/* El formulario ahora se acopla perfectamente a su contenedor */
+.login-form {
+    width: 100%;
+    max-width: 360px;
+}
+
+.login-form h1 {
+    margin-bottom: 8px;
+    font-size: 1.8rem;
+    color: #333333;
+}
+
+.login-subtitle {
+    font-size: 0.9rem;
+    color: #666666;
+    margin-bottom: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:hover,
+.form-group input:focus {
+    outline: none;
+    border-color: #355e3b;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #355e3b;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s ease;
+}
+
+.login-form button:hover {
+    background: #2b4c31;
+}
+
+/*OAUTH DESDE ACA*/
+
+/* Separador elegante "o" con líneas grises */
+.login-separator {
+    text-align: center;
+    margin: 24px 0; /* Aumentamos el margen superior e inferior para dar aire */
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-separator::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #e2e8f0; /* Un gris un poco más moderno y suave */
+    z-index: 1;
+}
+
+.login-separator span {
+    background-color: white; 
+    padding: 0 16px; /* Más espacio a los lados de la "o" */
+    color: #94a3b8; /* Gris azulado más estético */
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 2;
+}
+
+/* Centra el iframe que inyectará Google automáticamente */
+.google-btn-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+/* Forzar que el iframe interno de Google se estire al 100% de los 360px */
+.google-btn-container > div {
+    width: 100% !important;
+}
+/* ==========================================================================
+   Estilos Responsive (Media Queries)
+   ========================================================================== */
+
+/* Para Tablets y pantallas medianas (Menos de 768px) */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column; /* Cambia el diseño dividido a vertical (uno abajo del otro) */
+        width: 100%;
+        max-width: 480px; /* Se acopla mejor al ancho de una tablet o celular grande */
+        height: auto; /* Quitamos la altura fija de 550px para que crezca según el contenido */
+        min-height: 600px;
+    }
+
+    .login-image {
+        height: 180px; /* Le asignamos una altura fija a la sección de la imagen */
+        flex: none; /* Desactivamos el comportamiento flex original */
+    }
+
+    .login-image-overlay h2 {
+        font-size: 1.5rem; /* Reducimos un poco el texto en pantallas pequeñas */
+    }
+
+    .login-content {
+        padding: 32px 24px; /* Ajustamos los espacios internos */
+    }
+}
+
+/* Para Celulares pequeños (Menos de 480px) */
+@media (max-width: 480px) {
+    .login-page {
+        padding: 12px; /* Menos espacio en los bordes de la pantalla del celular */
+    }
+
+    .login-container {
+        border-radius: 12px; /* Suavizamos un poco las esquinas en celulares */
+        box-shadow: 0 8px 24px rgba(0,0,0,.1);
+    }
+
+    /* OPCIONAL: Si prefieres ocultar la imagen por completo en celulares 
+       para que entren directo al formulario de login, descomenta la siguiente línea: */
+    /* .login-image { display: none; } */
+
+    .login-form h1 {
+        font-size: 1.5rem;
+    }
+
+    .login-content {
+        padding: 24px 16px;
+    }
+    
+    .form-group input {
+        padding: 14px; /* Hacemos los inputs un toque más altos para facilitar el toque con el dedo */
+    }
+}

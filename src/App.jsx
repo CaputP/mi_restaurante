@@ -3,10 +3,10 @@
 //==================================
 import {BrowserRouter, Routes, Route} from "react-router-dom"
 import Home from "./pages/home"
-import Login from "./pages/login"
-import Register from "./pages/register"
-import Reservations from "./pages/reservations"
-import Admin from "./pages/admin"
+import Login from "./pages/login/login"
+import Register from "./pages/register/register"
+import Reservations from "./pages/reservations/reservations"
+import Admin from "./pages/admin/admin"
 
 //==================================
 // COMPONENTE PRINCIPAL
