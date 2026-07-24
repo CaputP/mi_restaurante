@@ -80,7 +80,7 @@ function Navbar({ titulo }) {
             aria-label="Ir al inicio"
             onClick={() => setMenuAbierto(false)}
             >
-            <img src={logo} alt="" />
+            <img src={logo} alt="Logo de {titulo}" />
             <h2>{titulo}</h2>
             </a>
             <button className="menu-toggle" onClick={toggleMenu} aria-label="Abrir menú">

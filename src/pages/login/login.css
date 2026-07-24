@@ -48,7 +48,7 @@
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
     width: 900px;
     max-width: 100%;
-    height: 550px; /* Le damos una altura fija para que se vea genial de forma dividida */
+    min-height: 550px; /* Le damos una altura fija para que se vea genial de forma dividida */
     overflow: hidden;
     position: relative;
     z-index: 2; /* 👈 Esto hace que quede encima de las sombras del fondo */
@@ -105,7 +105,6 @@
     font-size: 2.2rem;
     margin-bottom: 12px;
     letter-spacing: 1px;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Sombra más pronunciada para resaltar de la foto */
     /* Efecto de sombra premium para que el texto flote sobre la imagen */
     text-shadow: 0px 4px 12px rgba(0, 0, 0, 0.8), 0px 2px 4px rgba(0, 0, 0, 0.5); 
     border-bottom: 2px solid rgba(255, 255, 255, 0.3); /* Línea divisoria sutil debajo del logo */
@@ -261,6 +260,29 @@
 
 .toggle-form-text span:hover {
     color: #2b4c31; /* Un verde más oscuro al hacer hover */
+}
+
+/* ==========================================================================
+   Estilos de ERROR
+   ========================================================================== */
+.error-message {
+    display: block;
+    margin-top: 6px;
+    color: #d32f2f;
+    font-size: 13px;
+}
+
+.input-error {
+    border: 1px solid #d32f2f !important;
+}
+
+.server-error {
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    color: #b71c1c;
+    background-color: #ffebee;
+    border: 1px solid #ef9a9a;
+    border-radius: 6px;
 }
 
 /* ==========================================================================
