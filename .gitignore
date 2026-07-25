@@ -28,4 +28,23 @@ backend/dist/
 
 .env
 frontend/.env
+
 backend/.env
+=======
+frontend/.env.*
+backend/.env
+backend/.env.*
+
+# Prisma generado
+backend/generated/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+
+backend/.windsurf/
+backend/.claude/
+backend/.agents/
