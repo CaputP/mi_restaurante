@@ -1,13 +1,1501 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider            = "prisma-client"
+  output              = "../generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// ======================================================
+// ENUMERACIONES GENERALES
+// ======================================================
+
+enum EstadoRegistro {
+  ACTIVO
+  INACTIVO
+  ARCHIVADO
+  BLOQUEADO
+}
+
+enum ProveedorAuth {
+  LOCAL
+  GOOGLE
+  AMBOS
+}
+
+enum DiaSemana {
+  LUNES
+  MARTES
+  MIERCOLES
+  JUEVES
+  VIERNES
+  SABADO
+  DOMINGO
+}
+
+enum TipoStock {
+  DIARIO
+  PERMANENTE
+  SIN_CONTROL
+}
+
+enum DestinoPreparacion {
+  COCINA
+  BARRA
+  NINGUNO
+}
+
+enum TipoMovimientoInventario {
+  ENTRADA_COMPRA
+  AJUSTE_ENTRADA
+  AJUSTE_SALIDA
+  PERDIDA
+  VENCIMIENTO
+  VENTA
+  ANULACION_VENTA
+  COMPROMISO_RESERVA
+  LIBERACION_RESERVA
+  CONSUMO_INTERNO
+}
+
+enum TipoReserva {
+  NORMAL
+  EVENTO
+  SOLO_ZONA
+}
+
+enum EstadoReserva {
+  SOLICITADA
+  EN_REVISION
+  ESPERANDO_ADELANTO
+  CONFIRMADA
+  RECHAZADA
+  CANCELADA
+  ATENDIDA
+  NO_ASISTIO
+}
+
+enum EstadoDetalleReserva {
+  SOLICITADO
+  APROBADO
+  RECHAZADO
+  COMPROMETIDO
+  LIBERADO
+  CONSUMIDO
+}
+
+enum MetodoPago {
+  EFECTIVO
+  YAPE
+  PLIN
+  TARJETA
+  TRANSFERENCIA
+}
+
+enum EstadoPago {
+  PENDIENTE
+  CONFIRMADO
+  RECHAZADO
+  ANULADO
+}
+
+enum TipoPedido {
+  CONSUMO_LOCAL
+  PARA_LLEVAR
+  RESERVA
+  EVENTO
+}
+
+enum EstadoPedido {
+  ABIERTO
+  ENVIADO
+  EN_PREPARACION
+  LISTO
+  ENTREGA_PARCIAL
+  ENTREGADO
+  PAGADO
+  CANCELADO
+}
+
+enum EstadoDetallePedido {
+  PENDIENTE
+  ENVIADO
+  PREPARANDO
+  LISTO
+  ENTREGA_PARCIAL
+  ENTREGADO
+  CANCELADO
+}
+
+enum DestinoComanda {
+  COCINA
+  BARRA
+}
+
+enum PrioridadComanda {
+  NORMAL
+  URGENTE
+  EVENTO
+}
+
+enum EstadoComanda {
+  PENDIENTE
+  PREPARANDO
+  LISTA
+  RECHAZADA
+  CANCELADA
+}
+
+enum EstadoDetalleComanda {
+  PENDIENTE
+  PREPARANDO
+  LISTO
+  RECHAZADO
+  CANCELADO
+}
+
+enum TipoEntrega {
+  PARCIAL
+  COMPLETA
+}
+
+enum EstadoEntrega {
+  PENDIENTE
+  RETIRADA
+  ENTREGADA
+  ANULADA
+}
+
+enum EstadoVenta {
+  CONFIRMADA
+  ANULADA
+}
+
+enum EstadoCaja {
+  ABIERTA
+  CERRADA
+  ANULADA
+}
+
+enum EstadoGasto {
+  REGISTRADO
+  ANULADO
+}
+
+enum TipoProgramaFidelizacion {
+  VISITAS
+  MONTO_CONSUMIDO
+  AMBOS
+}
+
+enum TipoRecompensa {
+  PRODUCTO_GRATIS
+  DESCUENTO_FIJO
+  DESCUENTO_PORCENTAJE
+  BENEFICIO
+}
+
+enum EstadoPremio {
+  DISPONIBLE
+  CANJEADO
+  VENCIDO
+  ANULADO
+}
+
+enum TipoPromocion {
+  DESCUENTO_FIJO
+  DESCUENTO_PORCENTAJE
+  PRODUCTO_GRATIS
+  COMBO
+}
+
+enum EstadoPromocion {
+  BORRADOR
+  ACTIVA
+  PAUSADA
+  FINALIZADA
+  ARCHIVADA
+}
+
+enum TipoDatoConfiguracion {
+  TEXTO
+  ENTERO
+  DECIMAL
+  BOOLEANO
+  JSON
+  FECHA
+  HORA
+}
+
+enum TipoNotificacion {
+  STOCK_BAJO
+  RESERVA_PENDIENTE
+  RESERVA_CONFIRMADA
+  PEDIDO_LISTO
+  CAJA_ABIERTA
+  CAJA_PENDIENTE_CIERRE
+  PREMIO_DISPONIBLE
+  RESPALDO
+  SISTEMA
+}
+
+enum PrioridadNotificacion {
+  BAJA
+  NORMAL
+  ALTA
+  CRITICA
+}
+
+enum TipoDocumentoCorrelativo {
+  RESERVA
+  PEDIDO
+  COMANDA
+  TICKET
+  CAJA
+  GASTO
+}
+
+enum TipoRespaldo {
+  AUTOMATICO
+  MANUAL
+}
+
+enum EstadoRespaldo {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADO
+  FALLIDO
+}
+
+// ======================================================
+// ORGANIZACIÓN Y SUCURSALES
+// ======================================================
+
+model Sucursal {
+  id          String         @id @default(uuid()) @db.Uuid
+  codigo      String         @unique @db.VarChar(20)
+  nombre      String         @db.VarChar(150)
+  razonSocial String?        @map("razon_social") @db.VarChar(200)
+  ruc         String?        @db.VarChar(20)
+  direccion   String         @db.VarChar(250)
+  telefono    String?        @db.VarChar(30)
+  correo      String?        @db.VarChar(160)
+  zonaHoraria String         @default("America/Lima") @map("zona_horaria") @db.VarChar(60)
+  estado      EstadoRegistro @default(ACTIVO)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  zonas                  Zona[]
+  horariosAtencion       HorarioAtencion[]
+  bloqueosDisponibilidad BloqueoDisponibilidad[]
+  usuarios               UsuarioSucursal[]
+  productos              ProductoSucursal[]
+  reservas               Reserva[]
+  pedidos                Pedido[]
+  comandas               Comanda[]
+  cajas                  Caja[]
+  ventas                 Venta[]
+  gastos                 Gasto[]
+
+  programasFidelizacion ProgramaFidelizacion[]
+  promociones           Promocion[]
+  configuraciones       ConfiguracionSistema[]
+  notificaciones        Notificacion[]
+  auditorias            Auditoria[]
+  correlativos          Correlativo[]
+  respaldos             Respaldo[]
+
+  @@index([estado])
+  @@map("sucursal")
+}
+
+model Zona {
+  id                   String         @id @default(uuid()) @db.Uuid
+  sucursalId           String         @map("sucursal_id") @db.Uuid
+  nombre               String         @db.VarChar(120)
+  descripcion          String?        @db.Text
+  capacidadReferencial Int?           @map("capacidad_referencial")
+  estado               EstadoRegistro @default(ACTIVO)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  sucursal               Sucursal                @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  bloqueosDisponibilidad BloqueoDisponibilidad[]
+  reservas               Reserva[]
+  pedidos                Pedido[]
+
+  @@unique([sucursalId, nombre])
+  @@index([sucursalId, estado])
+  @@map("zona")
+}
+
+model HorarioAtencion {
+  id         String    @id @default(uuid()) @db.Uuid
+  sucursalId String    @map("sucursal_id") @db.Uuid
+  diaSemana  DiaSemana @map("dia_semana")
+  horaInicio DateTime  @map("hora_inicio") @db.Time(0)
+  horaFin    DateTime  @map("hora_fin") @db.Time(0)
+  activo     Boolean   @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+
+  @@unique([sucursalId, diaSemana, horaInicio, horaFin])
+  @@index([sucursalId, diaSemana, activo])
+  @@map("horario_atencion")
+}
+
+model BloqueoDisponibilidad {
+  id          String         @id @default(uuid()) @db.Uuid
+  sucursalId  String         @map("sucursal_id") @db.Uuid
+  zonaId      String?        @map("zona_id") @db.Uuid
+  creadoPorId String         @map("creado_por_id") @db.Uuid
+  fechaInicio DateTime       @map("fecha_inicio") @db.Timestamptz(3)
+  fechaFin    DateTime       @map("fecha_fin") @db.Timestamptz(3)
+  motivo      String         @db.Text
+  estado      EstadoRegistro @default(ACTIVO)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal  Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  zona      Zona?    @relation(fields: [zonaId], references: [id], onDelete: Restrict)
+  creadoPor Usuario  @relation("BloqueosCreados", fields: [creadoPorId], references: [id], onDelete: Restrict)
+
+  @@index([sucursalId, fechaInicio, fechaFin])
+  @@index([zonaId, fechaInicio, fechaFin])
+  @@index([estado])
+  @@map("bloqueo_disponibilidad")
+}
+
+// ======================================================
+// ROLES Y PERMISOS
+// ======================================================
+
+model Rol {
+  id          String  @id @default(uuid()) @db.Uuid
+  codigo      String  @unique @db.VarChar(50)
+  nombre      String  @db.VarChar(100)
+  descripcion String? @db.Text
+  activo      Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  usuarios       Usuario[]
+  permisos       RolPermiso[]
+  notificaciones Notificacion[]
+
+  @@index([activo])
+  @@map("rol")
+}
+
+model Permiso {
+  id          String  @id @default(uuid()) @db.Uuid
+  codigo      String  @unique @db.VarChar(80)
+  nombre      String  @db.VarChar(120)
+  descripcion String? @db.Text
+  modulo      String  @db.VarChar(80)
+  activo      Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  roles RolPermiso[]
+
+  @@index([modulo, activo])
+  @@map("permiso")
+}
+
+model RolPermiso {
+  rolId     String @map("rol_id") @db.Uuid
+  permisoId String @map("permiso_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  rol     Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  permiso Permiso @relation(fields: [permisoId], references: [id], onDelete: Cascade)
+
+  @@id([rolId, permisoId])
+  @@index([permisoId])
+  @@map("rol_permiso")
+}
+
+// ======================================================
+// USUARIOS
+// ======================================================
+
+model Usuario {
+  id               String         @id @default(uuid()) @db.Uuid
+  rolId            String         @map("rol_id") @db.Uuid
+  nombres          String         @db.VarChar(120)
+  apellidos        String         @db.VarChar(150)
+  telefono         String?        @db.VarChar(30)
+  correo           String         @unique @db.VarChar(160)
+  passwordHash     String?        @map("password_hash") @db.VarChar(255)
+  googleId         String?        @unique @map("google_id") @db.VarChar(255)
+  proveedorAuth    ProveedorAuth  @default(LOCAL) @map("proveedor_auth")
+  estado           EstadoRegistro @default(ACTIVO)
+  correoVerificado Boolean        @default(false) @map("correo_verificado")
+  ultimoAcceso     DateTime?      @map("ultimo_acceso") @db.Timestamptz(3)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  rol             Rol                     @relation(fields: [rolId], references: [id], onDelete: Restrict)
+  sucursales      UsuarioSucursal[]
+  bloqueosCreados BloqueoDisponibilidad[] @relation("BloqueosCreados")
+
+  stocksDiariosCreados StockDiario[]          @relation("StockDiarioCreadoPor")
+  movimientosStock     MovimientoInventario[] @relation("MovimientosInventarioUsuario")
+
+  reservasComoCliente     Reserva[]          @relation("ReservasCliente")
+  reservasAprobadas       Reserva[]          @relation("ReservasAprobadas")
+  reservasCanceladas      Reserva[]          @relation("ReservasCanceladas")
+  pagosReservaRegistrados PagoReserva[]      @relation("PagosReservaRegistrados")
+  pagosReservaConfirmados PagoReserva[]      @relation("PagosReservaConfirmados")
+  historialReservas       HistorialReserva[] @relation("HistorialReservaUsuario")
+
+  pedidosComoCliente Pedido[] @relation("PedidosCliente")
+  pedidosCreados     Pedido[] @relation("PedidosVendedor")
+  pedidosComoMozo    Pedido[] @relation("PedidosMozo")
+  pedidosCancelados  Pedido[] @relation("PedidosCancelados")
+
+  comandasProcesadas Comanda[]       @relation("ComandasProcesadas")
+  entregasRealizadas EntregaPedido[] @relation("EntregasMozo")
+
+  ventasComoCliente  Venta[] @relation("VentasCliente")
+  ventasComoVendedor Venta[] @relation("VentasVendedor")
+  ventasAnuladas     Venta[] @relation("VentasAnuladasPor")
+
+  cajasComoVendedor Caja[] @relation("CajasVendedor")
+  cajasAbiertas     Caja[] @relation("CajasAbiertasPor")
+  cajasCerradas     Caja[] @relation("CajasCerradasPor")
+
+  gastosRegistrados Gasto[] @relation("GastosRegistradosPor")
+  gastosAnulados    Gasto[] @relation("GastosAnuladosPor")
+
+  programasFidelizacionCreados ProgramaFidelizacion[] @relation("ProgramasFidelizacionCreados")
+  promocionesCreadas           Promocion[]            @relation("PromocionesCreadas")
+
+  progresosFidelizacion ProgresoFidelizacion[] @relation("ProgresoFidelizacionCliente")
+  premiosObtenidos      PremioCliente[]        @relation("PremiosCliente")
+  premiosCanjeados      PremioCliente[]        @relation("PremiosCanjeadosPor")
+
+  configuracionesActualizadas ConfiguracionSistema[] @relation("ConfiguracionesActualizadasPor")
+  notificaciones              Notificacion[]         @relation("NotificacionesUsuario")
+  auditorias                  Auditoria[]            @relation("AuditoriasUsuario")
+  respaldosSolicitados        Respaldo[]             @relation("RespaldosSolicitadosPor")
+
+  @@index([rolId, estado])
+  @@index([apellidos, nombres])
+  @@map("usuario")
+}
+
+model UsuarioSucursal {
+  id          String    @id @default(uuid()) @db.Uuid
+  usuarioId   String    @map("usuario_id") @db.Uuid
+  sucursalId  String    @map("sucursal_id") @db.Uuid
+  activo      Boolean   @default(true)
+  fechaInicio DateTime  @default(now()) @map("fecha_inicio") @db.Date
+  fechaFin    DateTime? @map("fecha_fin") @db.Date
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  usuario  Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  sucursal Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+
+  @@unique([usuarioId, sucursalId])
+  @@index([sucursalId, activo])
+  @@map("usuario_sucursal")
+}
+
+// ======================================================
+// CATÁLOGO DE PRODUCTOS
+// ======================================================
+
+model Categoria {
+  id          String         @id @default(uuid()) @db.Uuid
+  nombre      String         @unique @db.VarChar(120)
+  descripcion String?        @db.Text
+  estado      EstadoRegistro @default(ACTIVO)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  productos Producto[]
+
+  @@index([estado])
+  @@map("categoria")
+}
+
+model UnidadMedida {
+  id          String  @id @default(uuid()) @db.Uuid
+  codigo      String  @unique @db.VarChar(30)
+  nombre      String  @db.VarChar(80)
+  abreviatura String  @db.VarChar(15)
+  decimales   Int     @default(0)
+  activo      Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  productos Producto[]
+
+  @@index([activo])
+  @@map("unidad_medida")
+}
+
+model Producto {
+  id                  String             @id @default(uuid()) @db.Uuid
+  categoriaId         String             @map("categoria_id") @db.Uuid
+  unidadMedidaId      String             @map("unidad_medida_id") @db.Uuid
+  codigo              String             @unique @db.VarChar(40)
+  nombre              String             @db.VarChar(150)
+  descripcion         String?            @db.Text
+  tipoStock           TipoStock          @map("tipo_stock")
+  requierePreparacion Boolean            @default(false) @map("requiere_preparacion")
+  destinoPreparacion  DestinoPreparacion @default(NINGUNO) @map("destino_preparacion")
+  permiteCortesia     Boolean            @default(false) @map("permite_cortesia")
+  estado              EstadoRegistro     @default(ACTIVO)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  categoria    Categoria          @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  unidadMedida UnidadMedida       @relation(fields: [unidadMedidaId], references: [id], onDelete: Restrict)
+  sucursales   ProductoSucursal[]
+
+  programasComoPremio ProgramaFidelizacion[] @relation("ProductoPremioPrograma")
+  premiosEmitidos     PremioCliente[]        @relation("ProductoPremioEmitido")
+  promociones         PromocionProducto[]
+
+  @@index([categoriaId, estado])
+  @@index([nombre])
+  @@index([tipoStock])
+  @@map("producto")
+}
+
+model ProductoSucursal {
+  id              String         @id @default(uuid()) @db.Uuid
+  productoId      String         @map("producto_id") @db.Uuid
+  sucursalId      String         @map("sucursal_id") @db.Uuid
+  precioVenta     Decimal        @map("precio_venta") @db.Decimal(12, 2)
+  stockMinimo     Decimal        @default(0) @map("stock_minimo") @db.Decimal(12, 3)
+  disponibleVenta Boolean        @default(true) @map("disponible_venta")
+  estado          EstadoRegistro @default(ACTIVO)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  producto        Producto               @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  sucursal        Sucursal               @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  stockPermanente StockPermanente?
+  stocksDiarios   StockDiario[]
+  movimientos     MovimientoInventario[]
+  detallesReserva DetalleReserva[]
+  detallesPedido  DetallePedido[]
+  detallesVenta   DetalleVenta[]
+
+  @@unique([productoId, sucursalId])
+  @@index([sucursalId, disponibleVenta, estado])
+  @@index([productoId])
+  @@map("producto_sucursal")
+}
+
+// ======================================================
+// INVENTARIO
+// ======================================================
+
+model StockPermanente {
+  id                   String  @id @default(uuid()) @db.Uuid
+  productoSucursalId   String  @unique @map("producto_sucursal_id") @db.Uuid
+  cantidadActual       Decimal @default(0) @map("cantidad_actual") @db.Decimal(12, 3)
+  cantidadComprometida Decimal @default(0) @map("cantidad_comprometida") @db.Decimal(12, 3)
+
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  productoSucursal ProductoSucursal @relation(fields: [productoSucursalId], references: [id], onDelete: Restrict)
+
+  @@map("stock_permanente")
+}
+
+model StockDiario {
+  id                   String   @id @default(uuid()) @db.Uuid
+  productoSucursalId   String   @map("producto_sucursal_id") @db.Uuid
+  creadoPorId          String   @map("creado_por_id") @db.Uuid
+  fecha                DateTime @db.Date
+  cantidadInicial      Decimal  @default(0) @map("cantidad_inicial") @db.Decimal(12, 3)
+  cantidadActual       Decimal  @default(0) @map("cantidad_actual") @db.Decimal(12, 3)
+  cantidadComprometida Decimal  @default(0) @map("cantidad_comprometida") @db.Decimal(12, 3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  productoSucursal ProductoSucursal @relation(fields: [productoSucursalId], references: [id], onDelete: Restrict)
+  creadoPor        Usuario          @relation("StockDiarioCreadoPor", fields: [creadoPorId], references: [id], onDelete: Restrict)
+
+  @@unique([productoSucursalId, fecha])
+  @@index([fecha])
+  @@index([creadoPorId])
+  @@map("stock_diario")
+}
+
+model MovimientoInventario {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  productoSucursalId String                   @map("producto_sucursal_id") @db.Uuid
+  usuarioId          String                   @map("usuario_id") @db.Uuid
+  tipoMovimiento     TipoMovimientoInventario @map("tipo_movimiento")
+  cantidad           Decimal                  @db.Decimal(12, 3)
+  cantidadAnterior   Decimal                  @map("cantidad_anterior") @db.Decimal(12, 3)
+  cantidadResultante Decimal                  @map("cantidad_resultante") @db.Decimal(12, 3)
+  costoUnitario      Decimal?                 @map("costo_unitario") @db.Decimal(12, 2)
+  costoTotal         Decimal?                 @map("costo_total") @db.Decimal(12, 2)
+  motivo             String                   @db.Text
+  referenciaTipo     String?                  @map("referencia_tipo") @db.VarChar(60)
+  referenciaId       String?                  @map("referencia_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  productoSucursal ProductoSucursal @relation(fields: [productoSucursalId], references: [id], onDelete: Restrict)
+  usuario          Usuario          @relation("MovimientosInventarioUsuario", fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([productoSucursalId, createdAt])
+  @@index([usuarioId, createdAt])
+  @@index([tipoMovimiento, createdAt])
+  @@index([referenciaTipo, referenciaId])
+  @@map("movimiento_inventario")
+}
+
+// ======================================================
+// RESERVAS Y EVENTOS
+// ======================================================
+
+model Reserva {
+  id                String        @id @default(uuid()) @db.Uuid
+  codigo            String        @db.VarChar(30)
+  clienteId         String        @map("cliente_id") @db.Uuid
+  sucursalId        String        @map("sucursal_id") @db.Uuid
+  zonaId            String        @map("zona_id") @db.Uuid
+  tipoReserva       TipoReserva   @map("tipo_reserva")
+  fechaReserva      DateTime      @map("fecha_reserva") @db.Date
+  horaReserva       DateTime      @map("hora_reserva") @db.Time(0)
+  cantidadPersonas  Int           @map("cantidad_personas")
+  nombreEvento      String?       @map("nombre_evento") @db.VarChar(180)
+  observaciones     String?       @db.Text
+  totalEstimado     Decimal       @default(0) @map("total_estimado") @db.Decimal(12, 2)
+  adelantoRequerido Decimal       @default(0) @map("adelanto_requerido") @db.Decimal(12, 2)
+  adelantoPagado    Decimal       @default(0) @map("adelanto_pagado") @db.Decimal(12, 2)
+  saldoEstimado     Decimal       @default(0) @map("saldo_estimado") @db.Decimal(12, 2)
+  estado            EstadoReserva @default(SOLICITADA)
+
+  aprobadoPorId   String?   @map("aprobado_por_id") @db.Uuid
+  fechaAprobacion DateTime? @map("fecha_aprobacion") @db.Timestamptz(3)
+
+  canceladoPorId       String?   @map("cancelado_por_id") @db.Uuid
+  fechaCancelacion     DateTime? @map("fecha_cancelacion") @db.Timestamptz(3)
+  motivoCancelacion    String?   @map("motivo_cancelacion") @db.Text
+  penalidadCancelacion Decimal   @default(0) @map("penalidad_cancelacion") @db.Decimal(12, 2)
+  montoDevuelto        Decimal   @default(0) @map("monto_devuelto") @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  cliente      Usuario  @relation("ReservasCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  sucursal     Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  zona         Zona     @relation(fields: [zonaId], references: [id], onDelete: Restrict)
+  aprobadoPor  Usuario? @relation("ReservasAprobadas", fields: [aprobadoPorId], references: [id], onDelete: Restrict)
+  canceladoPor Usuario? @relation("ReservasCanceladas", fields: [canceladoPorId], references: [id], onDelete: Restrict)
+
+  detalles  DetalleReserva[]
+  pagos     PagoReserva[]
+  historial HistorialReserva[]
+  pedido    Pedido?
+
+  @@unique([sucursalId, codigo])
+  @@index([clienteId, createdAt])
+  @@index([sucursalId, fechaReserva, estado])
+  @@index([zonaId, fechaReserva, horaReserva])
+  @@index([estado])
+  @@map("reserva")
+}
+
+model DetalleReserva {
+  id                   String               @id @default(uuid()) @db.Uuid
+  reservaId            String               @map("reserva_id") @db.Uuid
+  productoSucursalId   String               @map("producto_sucursal_id") @db.Uuid
+  nombreProducto       String               @map("nombre_producto") @db.VarChar(150)
+  cantidadSolicitada   Decimal              @map("cantidad_solicitada") @db.Decimal(12, 3)
+  cantidadAprobada     Decimal              @default(0) @map("cantidad_aprobada") @db.Decimal(12, 3)
+  cantidadComprometida Decimal              @default(0) @map("cantidad_comprometida") @db.Decimal(12, 3)
+  precioReservado      Decimal              @map("precio_reservado") @db.Decimal(12, 2)
+  subtotal             Decimal              @default(0) @db.Decimal(12, 2)
+  observaciones        String?              @db.Text
+  estado               EstadoDetalleReserva @default(SOLICITADO)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  reserva          Reserva          @relation(fields: [reservaId], references: [id], onDelete: Restrict)
+  productoSucursal ProductoSucursal @relation(fields: [productoSucursalId], references: [id], onDelete: Restrict)
+
+  @@unique([reservaId, productoSucursalId])
+  @@index([productoSucursalId])
+  @@index([reservaId, estado])
+  @@map("detalle_reserva")
+}
+
+model PagoReserva {
+  id                String     @id @default(uuid()) @db.Uuid
+  reservaId         String     @map("reserva_id") @db.Uuid
+  registradoPorId   String     @map("registrado_por_id") @db.Uuid
+  confirmadoPorId   String?    @map("confirmado_por_id") @db.Uuid
+  metodoPago        MetodoPago @map("metodo_pago")
+  monto             Decimal    @db.Decimal(12, 2)
+  numeroOperacion   String?    @map("numero_operacion") @db.VarChar(100)
+  estado            EstadoPago @default(PENDIENTE)
+  fechaPago         DateTime   @default(now()) @map("fecha_pago") @db.Timestamptz(3)
+  fechaConfirmacion DateTime?  @map("fecha_confirmacion") @db.Timestamptz(3)
+  observaciones     String?    @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  reserva       Reserva  @relation(fields: [reservaId], references: [id], onDelete: Restrict)
+  registradoPor Usuario  @relation("PagosReservaRegistrados", fields: [registradoPorId], references: [id], onDelete: Restrict)
+  confirmadoPor Usuario? @relation("PagosReservaConfirmados", fields: [confirmadoPorId], references: [id], onDelete: Restrict)
+
+  @@index([reservaId, estado])
+  @@index([metodoPago, numeroOperacion])
+  @@index([registradoPorId])
+  @@index([confirmadoPorId])
+  @@map("pago_reserva")
+}
+
+model HistorialReserva {
+  id             String         @id @default(uuid()) @db.Uuid
+  reservaId      String         @map("reserva_id") @db.Uuid
+  usuarioId      String         @map("usuario_id") @db.Uuid
+  estadoAnterior EstadoReserva? @map("estado_anterior")
+  estadoNuevo    EstadoReserva  @map("estado_nuevo")
+  observacion    String?        @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  reserva Reserva @relation(fields: [reservaId], references: [id], onDelete: Restrict)
+  usuario Usuario @relation("HistorialReservaUsuario", fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([reservaId, createdAt])
+  @@index([usuarioId, createdAt])
+  @@map("historial_reserva")
+}
+
+// ======================================================
+// PEDIDOS
+// ======================================================
+
+model Pedido {
+  id            String       @id @default(uuid()) @db.Uuid
+  codigo        String       @db.VarChar(30)
+  sucursalId    String       @map("sucursal_id") @db.Uuid
+  reservaId     String?      @unique @map("reserva_id") @db.Uuid
+  clienteId     String?      @map("cliente_id") @db.Uuid
+  vendedorId    String       @map("vendedor_id") @db.Uuid
+  mozoId        String?      @map("mozo_id") @db.Uuid
+  zonaId        String?      @map("zona_id") @db.Uuid
+  tipoPedido    TipoPedido   @map("tipo_pedido")
+  estado        EstadoPedido @default(ABIERTO)
+  observaciones String?      @db.Text
+
+  enviadoAt         DateTime? @map("enviado_at") @db.Timestamptz(3)
+  pagadoAt          DateTime? @map("pagado_at") @db.Timestamptz(3)
+  canceladoAt       DateTime? @map("cancelado_at") @db.Timestamptz(3)
+  canceladoPorId    String?   @map("cancelado_por_id") @db.Uuid
+  motivoCancelacion String?   @map("motivo_cancelacion") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal     Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  reserva      Reserva? @relation(fields: [reservaId], references: [id], onDelete: Restrict)
+  cliente      Usuario? @relation("PedidosCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  vendedor     Usuario  @relation("PedidosVendedor", fields: [vendedorId], references: [id], onDelete: Restrict)
+  mozo         Usuario? @relation("PedidosMozo", fields: [mozoId], references: [id], onDelete: Restrict)
+  zona         Zona?    @relation(fields: [zonaId], references: [id], onDelete: Restrict)
+  canceladoPor Usuario? @relation("PedidosCancelados", fields: [canceladoPorId], references: [id], onDelete: Restrict)
+
+  detalles DetallePedido[]
+  comandas Comanda[]
+  entregas EntregaPedido[]
+  venta    Venta?
+
+  @@unique([sucursalId, codigo])
+  @@index([sucursalId, estado, createdAt])
+  @@index([clienteId, createdAt])
+  @@index([vendedorId, createdAt])
+  @@index([mozoId, estado])
+  @@index([zonaId, estado])
+  @@index([reservaId])
+  @@map("pedido")
+}
+
+model DetallePedido {
+  id                 String              @id @default(uuid()) @db.Uuid
+  pedidoId           String              @map("pedido_id") @db.Uuid
+  productoSucursalId String              @map("producto_sucursal_id") @db.Uuid
+  nombreProducto     String              @map("nombre_producto") @db.VarChar(150)
+  cantidad           Decimal             @db.Decimal(12, 3)
+  precioUnitario     Decimal             @map("precio_unitario") @db.Decimal(12, 2)
+  subtotal           Decimal             @db.Decimal(12, 2)
+  observaciones      String?             @db.Text
+  estado             EstadoDetallePedido @default(PENDIENTE)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  pedido           Pedido           @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  productoSucursal ProductoSucursal @relation(fields: [productoSucursalId], references: [id], onDelete: Restrict)
+
+  comandas DetalleComanda[]
+  entregas DetalleEntrega[]
+
+  @@index([pedidoId, estado])
+  @@index([productoSucursalId])
+  @@map("detalle_pedido")
+}
+
+// ======================================================
+// COMANDAS: COCINA Y BARRA
+// ======================================================
+
+model Comanda {
+  id             String           @id @default(uuid()) @db.Uuid
+  codigo         String           @db.VarChar(30)
+  sucursalId     String           @map("sucursal_id") @db.Uuid
+  pedidoId       String           @map("pedido_id") @db.Uuid
+  procesadoPorId String?          @map("procesado_por_id") @db.Uuid
+  destino        DestinoComanda
+  prioridad      PrioridadComanda @default(NORMAL)
+  estado         EstadoComanda    @default(PENDIENTE)
+
+  fechaInicio       DateTime? @map("fecha_inicio") @db.Timestamptz(3)
+  fechaFinalizacion DateTime? @map("fecha_finalizacion") @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal     Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  pedido       Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  procesadoPor Usuario? @relation("ComandasProcesadas", fields: [procesadoPorId], references: [id], onDelete: Restrict)
+
+  detalles DetalleComanda[]
+
+  @@unique([sucursalId, codigo])
+  @@index([pedidoId])
+  @@index([sucursalId, destino, estado, createdAt])
+  @@index([procesadoPorId, estado])
+  @@map("comanda")
+}
+
+model DetalleComanda {
+  id              String               @id @default(uuid()) @db.Uuid
+  comandaId       String               @map("comanda_id") @db.Uuid
+  detallePedidoId String               @map("detalle_pedido_id") @db.Uuid
+  cantidad        Decimal              @db.Decimal(12, 3)
+  observaciones   String?              @db.Text
+  estado          EstadoDetalleComanda @default(PENDIENTE)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  comanda       Comanda       @relation(fields: [comandaId], references: [id], onDelete: Restrict)
+  detallePedido DetallePedido @relation(fields: [detallePedidoId], references: [id], onDelete: Restrict)
+
+  @@unique([comandaId, detallePedidoId])
+  @@index([detallePedidoId])
+  @@index([comandaId, estado])
+  @@map("detalle_comanda")
+}
+
+// ======================================================
+// ENTREGA DE PEDIDOS
+// ======================================================
+
+model EntregaPedido {
+  id               String        @id @default(uuid()) @db.Uuid
+  pedidoId         String        @map("pedido_id") @db.Uuid
+  mozoId           String        @map("mozo_id") @db.Uuid
+  tipoEntrega      TipoEntrega   @map("tipo_entrega")
+  estado           EstadoEntrega @default(PENDIENTE)
+  codigoValidacion String        @unique @map("codigo_validacion") @db.VarChar(20)
+  fechaRetiro      DateTime?     @map("fecha_retiro") @db.Timestamptz(3)
+  fechaEntrega     DateTime?     @map("fecha_entrega") @db.Timestamptz(3)
+  observaciones    String?       @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  pedido Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  mozo   Usuario @relation("EntregasMozo", fields: [mozoId], references: [id], onDelete: Restrict)
+
+  detalles DetalleEntrega[]
+
+  @@index([pedidoId, estado])
+  @@index([mozoId, createdAt])
+  @@index([estado, createdAt])
+  @@map("entrega_pedido")
+}
+
+model DetalleEntrega {
+  id                String  @id @default(uuid()) @db.Uuid
+  entregaPedidoId   String  @map("entrega_pedido_id") @db.Uuid
+  detallePedidoId   String  @map("detalle_pedido_id") @db.Uuid
+  cantidadEntregada Decimal @map("cantidad_entregada") @db.Decimal(12, 3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  entregaPedido EntregaPedido @relation(fields: [entregaPedidoId], references: [id], onDelete: Restrict)
+  detallePedido DetallePedido @relation(fields: [detallePedidoId], references: [id], onDelete: Restrict)
+
+  @@unique([entregaPedidoId, detallePedidoId])
+  @@index([detallePedidoId])
+  @@map("detalle_entrega")
+}
+
+// ======================================================
+// CAJA
+// ======================================================
+
+model Caja {
+  id           String  @id @default(uuid()) @db.Uuid
+  codigo       String  @db.VarChar(30)
+  sucursalId   String  @map("sucursal_id") @db.Uuid
+  vendedorId   String  @map("vendedor_id") @db.Uuid
+  abiertaPorId String  @map("abierta_por_id") @db.Uuid
+  cerradaPorId String? @map("cerrada_por_id") @db.Uuid
+
+  montoInicial       Decimal @default(0) @map("monto_inicial") @db.Decimal(12, 2)
+  totalVentas        Decimal @default(0) @map("total_ventas") @db.Decimal(12, 2)
+  totalEfectivo      Decimal @default(0) @map("total_efectivo") @db.Decimal(12, 2)
+  totalYape          Decimal @default(0) @map("total_yape") @db.Decimal(12, 2)
+  totalPlin          Decimal @default(0) @map("total_plin") @db.Decimal(12, 2)
+  totalTarjeta       Decimal @default(0) @map("total_tarjeta") @db.Decimal(12, 2)
+  totalTransferencia Decimal @default(0) @map("total_transferencia") @db.Decimal(12, 2)
+  totalGastosCaja    Decimal @default(0) @map("total_gastos_caja") @db.Decimal(12, 2)
+
+  efectivoEsperado Decimal  @default(0) @map("efectivo_esperado") @db.Decimal(12, 2)
+  efectivoContado  Decimal? @map("efectivo_contado") @db.Decimal(12, 2)
+  diferencia       Decimal? @db.Decimal(12, 2)
+
+  estado        EstadoCaja @default(ABIERTA)
+  fechaApertura DateTime   @default(now()) @map("fecha_apertura") @db.Timestamptz(3)
+  fechaCierre   DateTime?  @map("fecha_cierre") @db.Timestamptz(3)
+  observaciones String?    @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal   Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  vendedor   Usuario  @relation("CajasVendedor", fields: [vendedorId], references: [id], onDelete: Restrict)
+  abiertaPor Usuario  @relation("CajasAbiertasPor", fields: [abiertaPorId], references: [id], onDelete: Restrict)
+  cerradaPor Usuario? @relation("CajasCerradasPor", fields: [cerradaPorId], references: [id], onDelete: Restrict)
+
+  ventas Venta[]
+  gastos Gasto[]
+
+  @@unique([sucursalId, codigo])
+  @@index([sucursalId, estado, fechaApertura])
+  @@index([vendedorId, estado])
+  @@index([abiertaPorId])
+  @@index([cerradaPorId])
+  @@map("caja")
+}
+
+// ======================================================
+// VENTAS
+// ======================================================
+
+model Venta {
+  id           String  @id @default(uuid()) @db.Uuid
+  numeroTicket String  @map("numero_ticket") @db.VarChar(30)
+  pedidoId     String  @unique @map("pedido_id") @db.Uuid
+  clienteId    String? @map("cliente_id") @db.Uuid
+  sucursalId   String  @map("sucursal_id") @db.Uuid
+  vendedorId   String  @map("vendedor_id") @db.Uuid
+  cajaId       String  @map("caja_id") @db.Uuid
+
+  nombreCliente String? @map("nombre_cliente") @db.VarChar(200)
+
+  subtotal         Decimal @db.Decimal(12, 2)
+  descuento        Decimal @default(0) @db.Decimal(12, 2)
+  propina          Decimal @default(0) @db.Decimal(12, 2)
+  total            Decimal @db.Decimal(12, 2)
+  adelantoAplicado Decimal @default(0) @map("adelanto_aplicado") @db.Decimal(12, 2)
+  saldoCobrar      Decimal @map("saldo_cobrar") @db.Decimal(12, 2)
+
+  estado        EstadoVenta @default(CONFIRMADA)
+  observaciones String?     @db.Text
+
+  anuladaAt       DateTime? @map("anulada_at") @db.Timestamptz(3)
+  anuladaPorId    String?   @map("anulada_por_id") @db.Uuid
+  motivoAnulacion String?   @map("motivo_anulacion") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  pedido     Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  cliente    Usuario? @relation("VentasCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  sucursal   Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  vendedor   Usuario  @relation("VentasVendedor", fields: [vendedorId], references: [id], onDelete: Restrict)
+  caja       Caja     @relation(fields: [cajaId], references: [id], onDelete: Restrict)
+  anuladaPor Usuario? @relation("VentasAnuladasPor", fields: [anuladaPorId], references: [id], onDelete: Restrict)
+
+  detalles             DetalleVenta[]
+  pagos                PagoVenta[]
+  premiosCanjeados     PremioCliente[]
+  promocionesAplicadas VentaPromocion[]
+
+  @@unique([sucursalId, numeroTicket])
+  @@index([sucursalId, createdAt])
+  @@index([vendedorId, createdAt])
+  @@index([clienteId, createdAt])
+  @@index([cajaId, estado])
+  @@index([estado, createdAt])
+  @@map("venta")
+}
+
+model DetalleVenta {
+  id                 String  @id @default(uuid()) @db.Uuid
+  ventaId            String  @map("venta_id") @db.Uuid
+  productoSucursalId String  @map("producto_sucursal_id") @db.Uuid
+  nombreProducto     String  @map("nombre_producto") @db.VarChar(150)
+  cantidad           Decimal @db.Decimal(12, 3)
+  precioUnitario     Decimal @map("precio_unitario") @db.Decimal(12, 2)
+  subtotal           Decimal @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  venta            Venta            @relation(fields: [ventaId], references: [id], onDelete: Restrict)
+  productoSucursal ProductoSucursal @relation(fields: [productoSucursalId], references: [id], onDelete: Restrict)
+
+  @@index([ventaId])
+  @@index([productoSucursalId])
+  @@map("detalle_venta")
+}
+
+model PagoVenta {
+  id              String     @id @default(uuid()) @db.Uuid
+  ventaId         String     @map("venta_id") @db.Uuid
+  metodoPago      MetodoPago @map("metodo_pago")
+  monto           Decimal    @db.Decimal(12, 2)
+  numeroOperacion String?    @map("numero_operacion") @db.VarChar(100)
+
+  montoRecibido Decimal? @map("monto_recibido") @db.Decimal(12, 2)
+  vuelto        Decimal? @db.Decimal(12, 2)
+
+  estado EstadoPago @default(CONFIRMADO)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  venta Venta @relation(fields: [ventaId], references: [id], onDelete: Restrict)
+
+  @@index([ventaId, estado])
+  @@index([metodoPago, createdAt])
+  @@index([numeroOperacion])
+  @@map("pago_venta")
+}
+
+// ======================================================
+// GASTOS
+// ======================================================
+
+model CategoriaGasto {
+  id          String  @id @default(uuid()) @db.Uuid
+  nombre      String  @unique @db.VarChar(100)
+  descripcion String? @db.Text
+  activo      Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  gastos Gasto[]
+
+  @@index([activo])
+  @@map("categoria_gasto")
+}
+
+model Gasto {
+  id               String  @id @default(uuid()) @db.Uuid
+  sucursalId       String  @map("sucursal_id") @db.Uuid
+  categoriaGastoId String  @map("categoria_gasto_id") @db.Uuid
+  administradorId  String  @map("administrador_id") @db.Uuid
+  cajaId           String? @map("caja_id") @db.Uuid
+
+  descripcion    String     @db.Text
+  monto          Decimal    @db.Decimal(12, 2)
+  metodoPago     MetodoPago @map("metodo_pago")
+  salioDeCaja    Boolean    @default(false) @map("salio_de_caja")
+  comprobanteUrl String?    @map("comprobante_url") @db.VarChar(500)
+  fechaGasto     DateTime   @default(now()) @map("fecha_gasto") @db.Timestamptz(3)
+
+  estado EstadoGasto @default(REGISTRADO)
+
+  anuladoPorId    String?   @map("anulado_por_id") @db.Uuid
+  anuladoAt       DateTime? @map("anulado_at") @db.Timestamptz(3)
+  motivoAnulacion String?   @map("motivo_anulacion") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal       Sucursal       @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  categoriaGasto CategoriaGasto @relation(fields: [categoriaGastoId], references: [id], onDelete: Restrict)
+  administrador  Usuario        @relation("GastosRegistradosPor", fields: [administradorId], references: [id], onDelete: Restrict)
+  caja           Caja?          @relation(fields: [cajaId], references: [id], onDelete: Restrict)
+  anuladoPor     Usuario?       @relation("GastosAnuladosPor", fields: [anuladoPorId], references: [id], onDelete: Restrict)
+
+  @@index([sucursalId, fechaGasto])
+  @@index([categoriaGastoId, fechaGasto])
+  @@index([administradorId])
+  @@index([cajaId])
+  @@index([estado, fechaGasto])
+  @@map("gasto")
+}
+
+// ======================================================
+// FIDELIZACIÓN DE CLIENTES
+// ======================================================
+
+model ProgramaFidelizacion {
+  id          String  @id @default(uuid()) @db.Uuid
+  sucursalId  String? @map("sucursal_id") @db.Uuid
+  creadoPorId String  @map("creado_por_id") @db.Uuid
+
+  nombre      String  @db.VarChar(160)
+  descripcion String? @db.Text
+
+  tipo              TipoProgramaFidelizacion
+  visitasRequeridas Int?                     @map("visitas_requeridas")
+  montoRequerido    Decimal?                 @map("monto_requerido") @db.Decimal(12, 2)
+
+  tipoRecompensa       TipoRecompensa @map("tipo_recompensa")
+  productoPremioId     String?        @map("producto_premio_id") @db.Uuid
+  cantidadPremio       Decimal?       @map("cantidad_premio") @db.Decimal(12, 3)
+  montoDescuento       Decimal?       @map("monto_descuento") @db.Decimal(12, 2)
+  porcentajeDescuento  Decimal?       @map("porcentaje_descuento") @db.Decimal(5, 2)
+  descripcionBeneficio String?        @map("descripcion_beneficio") @db.VarChar(250)
+
+  vigenciaDiasPremio Int     @default(30) @map("vigencia_dias_premio")
+  automatico         Boolean @default(true)
+  activo             Boolean @default(true)
+
+  fechaInicio DateTime  @map("fecha_inicio") @db.Date
+  fechaFin    DateTime? @map("fecha_fin") @db.Date
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal       Sucursal? @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  creadoPor      Usuario   @relation("ProgramasFidelizacionCreados", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  productoPremio Producto? @relation("ProductoPremioPrograma", fields: [productoPremioId], references: [id], onDelete: Restrict)
+
+  progresos ProgresoFidelizacion[]
+  premios   PremioCliente[]
+
+  @@index([sucursalId, activo, fechaInicio, fechaFin])
+  @@index([tipo, activo])
+  @@index([creadoPorId])
+  @@map("programa_fidelizacion")
+}
+
+model ProgresoFidelizacion {
+  id         String @id @default(uuid()) @db.Uuid
+  clienteId  String @map("cliente_id") @db.Uuid
+  programaId String @map("programa_id") @db.Uuid
+
+  visitasAcumuladas Int     @default(0) @map("visitas_acumuladas")
+  montoAcumulado    Decimal @default(0) @map("monto_acumulado") @db.Decimal(12, 2)
+  ciclosCompletados Int     @default(0) @map("ciclos_completados")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  cliente  Usuario              @relation("ProgresoFidelizacionCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  programa ProgramaFidelizacion @relation(fields: [programaId], references: [id], onDelete: Restrict)
+
+  @@unique([clienteId, programaId])
+  @@index([programaId])
+  @@index([clienteId, updatedAt])
+  @@map("progreso_fidelizacion")
+}
+
+model PremioCliente {
+  id               String  @id @default(uuid()) @db.Uuid
+  clienteId        String  @map("cliente_id") @db.Uuid
+  programaId       String  @map("programa_id") @db.Uuid
+  productoPremioId String? @map("producto_premio_id") @db.Uuid
+  ventaCanjeId     String? @map("venta_canje_id") @db.Uuid
+  canjeadoPorId    String? @map("canjeado_por_id") @db.Uuid
+
+  descripcion      String   @db.VarChar(250)
+  cantidadProducto Decimal? @map("cantidad_producto") @db.Decimal(12, 3)
+  valorReferencia  Decimal? @map("valor_referencia") @db.Decimal(12, 2)
+
+  estado EstadoPremio @default(DISPONIBLE)
+
+  fechaObtencion   DateTime  @default(now()) @map("fecha_obtencion") @db.Timestamptz(3)
+  fechaVencimiento DateTime  @map("fecha_vencimiento") @db.Timestamptz(3)
+  fechaCanje       DateTime? @map("fecha_canje") @db.Timestamptz(3)
+  motivoAnulacion  String?   @map("motivo_anulacion") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  cliente        Usuario              @relation("PremiosCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  programa       ProgramaFidelizacion @relation(fields: [programaId], references: [id], onDelete: Restrict)
+  productoPremio Producto?            @relation("ProductoPremioEmitido", fields: [productoPremioId], references: [id], onDelete: Restrict)
+  ventaCanje     Venta?               @relation(fields: [ventaCanjeId], references: [id], onDelete: Restrict)
+  canjeadoPor    Usuario?             @relation("PremiosCanjeadosPor", fields: [canjeadoPorId], references: [id], onDelete: Restrict)
+
+  @@index([clienteId, estado, fechaVencimiento])
+  @@index([programaId])
+  @@index([ventaCanjeId])
+  @@index([productoPremioId])
+  @@map("premio_cliente")
+}
+
+// ======================================================
+// PROMOCIONES
+// ======================================================
+
+model Promocion {
+  id          String  @id @default(uuid()) @db.Uuid
+  sucursalId  String? @map("sucursal_id") @db.Uuid
+  creadoPorId String  @map("creado_por_id") @db.Uuid
+
+  nombre      String        @db.VarChar(160)
+  descripcion String?       @db.Text
+  tipo        TipoPromocion
+
+  valor         Decimal @default(0) @db.Decimal(12, 2)
+  consumoMinimo Decimal @default(0) @map("consumo_minimo") @db.Decimal(12, 2)
+
+  automatica Boolean @default(true)
+  acumulable Boolean @default(false)
+
+  maximoUsos   Int? @map("maximo_usos")
+  usosActuales Int  @default(0) @map("usos_actuales")
+
+  fechaInicio DateTime @map("fecha_inicio") @db.Timestamptz(3)
+  fechaFin    DateTime @map("fecha_fin") @db.Timestamptz(3)
+
+  estado EstadoPromocion @default(BORRADOR)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal  Sucursal? @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  creadoPor Usuario   @relation("PromocionesCreadas", fields: [creadoPorId], references: [id], onDelete: Restrict)
+
+  productos PromocionProducto[]
+  ventas    VentaPromocion[]
+
+  @@index([sucursalId, estado, fechaInicio, fechaFin])
+  @@index([creadoPorId])
+  @@map("promocion")
+}
+
+model PromocionProducto {
+  promocionId String @map("promocion_id") @db.Uuid
+  productoId  String @map("producto_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  promocion Promocion @relation(fields: [promocionId], references: [id], onDelete: Cascade)
+  producto  Producto  @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  @@id([promocionId, productoId])
+  @@index([productoId])
+  @@map("promocion_producto")
+}
+
+model VentaPromocion {
+  id          String @id @default(uuid()) @db.Uuid
+  ventaId     String @map("venta_id") @db.Uuid
+  promocionId String @map("promocion_id") @db.Uuid
+
+  descripcion    String  @db.VarChar(250)
+  montoDescuento Decimal @map("monto_descuento") @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  venta     Venta     @relation(fields: [ventaId], references: [id], onDelete: Restrict)
+  promocion Promocion @relation(fields: [promocionId], references: [id], onDelete: Restrict)
+
+  @@unique([ventaId, promocionId])
+  @@index([promocionId])
+  @@map("venta_promocion")
+}
+
+// ======================================================
+// CONFIGURACIÓN DEL SISTEMA
+// ======================================================
+
+model ConfiguracionSistema {
+  id               String  @id @default(uuid()) @db.Uuid
+  sucursalId       String? @map("sucursal_id") @db.Uuid
+  actualizadoPorId String  @map("actualizado_por_id") @db.Uuid
+
+  clave       String                @db.VarChar(120)
+  claveUnica  String                @unique @map("clave_unica") @db.VarChar(250)
+  valor       Json
+  tipoDato    TipoDatoConfiguracion @map("tipo_dato")
+  descripcion String?               @db.Text
+  editable    Boolean               @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal       Sucursal? @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  actualizadoPor Usuario   @relation("ConfiguracionesActualizadasPor", fields: [actualizadoPorId], references: [id], onDelete: Restrict)
+
+  @@index([sucursalId, clave])
+  @@index([actualizadoPorId])
+  @@map("configuracion_sistema")
+}
+
+// ======================================================
+// NOTIFICACIONES
+// ======================================================
+
+model Notificacion {
+  id         String  @id @default(uuid()) @db.Uuid
+  sucursalId String? @map("sucursal_id") @db.Uuid
+  usuarioId  String? @map("usuario_id") @db.Uuid
+  rolId      String? @map("rol_id") @db.Uuid
+
+  tipo      TipoNotificacion
+  prioridad PrioridadNotificacion @default(NORMAL)
+
+  titulo  String @db.VarChar(180)
+  mensaje String @db.Text
+
+  entidad   String? @db.VarChar(80)
+  entidadId String? @map("entidad_id") @db.Uuid
+
+  leida        Boolean   @default(false)
+  fechaLectura DateTime? @map("fecha_lectura") @db.Timestamptz(3)
+  expiraAt     DateTime? @map("expira_at") @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  sucursal Sucursal? @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  usuario  Usuario?  @relation("NotificacionesUsuario", fields: [usuarioId], references: [id], onDelete: Restrict)
+  rol      Rol?      @relation(fields: [rolId], references: [id], onDelete: Restrict)
+
+  @@index([usuarioId, leida, createdAt])
+  @@index([rolId, leida, createdAt])
+  @@index([sucursalId, tipo, createdAt])
+  @@index([entidad, entidadId])
+  @@map("notificacion")
+}
+
+// ======================================================
+// AUDITORÍA
+// ======================================================
+
+model Auditoria {
+  id         String  @id @default(uuid()) @db.Uuid
+  usuarioId  String? @map("usuario_id") @db.Uuid
+  sucursalId String? @map("sucursal_id") @db.Uuid
+
+  accion      String  @db.VarChar(100)
+  modulo      String  @db.VarChar(100)
+  entidad     String  @db.VarChar(100)
+  entidadId   String? @map("entidad_id") @db.Uuid
+  descripcion String  @db.Text
+
+  datosAnteriores Json? @map("datos_anteriores")
+  datosNuevos     Json? @map("datos_nuevos")
+
+  direccionIp String? @map("direccion_ip") @db.VarChar(64)
+  userAgent   String? @map("user_agent") @db.VarChar(500)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  usuario  Usuario?  @relation("AuditoriasUsuario", fields: [usuarioId], references: [id], onDelete: Restrict)
+  sucursal Sucursal? @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+
+  @@index([usuarioId, createdAt])
+  @@index([sucursalId, createdAt])
+  @@index([entidad, entidadId])
+  @@index([modulo, accion, createdAt])
+  @@map("auditoria")
+}
+
+// ======================================================
+// CORRELATIVOS
+// ======================================================
+
+model Correlativo {
+  id             String                   @id @default(uuid()) @db.Uuid
+  sucursalId     String                   @map("sucursal_id") @db.Uuid
+  tipoDocumento  TipoDocumentoCorrelativo @map("tipo_documento")
+  prefijo        String                   @db.VarChar(15)
+  ultimoNumero   BigInt                   @default(0) @map("ultimo_numero")
+  longitudNumero Int                      @default(6) @map("longitud_numero")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+
+  @@unique([sucursalId, tipoDocumento])
+  @@index([sucursalId])
+  @@map("correlativo")
+}
+
+// ======================================================
+// RESPALDOS
+// ======================================================
+
+model Respaldo {
+  id              String  @id @default(uuid()) @db.Uuid
+  sucursalId      String? @map("sucursal_id") @db.Uuid
+  solicitadoPorId String? @map("solicitado_por_id") @db.Uuid
+
+  tipo   TipoRespaldo
+  estado EstadoRespaldo @default(PENDIENTE)
+
+  nombreArchivo String? @map("nombre_archivo") @db.VarChar(250)
+  rutaArchivo   String? @map("ruta_archivo") @db.VarChar(500)
+  tamanoBytes   BigInt? @map("tamano_bytes")
+  checksum      String? @db.VarChar(128)
+
+  fechaInicio  DateTime? @map("fecha_inicio") @db.Timestamptz(3)
+  fechaFin     DateTime? @map("fecha_fin") @db.Timestamptz(3)
+  mensajeError String?   @map("mensaje_error") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal      Sucursal? @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  solicitadoPor Usuario?  @relation("RespaldosSolicitadosPor", fields: [solicitadoPorId], references: [id], onDelete: Restrict)
+
+  @@index([estado, createdAt])
+  @@index([tipo, createdAt])
+  @@index([solicitadoPorId])
+  @@map("respaldo")
 }
