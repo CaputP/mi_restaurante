@@ -6,7 +6,7 @@ import logo from "../../assets/images/logo.png";
 
 // Importamos la función de validación
 import { validateAuthForm } from "./validations";
-oda
+
 function Login() {
 
     // Estado para alternar entre iniciar sesión y registrarse
