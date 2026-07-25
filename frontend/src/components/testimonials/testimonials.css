@@ -1,0 +1,91 @@
+/* ==========================================================================
+   1. ESTILOS BASE (Mobile First - Por defecto para celulares)
+   ========================================================================== */
+
+.testimonials {
+    /* CAMBIADO: Ajustamos el padding para que respire bien en móviles sin comerse la pantalla */
+    padding: 50px 20px; 
+    background: #ffffff;
+}
+
+.testimonials-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.testimonials-container h2 {
+    text-align: center;
+    /* CAMBIADO: Tamaño de título adecuado y legible en celulares */
+    font-size: 2rem; 
+    color: #355e3b;
+    /* CAMBIADO: Espaciado inferior más corto para no obligar a hacer tanto scroll */
+    margin-bottom: 30px; 
+}
+
+.testimonials-grid {
+    display: grid;
+    /* CAMBIADO: Por defecto, 1 sola columna vertical para celulares */
+    grid-template-columns: 1fr; 
+    gap: 20px; /* Separación más compacta para las tarjetas en móvil */
+}
+
+/* --- TUS ESTILOS ORIGINALES DE LA TARJETA --- */
+.testimonial-card {
+    background: #fff;
+    border-radius: 20px;
+    /* CAMBIADO: Reducimos un poco el padding interno en móviles para ganar espacio */
+    padding: 25px 20px; 
+    text-align: center;
+    /* Añadimos un borde sutil para que no se pierdan las tarjetas sobre el fondo blanco */
+    border: 1px solid #f0f0f0; 
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-8px); /* Ajustado a -8px para una elevación elegante */
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+}
+
+
+/* ==========================================================================
+   2. MEDIA QUERY (Para Tablets - Ancho mínimo: 600px)
+   ========================================================================== */
+@media (min-width: 600px) {
+    .testimonials-grid {
+        /* En tablets medianas, 2 columnas se acomodan de forma espectacular */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+
+    .testimonials-container h2 {
+        font-size: 2.4rem;
+    }
+}
+
+
+/* ==========================================================================
+   3. MEDIA QUERY (Para Laptops y PC - Ancho mínimo: 1024px)
+   ========================================================================== */
+@media (min-width: 1024px) {
+    .testimonials {
+        padding: 60px 40px; /* RESTAURADO: Tu relleno original para pantallas grandes */
+    }
+
+    .testimonials-container h2 {
+        font-size: 2.8rem; /* RESTAURADO: Tu tamaño gigante original */
+        margin-bottom: 50px; /* RESTAURADO: Tu margen original */
+    }
+
+    .testimonials-grid {
+        /* RESTAURADO: En computadoras volvemos a tus 3 columnas originales */
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px; /* Tu gap original de 30px */
+    }
+
+    .testimonial-card {
+        padding: 30px; /* RESTAURADO: Tu padding interno original */
+        border: none; /* Quitamos el borde ya que en PC las sombras lucen genial */
+    }
+}

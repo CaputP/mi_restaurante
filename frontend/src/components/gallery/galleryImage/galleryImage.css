@@ -1,0 +1,39 @@
+/* ==========================================================================
+   1. ESTILOS BASE (Mobile First - Por defecto para celulares)
+   ========================================================================== */
+
+.gallery-image {
+    width: 100%; /* Asegura que ocupe el 100% del contenedor o columna donde esté */
+    overflow: hidden;
+    border-radius: 15px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    /* Soluciona pequeños bugs visuales de parpadeo en la animación en algunos navegadores */
+    backface-visibility: hidden; 
+    transform: translateZ(0); 
+}
+
+.gallery-image img {
+    width: 100%;
+    /* CAMBIADO: Altura ligeramente menor en celulares para que no ocupe 
+       tanta pantalla vertical si se ordenan en una sola columna */
+    height: 200px; 
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.gallery-image:hover img {
+    transform: scale(1.08);
+}
+
+
+/* ==========================================================================
+   2. MEDIA QUERY (Para Tablets y Computadoras - Ancho mínimo: 768px)
+   ========================================================================== */
+@media (min-width: 768px) {
+    .gallery-image img {
+        /* RESTAURADO: Tu altura original de 250px en pantallas medianas y grandes */
+        height: 250px; 
+    }
+}

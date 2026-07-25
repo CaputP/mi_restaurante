@@ -1,0 +1,67 @@
+/* ==========================================================================
+   1. ESTILOS BASE (Mobile First - Por defecto para celulares)
+   ========================================================================== */
+
+.gallery {
+    /* CAMBIADO: Reducimos ligeramente el padding vertical en móvil */
+    padding: 40px 20px; 
+    background: #f8f8f8;
+}
+
+.gallery-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.gallery-container h2 {
+    text-align: center;
+    /* CAMBIADO: Ajustamos el tamaño para pantallas pequeñas */
+    font-size: 2rem; 
+    color: #355e3b;
+    /* CAMBIADO: Espaciado inferior más corto en celulares */
+    margin-bottom: 30px; 
+}
+
+.gallery-grid {
+    display: grid;
+    /* CAMBIADO: 1 sola columna por defecto para que las fotos luzcan en móviles */
+    grid-template-columns: 1fr; 
+    gap: 20px; /* Separación un poco más compacta en celulares */
+}
+
+
+/* ==========================================================================
+   2. MEDIA QUERY (Para Tablets - Ancho mínimo: 600px)
+   ========================================================================== */
+@media (min-width: 600px) {
+    .gallery-grid {
+        /* RESTAURADO: En tablets activamos tus 2 columnas originales */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px; /* Tu separación original */
+    }
+
+    .gallery-container h2 {
+        font-size: 2.4rem;
+    }
+}
+
+
+/* ==========================================================================
+   3. MEDIA QUERY (Para Laptops y PC - Ancho mínimo: 1024px)
+   ========================================================================== */
+@media (min-width: 1024px) {
+    .gallery {
+        padding: 50px 40px; /* RESTAURADO: Tu padding original para PC */
+    }
+
+    .gallery-container h2 {
+        font-size: 2.8rem; /* RESTAURADO: Tu tamaño de letra original */
+        margin-bottom: 50px; /* RESTAURADO: Tu espaciado original */
+    }
+
+    .gallery-grid {
+        /* NUEVO: En pantallas grandes se ve espectacular usar 3 columnas */
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

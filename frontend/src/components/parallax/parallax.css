@@ -1,0 +1,75 @@
+/* ==========================================================================
+   1. ESTILOS BASE (Mobile First - Para Celulares)
+   ========================================================================== */
+
+.parallax {
+    /* CAMBIADO: Usamos min-height en lugar de height fijo para que si el texto 
+       se envuelve en varias líneas en pantallas muy chicas, el contenedor crezca solo */
+    min-height: 50vh; 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* IMPORTANTE: En móviles dejamos el comportamiento normal de la imagen.
+       Esto evita que se rompa o se pixele en iOS/Android */
+    background-attachment: scroll; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.parallax-overlay {
+    width: 100%;
+    /* CAMBIADO: Usamos min-height para que llene el contenedor */
+    min-height: 50vh; 
+    background: rgba(0, 0, 0, 0.5); /* Subí un poco la opacidad a 0.5 para leer mejor el texto */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    padding: 40px 20px; /* NUEVO: Margen interno para que no choque con los bordes */
+}
+
+.parallax-overlay h2 {
+    /* CAMBIADO: Un tamaño de fuente adaptado y legible en celulares */
+    font-size: 1.8rem; 
+    margin-bottom: 15px;
+    max-width: 800px;
+    line-height: 1.3;
+}
+
+.parallax-overlay p {
+    /* CAMBIADO: Tamaño de párrafo estándar para celulares */
+    font-size: 1rem; 
+    max-width: 600px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================================================
+   2. MEDIA QUERY (Para Tablets y Computadoras - Ancho mínimo: 768px)
+   ========================================================================== */
+@media (min-width: 768px) {
+    .parallax {
+        height: 60vh; /* RESTAURADO: Tu altura de 60vh original */
+        min-height: auto;
+        /* ACTIVADO: Solo aplicamos el efecto Parallax en pantallas grandes */
+        background-attachment: fixed; 
+    }
+
+    .parallax-overlay {
+        height: 100%;
+        min-height: auto;
+        padding: 0; /* Quitamos el padding del móvil */
+    }
+
+    .parallax-overlay h2 {
+        font-size: 3rem; /* RESTAURADO: Tu tamaño gigante original */
+        margin-bottom: 20px;
+    }
+
+    .parallax-overlay p {
+        font-size: 1.2rem; /* RESTAURADO: Tu tamaño original */
+    }
+}

@@ -1,0 +1,115 @@
+/* ==========================================================================
+   1. ESTILOS BASE (Mobile First - Por defecto para celulares)
+   ========================================================================== */
+
+.about {
+    /* CAMBIADO: Reducimos el padding vertical en móvil (60px en lugar de 130px) */
+    padding: 60px 20px; 
+    background: #ffffff;
+}
+
+.about-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    /* CAMBIADO: En celulares, los elementos se apilan uno abajo del otro */
+    flex-direction: column; 
+    gap: 35px; /* Reducimos el espacio entre la imagen y el texto en móvil */
+}
+
+.about-image {
+    width: 100%; /* Toma todo el ancho disponible en móvil */
+}
+
+.about-image img {
+    width: 100%;
+    max-height: 350px; /* NUEVO: Evitamos que la foto sea infinitamente alta en celulares */
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 8px 20px rgba(0,0,0,.2);
+    transition: transform 0.3s ease;
+}
+
+/* Efecto hover suave */
+.about-image img:hover {
+    transform: translateY(-8px); /* CAMBIADO: Es mejor moverlo hacia arriba (-8px) que hacia abajo */
+}
+
+.about-content {
+    width: 100%;
+    text-align: center; /* NUEVO: El texto centrado luce mucho más equilibrado en móvil */
+}
+
+.about-content h2 {
+    font-size: 2rem; /* CAMBIADO: Un tamaño de título adecuado para celulares */
+    color: #355e3b;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.about-content p {
+    font-size: 1rem; /* CAMBIADO: Letra estándar de lectura cómoda en móvil */
+    line-height: 1.7;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.about-content button {
+    background: #355e3b;
+    color: white;
+    border: none;
+    padding: 14px 35px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .3s;
+    width: 100%; /* NUEVO: Botón ancho en móviles para presionar fácilmente */
+    max-width: 280px; /* Evita que se estire demasiado */
+}
+
+.about-content button:hover {
+    background: #2b4c31;
+}
+
+
+/* ==========================================================================
+   2. MEDIA QUERY (Para Tablets y Computadoras - Ancho mínimo: 768px)
+   ========================================================================== */
+@media (min-width: 768px) {
+    .about {
+        padding: 100px 40px; /* Aumentamos el aire visual en pantallas más grandes */
+    }
+
+    .about-container {
+        flex-direction: row; /* RESTAURADO: Imagen a la izquierda, texto a la derecha */
+        gap: 50px;
+        align-items: center;
+    }
+
+    /* Le asignamos un ancho balanceado de 50% a cada columna */
+    .about-image,
+    .about-content {
+        width: 50%;
+    }
+
+    .about-image img {
+        max-height: 450px; /* Le damos más margen de altura a la foto en PC */
+    }
+
+    .about-content {
+        text-align: left; /* RESTAURADO: El texto se alinea a la izquierda en PC */
+    }
+
+    .about-content h2 {
+        font-size: 2.8rem; /* RESTAURADO: Tu tamaño gigante original */
+    }
+
+    .about-content p {
+        font-size: 1.1rem; /* RESTAURADO: Tu tamaño original */
+    }
+
+    .about-content button {
+        width: auto; /* Desactivamos el ancho de 100% del móvil */
+    }
+}

@@ -1,0 +1,22 @@
+html{
+    scroll-behavior: smooth;
+}
+
+/* Reseteo global para eliminar bordes y ajustar tamaños */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    /* Evita que aparezca la barra horizontal molesta */
+  
+    /* Cambia esto por el tipo de letra que prefieras */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+}
+
+/* Asegura que las imágenes no se desborden de sus contenedores */

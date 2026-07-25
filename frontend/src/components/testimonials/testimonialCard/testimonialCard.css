@@ -1,0 +1,63 @@
+/* ==========================================================================
+   ESTILOS DE LA TARJETA DE TESTIMONIALES
+   ========================================================================== */
+
+.testimonial-card {
+    background: white;
+    padding: 30px 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    text-align: center; /* Centra todo el contenido (imagen, estrellas, nombre, texto) */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%; /* Para que todas midan lo mismo en la cuadrícula */
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* ==========================================================================
+   ESTILOS DE LA IMAGEN / AVATAR (Aquí está la magia)
+   ========================================================================== */
+
+.testimonial-image {
+    margin-bottom: 15px; /* Espacio entre la foto y las estrellas */
+}
+
+.testimonial-image img {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%; /* Hace que la imagen sea perfectamente redonda */
+    object-fit: cover; /* Recorta la foto proporcionalmente para que no se aplaste o estire */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 1.15); /* Sombra suave debajo del avatar */
+    display: block;
+}
+
+/* ==========================================================================
+   ESTILOS DEL CONTENIDO DE TEXTO
+   ========================================================================== */
+
+.testimonial-content .stars {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.testimonial-content h3 {
+    color: #333;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.testimonial-content .comment {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-style: italic; /* El estilo itálico le da ese toque clásico de reseña */
+    margin: 0;
+}
