@@ -30,3 +30,5 @@ Thumbs.db
 
 # Configuración del editor
 .vscode/
+
+backend/src/generated/
