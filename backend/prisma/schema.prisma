@@ -444,6 +444,7 @@ model Usuario {
   passwordHash     String?        @map("password_hash") @db.VarChar(255)
   googleId         String?        @unique @map("google_id") @db.VarChar(255)
   proveedorAuth    ProveedorAuth  @default(LOCAL) @map("proveedor_auth")
+  googleSubject    String?        @unique @map("google_subject") @db.VarChar(255)
   estado           EstadoRegistro @default(ACTIVO)
   correoVerificado Boolean        @default(false) @map("correo_verificado")
   ultimoAcceso     DateTime?      @map("ultimo_acceso") @db.Timestamptz(3)

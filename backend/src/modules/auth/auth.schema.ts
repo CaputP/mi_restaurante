@@ -136,3 +136,15 @@ export type ForgotPasswordInput = z.infer<
 export type ResetPasswordInput = z.infer<
   typeof resetPasswordSchema
 >;
+
+export const googleLoginSchema = z.object({
+  credential: z
+    .string()
+    .trim()
+    .min(100, "La credencial de Google no es válida.")
+    .max(5000, "La credencial de Google no es válida."),
+});
+
+export type GoogleLoginInput = z.infer<
+  typeof googleLoginSchema
+>;

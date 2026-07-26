@@ -44,6 +44,7 @@ export type UsuarioMinAggregateOutputType = {
   passwordHash: string | null
   googleId: string | null
   proveedorAuth: $Enums.ProveedorAuth | null
+  googleSubject: string | null
   estado: $Enums.EstadoRegistro | null
   correoVerificado: boolean | null
   ultimoAcceso: Date | null
@@ -63,6 +64,7 @@ export type UsuarioMaxAggregateOutputType = {
   passwordHash: string | null
   googleId: string | null
   proveedorAuth: $Enums.ProveedorAuth | null
+  googleSubject: string | null
   estado: $Enums.EstadoRegistro | null
   correoVerificado: boolean | null
   ultimoAcceso: Date | null
@@ -82,6 +84,7 @@ export type UsuarioCountAggregateOutputType = {
   passwordHash: number
   googleId: number
   proveedorAuth: number
+  googleSubject: number
   estado: number
   correoVerificado: number
   ultimoAcceso: number
@@ -111,6 +114,7 @@ export type UsuarioMinAggregateInputType = {
   passwordHash?: true
   googleId?: true
   proveedorAuth?: true
+  googleSubject?: true
   estado?: true
   correoVerificado?: true
   ultimoAcceso?: true
@@ -130,6 +134,7 @@ export type UsuarioMaxAggregateInputType = {
   passwordHash?: true
   googleId?: true
   proveedorAuth?: true
+  googleSubject?: true
   estado?: true
   correoVerificado?: true
   ultimoAcceso?: true
@@ -149,6 +154,7 @@ export type UsuarioCountAggregateInputType = {
   passwordHash?: true
   googleId?: true
   proveedorAuth?: true
+  googleSubject?: true
   estado?: true
   correoVerificado?: true
   ultimoAcceso?: true
@@ -255,6 +261,7 @@ export type UsuarioGroupByOutputType = {
   passwordHash: string | null
   googleId: string | null
   proveedorAuth: $Enums.ProveedorAuth
+  googleSubject: string | null
   estado: $Enums.EstadoRegistro
   correoVerificado: boolean
   ultimoAcceso: Date | null
@@ -297,6 +304,7 @@ export type UsuarioWhereInput = {
   passwordHash?: Prisma.StringNullableFilter<"Usuario"> | string | null
   googleId?: Prisma.StringNullableFilter<"Usuario"> | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFilter<"Usuario"> | $Enums.ProveedorAuth
+  googleSubject?: Prisma.StringNullableFilter<"Usuario"> | string | null
   estado?: Prisma.EnumEstadoRegistroFilter<"Usuario"> | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFilter<"Usuario"> | boolean
   ultimoAcceso?: Prisma.DateTimeNullableFilter<"Usuario"> | Date | string | null
@@ -352,6 +360,7 @@ export type UsuarioOrderByWithRelationInput = {
   passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
   googleId?: Prisma.SortOrderInput | Prisma.SortOrder
   proveedorAuth?: Prisma.SortOrder
+  googleSubject?: Prisma.SortOrderInput | Prisma.SortOrder
   estado?: Prisma.SortOrder
   correoVerificado?: Prisma.SortOrder
   ultimoAcceso?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -401,6 +410,7 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   correo?: string
   googleId?: string
+  googleSubject?: string
   AND?: Prisma.UsuarioWhereInput | Prisma.UsuarioWhereInput[]
   OR?: Prisma.UsuarioWhereInput[]
   NOT?: Prisma.UsuarioWhereInput | Prisma.UsuarioWhereInput[]
@@ -453,7 +463,7 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   respaldosSolicitados?: Prisma.RespaldoListRelationFilter
   tokensVerificacionCorreo?: Prisma.TokenVerificacionCorreoListRelationFilter
   tokensRecuperacion?: Prisma.TokenRecuperacionPasswordListRelationFilter
-}, "id" | "correo" | "googleId">
+}, "id" | "correo" | "googleId" | "googleSubject">
 
 export type UsuarioOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -465,6 +475,7 @@ export type UsuarioOrderByWithAggregationInput = {
   passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
   googleId?: Prisma.SortOrderInput | Prisma.SortOrder
   proveedorAuth?: Prisma.SortOrder
+  googleSubject?: Prisma.SortOrderInput | Prisma.SortOrder
   estado?: Prisma.SortOrder
   correoVerificado?: Prisma.SortOrder
   ultimoAcceso?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -492,6 +503,7 @@ export type UsuarioScalarWhereWithAggregatesInput = {
   passwordHash?: Prisma.StringNullableWithAggregatesFilter<"Usuario"> | string | null
   googleId?: Prisma.StringNullableWithAggregatesFilter<"Usuario"> | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthWithAggregatesFilter<"Usuario"> | $Enums.ProveedorAuth
+  googleSubject?: Prisma.StringNullableWithAggregatesFilter<"Usuario"> | string | null
   estado?: Prisma.EnumEstadoRegistroWithAggregatesFilter<"Usuario"> | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolWithAggregatesFilter<"Usuario"> | boolean
   ultimoAcceso?: Prisma.DateTimeNullableWithAggregatesFilter<"Usuario"> | Date | string | null
@@ -510,6 +522,7 @@ export type UsuarioCreateInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -565,6 +578,7 @@ export type UsuarioUncheckedCreateInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -618,6 +632,7 @@ export type UsuarioUpdateInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -673,6 +688,7 @@ export type UsuarioUncheckedUpdateInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -727,6 +743,7 @@ export type UsuarioCreateManyInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -745,6 +762,7 @@ export type UsuarioUpdateManyMutationInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -764,6 +782,7 @@ export type UsuarioUncheckedUpdateManyInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -798,6 +817,7 @@ export type UsuarioCountOrderByAggregateInput = {
   passwordHash?: Prisma.SortOrder
   googleId?: Prisma.SortOrder
   proveedorAuth?: Prisma.SortOrder
+  googleSubject?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   correoVerificado?: Prisma.SortOrder
   ultimoAcceso?: Prisma.SortOrder
@@ -821,6 +841,7 @@ export type UsuarioMaxOrderByAggregateInput = {
   passwordHash?: Prisma.SortOrder
   googleId?: Prisma.SortOrder
   proveedorAuth?: Prisma.SortOrder
+  googleSubject?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   correoVerificado?: Prisma.SortOrder
   ultimoAcceso?: Prisma.SortOrder
@@ -840,6 +861,7 @@ export type UsuarioMinOrderByAggregateInput = {
   passwordHash?: Prisma.SortOrder
   googleId?: Prisma.SortOrder
   proveedorAuth?: Prisma.SortOrder
+  googleSubject?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   correoVerificado?: Prisma.SortOrder
   ultimoAcceso?: Prisma.SortOrder
@@ -1441,6 +1463,7 @@ export type UsuarioCreateWithoutBloqueosCreadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -1495,6 +1518,7 @@ export type UsuarioUncheckedCreateWithoutBloqueosCreadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -1563,6 +1587,7 @@ export type UsuarioUpdateWithoutBloqueosCreadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1617,6 +1642,7 @@ export type UsuarioUncheckedUpdateWithoutBloqueosCreadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1669,6 +1695,7 @@ export type UsuarioCreateWithoutRolInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -1722,6 +1749,7 @@ export type UsuarioUncheckedCreateWithoutRolInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -1805,6 +1833,7 @@ export type UsuarioScalarWhereInput = {
   passwordHash?: Prisma.StringNullableFilter<"Usuario"> | string | null
   googleId?: Prisma.StringNullableFilter<"Usuario"> | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFilter<"Usuario"> | $Enums.ProveedorAuth
+  googleSubject?: Prisma.StringNullableFilter<"Usuario"> | string | null
   estado?: Prisma.EnumEstadoRegistroFilter<"Usuario"> | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFilter<"Usuario"> | boolean
   ultimoAcceso?: Prisma.DateTimeNullableFilter<"Usuario"> | Date | string | null
@@ -1823,6 +1852,7 @@ export type UsuarioCreateWithoutSucursalesInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -1877,6 +1907,7 @@ export type UsuarioUncheckedCreateWithoutSucursalesInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -1945,6 +1976,7 @@ export type UsuarioUpdateWithoutSucursalesInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1999,6 +2031,7 @@ export type UsuarioUncheckedUpdateWithoutSucursalesInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2051,6 +2084,7 @@ export type UsuarioCreateWithoutStocksDiariosCreadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2105,6 +2139,7 @@ export type UsuarioUncheckedCreateWithoutStocksDiariosCreadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2173,6 +2208,7 @@ export type UsuarioUpdateWithoutStocksDiariosCreadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2227,6 +2263,7 @@ export type UsuarioUncheckedUpdateWithoutStocksDiariosCreadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2279,6 +2316,7 @@ export type UsuarioCreateWithoutMovimientosStockInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2333,6 +2371,7 @@ export type UsuarioUncheckedCreateWithoutMovimientosStockInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2401,6 +2440,7 @@ export type UsuarioUpdateWithoutMovimientosStockInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2455,6 +2495,7 @@ export type UsuarioUncheckedUpdateWithoutMovimientosStockInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2507,6 +2548,7 @@ export type UsuarioCreateWithoutReservasComoClienteInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2561,6 +2603,7 @@ export type UsuarioUncheckedCreateWithoutReservasComoClienteInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2618,6 +2661,7 @@ export type UsuarioCreateWithoutReservasAprobadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2672,6 +2716,7 @@ export type UsuarioUncheckedCreateWithoutReservasAprobadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2729,6 +2774,7 @@ export type UsuarioCreateWithoutReservasCanceladasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2783,6 +2829,7 @@ export type UsuarioUncheckedCreateWithoutReservasCanceladasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -2851,6 +2898,7 @@ export type UsuarioUpdateWithoutReservasComoClienteInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2905,6 +2953,7 @@ export type UsuarioUncheckedUpdateWithoutReservasComoClienteInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2968,6 +3017,7 @@ export type UsuarioUpdateWithoutReservasAprobadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3022,6 +3072,7 @@ export type UsuarioUncheckedUpdateWithoutReservasAprobadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3085,6 +3136,7 @@ export type UsuarioUpdateWithoutReservasCanceladasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3139,6 +3191,7 @@ export type UsuarioUncheckedUpdateWithoutReservasCanceladasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3191,6 +3244,7 @@ export type UsuarioCreateWithoutPagosReservaRegistradosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -3245,6 +3299,7 @@ export type UsuarioUncheckedCreateWithoutPagosReservaRegistradosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -3302,6 +3357,7 @@ export type UsuarioCreateWithoutPagosReservaConfirmadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -3356,6 +3412,7 @@ export type UsuarioUncheckedCreateWithoutPagosReservaConfirmadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -3424,6 +3481,7 @@ export type UsuarioUpdateWithoutPagosReservaRegistradosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3478,6 +3536,7 @@ export type UsuarioUncheckedUpdateWithoutPagosReservaRegistradosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3541,6 +3600,7 @@ export type UsuarioUpdateWithoutPagosReservaConfirmadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3595,6 +3655,7 @@ export type UsuarioUncheckedUpdateWithoutPagosReservaConfirmadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3647,6 +3708,7 @@ export type UsuarioCreateWithoutHistorialReservasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -3701,6 +3763,7 @@ export type UsuarioUncheckedCreateWithoutHistorialReservasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -3769,6 +3832,7 @@ export type UsuarioUpdateWithoutHistorialReservasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3823,6 +3887,7 @@ export type UsuarioUncheckedUpdateWithoutHistorialReservasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3875,6 +3940,7 @@ export type UsuarioCreateWithoutPedidosComoClienteInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -3929,6 +3995,7 @@ export type UsuarioUncheckedCreateWithoutPedidosComoClienteInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -3986,6 +4053,7 @@ export type UsuarioCreateWithoutPedidosCreadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -4040,6 +4108,7 @@ export type UsuarioUncheckedCreateWithoutPedidosCreadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -4097,6 +4166,7 @@ export type UsuarioCreateWithoutPedidosComoMozoInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -4151,6 +4221,7 @@ export type UsuarioUncheckedCreateWithoutPedidosComoMozoInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -4208,6 +4279,7 @@ export type UsuarioCreateWithoutPedidosCanceladosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -4262,6 +4334,7 @@ export type UsuarioUncheckedCreateWithoutPedidosCanceladosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -4330,6 +4403,7 @@ export type UsuarioUpdateWithoutPedidosComoClienteInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4384,6 +4458,7 @@ export type UsuarioUncheckedUpdateWithoutPedidosComoClienteInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4447,6 +4522,7 @@ export type UsuarioUpdateWithoutPedidosCreadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4501,6 +4577,7 @@ export type UsuarioUncheckedUpdateWithoutPedidosCreadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4564,6 +4641,7 @@ export type UsuarioUpdateWithoutPedidosComoMozoInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4618,6 +4696,7 @@ export type UsuarioUncheckedUpdateWithoutPedidosComoMozoInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4681,6 +4760,7 @@ export type UsuarioUpdateWithoutPedidosCanceladosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4735,6 +4815,7 @@ export type UsuarioUncheckedUpdateWithoutPedidosCanceladosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4787,6 +4868,7 @@ export type UsuarioCreateWithoutComandasProcesadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -4841,6 +4923,7 @@ export type UsuarioUncheckedCreateWithoutComandasProcesadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -4909,6 +4992,7 @@ export type UsuarioUpdateWithoutComandasProcesadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4963,6 +5047,7 @@ export type UsuarioUncheckedUpdateWithoutComandasProcesadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5015,6 +5100,7 @@ export type UsuarioCreateWithoutEntregasRealizadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -5069,6 +5155,7 @@ export type UsuarioUncheckedCreateWithoutEntregasRealizadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -5137,6 +5224,7 @@ export type UsuarioUpdateWithoutEntregasRealizadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5191,6 +5279,7 @@ export type UsuarioUncheckedUpdateWithoutEntregasRealizadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5243,6 +5332,7 @@ export type UsuarioCreateWithoutCajasComoVendedorInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -5297,6 +5387,7 @@ export type UsuarioUncheckedCreateWithoutCajasComoVendedorInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -5354,6 +5445,7 @@ export type UsuarioCreateWithoutCajasAbiertasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -5408,6 +5500,7 @@ export type UsuarioUncheckedCreateWithoutCajasAbiertasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -5465,6 +5558,7 @@ export type UsuarioCreateWithoutCajasCerradasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -5519,6 +5613,7 @@ export type UsuarioUncheckedCreateWithoutCajasCerradasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -5587,6 +5682,7 @@ export type UsuarioUpdateWithoutCajasComoVendedorInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5641,6 +5737,7 @@ export type UsuarioUncheckedUpdateWithoutCajasComoVendedorInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5704,6 +5801,7 @@ export type UsuarioUpdateWithoutCajasAbiertasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5758,6 +5856,7 @@ export type UsuarioUncheckedUpdateWithoutCajasAbiertasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5821,6 +5920,7 @@ export type UsuarioUpdateWithoutCajasCerradasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5875,6 +5975,7 @@ export type UsuarioUncheckedUpdateWithoutCajasCerradasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5927,6 +6028,7 @@ export type UsuarioCreateWithoutVentasComoClienteInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -5981,6 +6083,7 @@ export type UsuarioUncheckedCreateWithoutVentasComoClienteInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -6038,6 +6141,7 @@ export type UsuarioCreateWithoutVentasComoVendedorInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -6092,6 +6196,7 @@ export type UsuarioUncheckedCreateWithoutVentasComoVendedorInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -6149,6 +6254,7 @@ export type UsuarioCreateWithoutVentasAnuladasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -6203,6 +6309,7 @@ export type UsuarioUncheckedCreateWithoutVentasAnuladasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -6271,6 +6378,7 @@ export type UsuarioUpdateWithoutVentasComoClienteInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6325,6 +6433,7 @@ export type UsuarioUncheckedUpdateWithoutVentasComoClienteInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6388,6 +6497,7 @@ export type UsuarioUpdateWithoutVentasComoVendedorInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6442,6 +6552,7 @@ export type UsuarioUncheckedUpdateWithoutVentasComoVendedorInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6505,6 +6616,7 @@ export type UsuarioUpdateWithoutVentasAnuladasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6559,6 +6671,7 @@ export type UsuarioUncheckedUpdateWithoutVentasAnuladasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6611,6 +6724,7 @@ export type UsuarioCreateWithoutGastosRegistradosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -6665,6 +6779,7 @@ export type UsuarioUncheckedCreateWithoutGastosRegistradosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -6722,6 +6837,7 @@ export type UsuarioCreateWithoutGastosAnuladosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -6776,6 +6892,7 @@ export type UsuarioUncheckedCreateWithoutGastosAnuladosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -6844,6 +6961,7 @@ export type UsuarioUpdateWithoutGastosRegistradosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6898,6 +7016,7 @@ export type UsuarioUncheckedUpdateWithoutGastosRegistradosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6961,6 +7080,7 @@ export type UsuarioUpdateWithoutGastosAnuladosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7015,6 +7135,7 @@ export type UsuarioUncheckedUpdateWithoutGastosAnuladosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7067,6 +7188,7 @@ export type UsuarioCreateWithoutProgramasFidelizacionCreadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -7121,6 +7243,7 @@ export type UsuarioUncheckedCreateWithoutProgramasFidelizacionCreadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -7189,6 +7312,7 @@ export type UsuarioUpdateWithoutProgramasFidelizacionCreadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7243,6 +7367,7 @@ export type UsuarioUncheckedUpdateWithoutProgramasFidelizacionCreadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7295,6 +7420,7 @@ export type UsuarioCreateWithoutProgresosFidelizacionInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -7349,6 +7475,7 @@ export type UsuarioUncheckedCreateWithoutProgresosFidelizacionInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -7417,6 +7544,7 @@ export type UsuarioUpdateWithoutProgresosFidelizacionInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7471,6 +7599,7 @@ export type UsuarioUncheckedUpdateWithoutProgresosFidelizacionInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7523,6 +7652,7 @@ export type UsuarioCreateWithoutPremiosObtenidosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -7577,6 +7707,7 @@ export type UsuarioUncheckedCreateWithoutPremiosObtenidosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -7634,6 +7765,7 @@ export type UsuarioCreateWithoutPremiosCanjeadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -7688,6 +7820,7 @@ export type UsuarioUncheckedCreateWithoutPremiosCanjeadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -7756,6 +7889,7 @@ export type UsuarioUpdateWithoutPremiosObtenidosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7810,6 +7944,7 @@ export type UsuarioUncheckedUpdateWithoutPremiosObtenidosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7873,6 +8008,7 @@ export type UsuarioUpdateWithoutPremiosCanjeadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7927,6 +8063,7 @@ export type UsuarioUncheckedUpdateWithoutPremiosCanjeadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7979,6 +8116,7 @@ export type UsuarioCreateWithoutPromocionesCreadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -8033,6 +8171,7 @@ export type UsuarioUncheckedCreateWithoutPromocionesCreadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -8101,6 +8240,7 @@ export type UsuarioUpdateWithoutPromocionesCreadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8155,6 +8295,7 @@ export type UsuarioUncheckedUpdateWithoutPromocionesCreadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8207,6 +8348,7 @@ export type UsuarioCreateWithoutConfiguracionesActualizadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -8261,6 +8403,7 @@ export type UsuarioUncheckedCreateWithoutConfiguracionesActualizadasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -8329,6 +8472,7 @@ export type UsuarioUpdateWithoutConfiguracionesActualizadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8383,6 +8527,7 @@ export type UsuarioUncheckedUpdateWithoutConfiguracionesActualizadasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8435,6 +8580,7 @@ export type UsuarioCreateWithoutNotificacionesInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -8489,6 +8635,7 @@ export type UsuarioUncheckedCreateWithoutNotificacionesInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -8557,6 +8704,7 @@ export type UsuarioUpdateWithoutNotificacionesInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8611,6 +8759,7 @@ export type UsuarioUncheckedUpdateWithoutNotificacionesInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8663,6 +8812,7 @@ export type UsuarioCreateWithoutAuditoriasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -8717,6 +8867,7 @@ export type UsuarioUncheckedCreateWithoutAuditoriasInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -8785,6 +8936,7 @@ export type UsuarioUpdateWithoutAuditoriasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8839,6 +8991,7 @@ export type UsuarioUncheckedUpdateWithoutAuditoriasInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8891,6 +9044,7 @@ export type UsuarioCreateWithoutRespaldosSolicitadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -8945,6 +9099,7 @@ export type UsuarioUncheckedCreateWithoutRespaldosSolicitadosInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -9013,6 +9168,7 @@ export type UsuarioUpdateWithoutRespaldosSolicitadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9067,6 +9223,7 @@ export type UsuarioUncheckedUpdateWithoutRespaldosSolicitadosInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9119,6 +9276,7 @@ export type UsuarioCreateWithoutTokensVerificacionCorreoInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -9173,6 +9331,7 @@ export type UsuarioUncheckedCreateWithoutTokensVerificacionCorreoInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -9241,6 +9400,7 @@ export type UsuarioUpdateWithoutTokensVerificacionCorreoInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9295,6 +9455,7 @@ export type UsuarioUncheckedUpdateWithoutTokensVerificacionCorreoInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9347,6 +9508,7 @@ export type UsuarioCreateWithoutTokensRecuperacionInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -9401,6 +9563,7 @@ export type UsuarioUncheckedCreateWithoutTokensRecuperacionInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -9469,6 +9632,7 @@ export type UsuarioUpdateWithoutTokensRecuperacionInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9523,6 +9687,7 @@ export type UsuarioUncheckedUpdateWithoutTokensRecuperacionInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9575,6 +9740,7 @@ export type UsuarioCreateManyRolInput = {
   passwordHash?: string | null
   googleId?: string | null
   proveedorAuth?: $Enums.ProveedorAuth
+  googleSubject?: string | null
   estado?: $Enums.EstadoRegistro
   correoVerificado?: boolean
   ultimoAcceso?: Date | string | null
@@ -9593,6 +9759,7 @@ export type UsuarioUpdateWithoutRolInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9646,6 +9813,7 @@ export type UsuarioUncheckedUpdateWithoutRolInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9699,6 +9867,7 @@ export type UsuarioUncheckedUpdateManyWithoutRolInput = {
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proveedorAuth?: Prisma.EnumProveedorAuthFieldUpdateOperationsInput | $Enums.ProveedorAuth
+  googleSubject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.EnumEstadoRegistroFieldUpdateOperationsInput | $Enums.EstadoRegistro
   correoVerificado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ultimoAcceso?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10055,6 +10224,7 @@ export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   passwordHash?: boolean
   googleId?: boolean
   proveedorAuth?: boolean
+  googleSubject?: boolean
   estado?: boolean
   correoVerificado?: boolean
   ultimoAcceso?: boolean
@@ -10111,6 +10281,7 @@ export type UsuarioSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   passwordHash?: boolean
   googleId?: boolean
   proveedorAuth?: boolean
+  googleSubject?: boolean
   estado?: boolean
   correoVerificado?: boolean
   ultimoAcceso?: boolean
@@ -10131,6 +10302,7 @@ export type UsuarioSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   passwordHash?: boolean
   googleId?: boolean
   proveedorAuth?: boolean
+  googleSubject?: boolean
   estado?: boolean
   correoVerificado?: boolean
   ultimoAcceso?: boolean
@@ -10151,6 +10323,7 @@ export type UsuarioSelectScalar = {
   passwordHash?: boolean
   googleId?: boolean
   proveedorAuth?: boolean
+  googleSubject?: boolean
   estado?: boolean
   correoVerificado?: boolean
   ultimoAcceso?: boolean
@@ -10160,7 +10333,7 @@ export type UsuarioSelectScalar = {
   deletedAt?: boolean
 }
 
-export type UsuarioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "rolId" | "nombres" | "apellidos" | "telefono" | "correo" | "passwordHash" | "googleId" | "proveedorAuth" | "estado" | "correoVerificado" | "ultimoAcceso" | "sessionVersion" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["usuario"]>
+export type UsuarioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "rolId" | "nombres" | "apellidos" | "telefono" | "correo" | "passwordHash" | "googleId" | "proveedorAuth" | "googleSubject" | "estado" | "correoVerificado" | "ultimoAcceso" | "sessionVersion" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["usuario"]>
 export type UsuarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   rol?: boolean | Prisma.RolDefaultArgs<ExtArgs>
   sucursales?: boolean | Prisma.Usuario$sucursalesArgs<ExtArgs>
@@ -10257,6 +10430,7 @@ export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     passwordHash: string | null
     googleId: string | null
     proveedorAuth: $Enums.ProveedorAuth
+    googleSubject: string | null
     estado: $Enums.EstadoRegistro
     correoVerificado: boolean
     ultimoAcceso: Date | null
@@ -10732,6 +10906,7 @@ export interface UsuarioFieldRefs {
   readonly passwordHash: Prisma.FieldRef<"Usuario", 'String'>
   readonly googleId: Prisma.FieldRef<"Usuario", 'String'>
   readonly proveedorAuth: Prisma.FieldRef<"Usuario", 'ProveedorAuth'>
+  readonly googleSubject: Prisma.FieldRef<"Usuario", 'String'>
   readonly estado: Prisma.FieldRef<"Usuario", 'EstadoRegistro'>
   readonly correoVerificado: Prisma.FieldRef<"Usuario", 'Boolean'>
   readonly ultimoAcceso: Prisma.FieldRef<"Usuario", 'DateTime'>

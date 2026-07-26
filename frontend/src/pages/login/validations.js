@@ -1,7 +1,7 @@
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^[0-9]{9}$/;
 const nameRegex = /^[A-ZÁÉÍÓÚÜÑ ]+$/;
-const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,72}$/;
+const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,72}$/;
 
 export function validateAuthForm({
     isRegister,
@@ -35,7 +35,7 @@ export function validateAuthForm({
             "La contraseña es obligatoria.";
     } else if (!passwordRegex.test(password)) {
         newErrors.password =
-            "Debe tener entre 8 y 72 caracteres, al menos una mayúscula, una minúscula y un número.";
+            "Debe tener entre 10 y 72 caracteres, al menos una mayúscula, una minúscula y un número.";
     }
 
     // Validaciones exclusivas del registro

@@ -29,6 +29,14 @@ import {
   sendEmailVerificationForUser,
 } from "./auth-security.service.js";
 
+import {
+  googleLoginSchema,
+} from "./auth.schema.js";
+
+import {
+  loginWithGoogle,
+} from "./google-auth.service.js";
+
 export async function loginController(
   request: Request,
   response: Response,
@@ -191,6 +199,30 @@ export async function resetPasswordController(
       success: true,
       message:
         "La contraseña fue restablecida correctamente. Inicia sesión nuevamente.",
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
+export async function googleLoginController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const input = googleLoginSchema.parse(
+      request.body,
+    );
+
+    const resultado =
+      await loginWithGoogle(input);
+
+    response.status(200).json({
+      success: true,
+      message:
+        "Inicio de sesión con Google correcto.",
+      data: resultado,
     });
   } catch (error: unknown) {
     next(error);

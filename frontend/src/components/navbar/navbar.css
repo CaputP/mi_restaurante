@@ -108,7 +108,7 @@
 }
 
 .nav-links.activo {
-    max-height: 350px;
+    max-height: 500px;
 }
 
 .nav-links li {
@@ -132,6 +132,36 @@
 
 .nav-links li:hover a {
     color: #ffd54f;
+}
+
+.nav-user-item a,
+.nav-logout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.nav-logout-button {
+    width: 100%;
+    padding: 15px 0;
+    border: none;
+    background: transparent;
+    color: white;
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.nav-logout-button:hover {
+    color: #ffd54f;
+}
+
+@media (min-width: 768px) {
+    .nav-logout-button {
+        width: auto;
+        padding: 0;
+    }
 }
 
 

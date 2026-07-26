@@ -3940,6 +3940,7 @@ export const UsuarioScalarFieldEnum = {
   passwordHash: 'passwordHash',
   googleId: 'googleId',
   proveedorAuth: 'proveedorAuth',
+  googleSubject: 'googleSubject',
   estado: 'estado',
   correoVerificado: 'correoVerificado',
   ultimoAcceso: 'ultimoAcceso',

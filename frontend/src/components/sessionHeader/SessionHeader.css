@@ -1,0 +1,103 @@
+.session-header {
+    width: 100%;
+    min-height: 82px;
+    padding: 12px 24px;
+    background: #355e3b;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+.session-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.session-header-brand img {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+}
+
+.session-header-brand h1 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.session-header-brand p {
+    margin: 3px 0 0;
+    font-size: 0.82rem;
+    opacity: 0.85;
+}
+
+.session-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.session-user {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.session-user > svg {
+    font-size: 1.8rem;
+}
+
+.session-user div {
+    display: flex;
+    flex-direction: column;
+}
+
+.session-user strong {
+    font-size: 0.9rem;
+}
+
+.session-user span {
+    font-size: 0.76rem;
+    opacity: 0.8;
+}
+
+.session-home-link,
+.session-logout-button {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    border: none;
+    background: transparent;
+    color: white;
+    text-decoration: none;
+    font: inherit;
+    cursor: pointer;
+}
+
+.session-home-link:hover,
+.session-logout-button:hover {
+    color: #ffd54f;
+}
+
+@media (max-width: 768px) {
+    .session-header {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 18px;
+    }
+
+    .session-header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .session-user {
+        width: 100%;
+    }
+}

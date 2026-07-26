@@ -4,6 +4,7 @@ import { requireAuth } from "../../middlewares/auth.middleware.js";
 import {
   confirmEmailController,
   forgotPasswordController,
+  googleLoginController,
   loginController,
   meController,
   registerController,
@@ -11,9 +12,15 @@ import {
   resetPasswordController,
 } from "./auth.controller.js";
 
+
+
 export const authRouter = Router();
 
 authRouter.post("/login", loginController);
+authRouter.post(
+  "/google",
+  googleLoginController,
+);
 authRouter.post("/register", registerController);
 
 authRouter.post(

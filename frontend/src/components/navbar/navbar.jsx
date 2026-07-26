@@ -1,8 +1,18 @@
-import { useState, useEffect } from "react"; // 1. MODIFICADO: Importamos useEffect
-import { FaBars, FaTimes } from "react-icons/fa";
-import {Link} from "react-router-dom"
-import "./navbar.css";
+import { useEffect, useState } from "react";
+import {
+    FaBars,
+    FaSignOutAlt,
+    FaTimes,
+    FaUserCircle
+} from "react-icons/fa";
+import {
+    Link,
+    useNavigate
+} from "react-router-dom";
+
+import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/images/logo.png";
+import "./navbar.css";
 
 function Navbar({ titulo }) {
     const [menuAbierto, setMenuAbierto] = useState(false);
@@ -10,9 +20,26 @@ function Navbar({ titulo }) {
     // NUEVO: Estado para saber si el usuario hizo scroll hacia abajo
     const [scrolled, setScrolled] = useState(false);
 
+    const navigate = useNavigate();
+
+    const {
+        usuario,
+        isAuthenticated,
+        logout
+    } = useAuth();
+
     const toggleMenu = () => {
         setMenuAbierto(!menuAbierto);
     };
+
+    function handleLogout() {
+        logout();
+        setMenuAbierto(false);
+
+        navigate("/", {
+            replace: true
+        });
+    }
 
     // NUEVO: Efecto para detectar el movimiento del scroll
     useEffect(() => {
@@ -64,11 +91,6 @@ function Navbar({ titulo }) {
             enlace: "#ubicacion",
             tipo: "scroll"
         },
-        {
-            nombre: "Iniciar Sesion",
-            enlace: "/login",
-            tipo: "ruta"
-        },
     ];
 
     return (
@@ -101,6 +123,54 @@ function Navbar({ titulo }) {
                     )}
                     </li>
                 ))}
+
+                {isAuthenticated ? (
+                    <>
+                        <li className="nav-user-item">
+                            <Link
+                                to={
+                                    usuario.rol.codigo ===
+                                        "ADMINISTRADOR_GENERAL" ||
+                                    usuario.rol.codigo ===
+                                        "ADMINISTRADOR_SUCURSAL"
+                                        ? "/admin"
+                                        : "/reservations"
+                                }
+                                onClick={() =>
+                                    setMenuAbierto(false)
+                                }
+                            >
+                                <FaUserCircle />
+                                <span>
+                                    {usuario.nombres}
+                                </span>
+                            </Link>
+                        </li>
+
+                        <li>
+                            <button
+                                type="button"
+                                className="nav-logout-button"
+                                onClick={handleLogout}
+                            >
+                                <FaSignOutAlt />
+                                <span>Cerrar sesión</span>
+                            </button>
+                        </li>
+                    </>
+                ) : (
+                    <li>
+                        <Link
+                            to="/login"
+                            onClick={() =>
+                                setMenuAbierto(false)
+                            }
+                        >
+                            Iniciar sesión
+                        </Link>
+                    </li>
+                )}
+
                 </ul>
         </nav>
     );

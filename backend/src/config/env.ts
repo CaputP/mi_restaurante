@@ -71,6 +71,13 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
 
   SMTP_PASSWORD: z.string().optional(),
+
+  GOOGLE_CLIENT_ID: z
+  .string()
+  .min(
+    20,
+    "GOOGLE_CLIENT_ID no se encuentra configurado.",
+  ),
 });
 
 const result = envSchema.safeParse(process.env);

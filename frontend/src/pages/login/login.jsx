@@ -4,6 +4,14 @@ import GoogleAuthButton from "./GoogleAuthButton";
 import "./login.css";
 import logo from "../../assets/images/logo.png";
 
+import {
+    Link,
+    useNavigate
+} from "react-router-dom";
+
+import { useAuth } from "../../context/AuthContext";
+import { ApiError } from "../../services/api";
+
 // Importamos la función de validación
 import { validateAuthForm } from "./validations";
 
@@ -27,6 +35,20 @@ function Login() {
         password: "",
         confirmPassword: ""
     });
+
+    const navigate = useNavigate();
+
+    const {
+        login,
+        loginWithGoogle,
+        register
+    } = useAuth();
+
+    const [isSubmitting, setIsSubmitting] =
+        useState(false);
+
+    const [serverMessage, setServerMessage] =
+        useState("");
 
     /*
      * Elimina únicamente el error del campo
@@ -63,17 +85,72 @@ function Login() {
         setTelefono("");
     }
 
+    function redirectAuthenticatedUser(usuario) {
+        const adminRoles = [
+            "ADMINISTRADOR_GENERAL",
+            "ADMINISTRADOR_SUCURSAL"
+        ];
+
+        if (
+            adminRoles.includes(
+                usuario.rol.codigo
+            )
+        ) {
+            navigate("/admin", {
+                replace: true
+            });
+
+            return;
+        }
+
+        navigate("/reservations", {
+            replace: true
+        });
+    }
+
     /*
      * Se ejecuta cuando Google autentica
      * correctamente al usuario.
      */
-    const handleGoogleSuccess = (credentialResponse) => {
-        console.log(
-            "Token JWT de Google recibido:",
-            credentialResponse.credential
-        );
+    const handleGoogleSuccess = async (
+        credentialResponse
+    ) => {
+        setServerMessage("");
 
-        // Posteriormente enviaremos este token al backend
+        const credential =
+            credentialResponse.credential;
+
+        if (!credential) {
+            setServerMessage(
+                "Google no devolvió una credencial válida."
+            );
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const usuario =
+                await loginWithGoogle(credential);
+
+            redirectAuthenticatedUser(usuario);
+        } catch (error) {
+            if (error instanceof ApiError) {
+                setServerMessage(error.message);
+                return;
+            }
+
+            console.error(
+                "Error iniciando sesión con Google:",
+                error
+            );
+
+            setServerMessage(
+                "No se pudo iniciar sesión con Google."
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     /*
@@ -81,8 +158,36 @@ function Login() {
      * durante la autenticación con Google.
      */
     const handleGoogleError = () => {
-        console.log("Error al autenticar con Google");
+        setServerMessage(
+            "Google no pudo completar el inicio de sesión."
+        );
     };
+
+    function splitFullName(fullName) {
+        const parts = fullName
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+        /*
+        * Para cuatro o más palabras se consideran las
+        * dos últimas como apellidos.
+        *
+        * Ejemplo:
+        * JUAN CLIMACO PRADA MENDOZA
+        */
+        const lastNameCount =
+            parts.length >= 4 ? 2 : 1;
+
+        return {
+            nombres: parts
+                .slice(0, -lastNameCount)
+                .join(" "),
+            apellidos: parts
+                .slice(-lastNameCount)
+                .join(" ")
+        };
+    }
 
     /*
      * Controla el envío del formulario.
@@ -93,10 +198,12 @@ function Login() {
      * 4. Detiene el proceso si existen errores.
      * 5. Continúa con login o registro.
      */
-    function handleSubmit(event) {
+
+    async function handleSubmit(event) {
         event.preventDefault();
 
-        // Validamos todos los campos
+        setServerMessage("");
+
         const newErrors = validateAuthForm({
             isRegister,
             nombre,
@@ -106,39 +213,115 @@ function Login() {
             confirmPassword
         });
 
-        // Guardamos los errores para mostrarlos en pantalla
         setErrors(newErrors);
 
-        // Verificamos si existe al menos un mensaje de error
-        const hasErrors = Object.values(newErrors).some(
-            (error) => error !== ""
-        );
+        const hasErrors = Object.values(
+            newErrors
+        ).some((error) => error !== "");
 
-        // Si existe algún error, detenemos la función
         if (hasErrors) {
             return;
         }
 
-        // Limpiamos los datos antes de enviarlos
-        const nombreLimpio = nombre.trim();
-        const correoLimpio = correo.trim().toLowerCase();
-        const telefonoLimpio = telefono.trim();
+        const correoLimpio =
+            correo.trim().toLowerCase();
 
-        if (isRegister) {
-            console.log("Registrando usuario clásico...");
-            console.log("Nombre:", nombreLimpio);
-            console.log("Correo:", correoLimpio);
-            console.log("Teléfono:", telefonoLimpio);
-            
-            // Aquí irá posteriormente el fetch del registro
-        } else {
-            console.log("Iniciando sesión clásica...");
-            console.log("Correo:", correoLimpio);
-            
+        setIsSubmitting(true);
 
-            // Aquí irá posteriormente el fetch del login
+        try {
+            if (isRegister) {
+                const {
+                    nombres,
+                    apellidos
+                } = splitFullName(nombre);
+
+                await register({
+                    nombres,
+                    apellidos,
+                    telefono: telefono.trim(),
+                    correo: correoLimpio,
+                    password,
+                    confirmarPassword:
+                        confirmPassword
+                });
+
+                navigate(
+                    "/reservations",
+                    { replace: true }
+                );
+
+                return;
+            }
+
+            const usuario = await login(
+                correoLimpio,
+                password
+            );
+
+            const adminRoles = [
+                "ADMINISTRADOR_GENERAL",
+                "ADMINISTRADOR_SUCURSAL"
+            ];
+
+            if (
+                adminRoles.includes(
+                    usuario.rol.codigo
+                )
+            ) {
+                navigate(
+                    "/admin",
+                    { replace: true }
+                );
+
+                return;
+            }
+
+            navigate(
+                "/reservations",
+                { replace: true }
+            );
+        } catch (error) {
+            if (error instanceof ApiError) {
+                setServerMessage(error.message);
+
+                if (
+                    error.code ===
+                    "VALIDATION_ERROR"
+                ) {
+                    const backendErrors = {};
+
+                    for (const item of error.errors) {
+                        if (item.campo) {
+                            backendErrors[
+                                item.campo
+                            ] = item.mensaje;
+                        }
+                    }
+
+                    setErrors(
+                        (previousErrors) => ({
+                            ...previousErrors,
+                            ...backendErrors
+                        })
+                    );
+                }
+
+                return;
+            }
+
+            console.error(
+                "Error inesperado:",
+                error
+            );
+
+            setServerMessage(
+                "Ocurrió un error inesperado."
+            );
+        } finally {
+            setIsSubmitting(false);
         }
     }
+
 
     return (
         <main className="login-page">
@@ -346,6 +529,14 @@ function Login() {
                                 )}
                             </div>
 
+                            {!isRegister && (
+                                <div className="forgot-password-container">
+                                    <Link to="/recuperar-password">
+                                        ¿Olvidaste tu contraseña?
+                                    </Link>
+                                </div>
+                            )}
+
                             {/* Confirmar contraseña: solo aparece en registro */}
                             {isRegister && (
                                 <div className="form-group">
@@ -380,14 +571,33 @@ function Login() {
                                 </div>
                             )}
 
+                            {serverMessage && (
+                                <div
+                                    className="auth-server-message"
+                                    role="alert"
+                                >
+                                    {serverMessage}
+                                </div>
+                            )}
+
                             {/* Botón principal */}
-                            <button type="submit" className="login-submit-button">
+                            <button
+                                type="submit"
+                                className="login-submit-button"
+                                disabled={isSubmitting}
+                            >
                                 <span className="login-submit-icon">
-                                    {isRegister ? <FaUserPlus /> : <FaSignInAlt />}
+                                    {isRegister
+                                        ? <FaUserPlus />
+                                        : <FaSignInAlt />}
                                 </span>
 
                                 <span className="login-submit-text">
-                                    {isRegister ? "Registrarme" : "Ingresar"}
+                                    {isSubmitting
+                                        ? "Procesando..."
+                                        : isRegister
+                                            ? "Registrarme"
+                                            : "Ingresar"}
                                 </span>
                             </button>
 
