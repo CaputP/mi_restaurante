@@ -1,10 +1,12 @@
+
 import "dotenv/config";
 
 import { PrismaPg } from "@prisma/adapter-pg";
+import { hash } from "bcryptjs";
 import {
   PrismaClient,
   TipoDocumentoCorrelativo,
-} from "../generated/prisma/client.ts";
+} from "../src/generated/prisma/client.ts";
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -403,6 +405,98 @@ async function seedCorrelativos(sucursalId: string): Promise<void> {
   }
 }
 
+async function seedAdministrador(sucursalId: string): Promise<void> {
+  const correo = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+  const nombres = process.env.ADMIN_NOMBRES?.trim();
+  const apellidos = process.env.ADMIN_APELLIDOS?.trim();
+  const telefono = process.env.ADMIN_TELEFONO?.trim() || null;
+
+  if (!correo || !password || !nombres || !apellidos) {
+    console.warn(
+      "No se creó el administrador: faltan variables ADMIN_* en .env.",
+    );
+    return;
+  }
+
+  if (password.length < 10) {
+    throw new Error(
+      "ADMIN_PASSWORD debe tener como mínimo 10 caracteres.",
+    );
+  }
+
+  const rolAdministrador = await prisma.rol.findUnique({
+    where: {
+      codigo: "ADMINISTRADOR_GENERAL",
+    },
+  });
+
+  if (!rolAdministrador) {
+    throw new Error(
+      "No se encontró el rol ADMINISTRADOR_GENERAL.",
+    );
+  }
+
+  let administrador = await prisma.usuario.findUnique({
+    where: {
+      correo,
+    },
+  });
+
+  if (!administrador) {
+    const passwordHash = await hash(password, 12);
+
+    administrador = await prisma.usuario.create({
+      data: {
+        rolId: rolAdministrador.id,
+        nombres,
+        apellidos,
+        telefono,
+        correo,
+        passwordHash,
+        proveedorAuth: "LOCAL",
+        estado: "ACTIVO",
+        correoVerificado: true,
+      },
+    });
+
+    console.log(`Administrador creado: ${correo}`);
+  } else {
+    administrador = await prisma.usuario.update({
+      where: {
+        id: administrador.id,
+      },
+      data: {
+        rolId: rolAdministrador.id,
+        nombres,
+        apellidos,
+        telefono,
+        estado: "ACTIVO",
+      },
+    });
+
+    console.log(`Administrador existente actualizado: ${correo}`);
+  }
+
+  await prisma.usuarioSucursal.upsert({
+    where: {
+      usuarioId_sucursalId: {
+        usuarioId: administrador.id,
+        sucursalId,
+      },
+    },
+    update: {
+      activo: true,
+      fechaFin: null,
+    },
+    create: {
+      usuarioId: administrador.id,
+      sucursalId,
+      activo: true,
+    },
+  });
+}
+
 async function main(): Promise<void> {
   console.log("Iniciando datos iniciales...");
 
@@ -412,9 +506,12 @@ async function main(): Promise<void> {
 
   await seedCatalogos();
   await seedCorrelativos(sucursalId);
+  await seedAdministrador(sucursalId);
 
   console.log("Datos iniciales creados correctamente.");
 }
+
+
 
 main()
   .catch((error: unknown) => {

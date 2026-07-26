@@ -1,6 +1,6 @@
 generator client {
   provider            = "prisma-client"
-  output              = "../generated/prisma"
+  output              = "../src/generated/prisma"
   moduleFormat        = "esm"
   importFileExtension = "ts"
 }
@@ -447,6 +447,7 @@ model Usuario {
   estado           EstadoRegistro @default(ACTIVO)
   correoVerificado Boolean        @default(false) @map("correo_verificado")
   ultimoAcceso     DateTime?      @map("ultimo_acceso") @db.Timestamptz(3)
+  sessionVersion   Int            @default(0) @map("session_version")
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -496,6 +497,9 @@ model Usuario {
   notificaciones              Notificacion[]         @relation("NotificacionesUsuario")
   auditorias                  Auditoria[]            @relation("AuditoriasUsuario")
   respaldosSolicitados        Respaldo[]             @relation("RespaldosSolicitadosPor")
+
+  tokensVerificacionCorreo TokenVerificacionCorreo[]
+  tokensRecuperacion       TokenRecuperacionPassword[]
 
   @@index([rolId, estado])
   @@index([apellidos, nombres])
@@ -1498,4 +1502,40 @@ model Respaldo {
   @@index([tipo, createdAt])
   @@index([solicitadoPorId])
   @@map("respaldo")
+}
+
+// ======================================================
+// TOKENS DE SEGURIDAD
+// ======================================================
+
+model TokenVerificacionCorreo {
+  id        String    @id @default(uuid()) @db.Uuid
+  usuarioId String    @map("usuario_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiraAt  DateTime  @map("expira_at") @db.Timestamptz(3)
+  usadoAt   DateTime? @map("usado_at") @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, expiraAt])
+  @@index([expiraAt, usadoAt])
+  @@map("token_verificacion_correo")
+}
+
+model TokenRecuperacionPassword {
+  id        String    @id @default(uuid()) @db.Uuid
+  usuarioId String    @map("usuario_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiraAt  DateTime  @map("expira_at") @db.Timestamptz(3)
+  usadoAt   DateTime? @map("usado_at") @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, expiraAt])
+  @@index([expiraAt, usadoAt])
+  @@map("token_recuperacion_password")
 }
