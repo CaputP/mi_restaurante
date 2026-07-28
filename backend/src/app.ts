@@ -1,9 +1,29 @@
+import {
+  catalogRouter,
+} from "./modules/catalog/catalog.routes.js";
+
+import {
+  dashboardRouter,
+} from "./modules/dashboard/dashboard.routes.js";
+
 import cors from "cors";
 import express from "express";
 
 import { env } from "./config/env.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
+
+import {
+  inventoryRouter,
+} from "./modules/inventory/inventory.routes.js";
+
+import {
+  reservationRouter,
+} from "./modules/reservations/reservation.routes.js";
+
+import {
+  userRouter,
+} from "./modules/users/user.routes.js";
 
 export const app = express();
 
@@ -32,6 +52,31 @@ app.get("/api/health", (_request, response) => {
 });
 
 app.use("/api/auth", authRouter);
+
+app.use(
+  "/api/admin/dashboard",
+  dashboardRouter,
+);
+
+app.use(
+  "/api/admin/catalog",
+  catalogRouter,
+);
+
+app.use(
+  "/api/admin/inventory",
+  inventoryRouter,
+);
+
+app.use(
+  "/api/admin/users",
+  userRouter,
+);
+
+app.use(
+  "/api/admin/reservations",
+  reservationRouter,
+);
 
 app.use((_request, response) => {
   response.status(404).json({

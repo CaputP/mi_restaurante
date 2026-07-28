@@ -1,0 +1,135 @@
+.admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1200;
+
+    width: 270px;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #203d27;
+    color: white;
+
+    box-shadow: 4px 0 18px rgba(0, 0, 0, 0.16);
+}
+
+.admin-sidebar-header {
+    min-height: 92px;
+    padding: 20px 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-sidebar-label {
+    color: #dfbc59;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+.admin-sidebar-header h2 {
+    margin: 5px 0 0;
+    font-size: 1.25rem;
+}
+
+.admin-sidebar-close {
+    display: none;
+
+    border: none;
+    background: transparent;
+    color: white;
+
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.admin-sidebar-nav {
+    flex: 1;
+    padding: 18px 12px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    overflow-y: auto;
+}
+
+.admin-sidebar-link {
+    min-height: 46px;
+    padding: 0 14px;
+
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    border-radius: 9px;
+
+    color: rgba(255, 255, 255, 0.82);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.admin-sidebar-link svg {
+    width: 18px;
+    font-size: 1rem;
+}
+
+.admin-sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    transform: translateX(2px);
+}
+
+.admin-sidebar-link.active {
+    background: #d9b54a;
+    color: #203d27;
+    font-weight: 700;
+}
+
+.admin-sidebar-footer {
+    padding: 17px 22px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-sidebar-footer strong {
+    font-size: 0.88rem;
+}
+
+.admin-sidebar-footer span {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.75rem;
+}
+
+@media (max-width: 980px) {
+    .admin-sidebar {
+        transform: translateX(-105%);
+        transition: transform 0.25s ease;
+    }
+
+    .admin-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .admin-sidebar-close {
+        display: inline-flex;
+    }
+}

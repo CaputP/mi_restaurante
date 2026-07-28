@@ -13,6 +13,35 @@
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
 }
 
+.session-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.session-menu-button {
+    display: none;
+
+    width: 42px;
+    height: 42px;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9px;
+
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+
+    font-size: 1.15rem;
+    cursor: pointer;
+}
+
+.session-menu-button:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
 .session-header-brand {
     display: flex;
     align-items: center;
@@ -100,4 +129,20 @@
     .session-user {
         width: 100%;
     }
+
+    .session-header-left {
+    width: 100%;
+    }
+
+    .session-menu-button {
+        display: inline-flex;
+        flex-shrink: 0;
+    }
 }
+
+@media (min-width: 769px) and (max-width: 980px) {
+    .session-menu-button {
+        display: inline-flex;
+    }
+}
+

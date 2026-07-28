@@ -1,4 +1,5 @@
 import {
+    FaBars,
     FaHome,
     FaSignOutAlt,
     FaUserCircle
@@ -10,9 +11,12 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/images/logo.png";
-import "./sessionHeader.css";
+import "./SessionHeader.css";
 
-function SessionHeader({ title }) {
+function SessionHeader({
+    title,
+    onMenuToggle
+}) {
     const navigate = useNavigate();
 
     const {
@@ -30,15 +34,28 @@ function SessionHeader({ title }) {
 
     return (
         <header className="session-header">
-            <div className="session-header-brand">
-                <img
-                    src={logo}
-                    alt="El Vallecito de Chocco"
-                />
+            <div className="session-header-left">
+                {onMenuToggle && (
+                    <button
+                        type="button"
+                        className="session-menu-button"
+                        aria-label="Abrir menú administrativo"
+                        onClick={onMenuToggle}
+                    >
+                        <FaBars />
+                    </button>
+                )}
 
-                <div>
-                    <h1>{title}</h1>
-                    <p>El Vallecito de Chocco</p>
+                <div className="session-header-brand">
+                    <img
+                        src={logo}
+                        alt="El Vallecito de Chocco"
+                    />
+
+                    <div>
+                        <h1>{title}</h1>
+                        <p>El Vallecito de Chocco</p>
+                    </div>
                 </div>
             </div>
 

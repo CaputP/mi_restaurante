@@ -696,9 +696,10 @@ model Reserva {
   sucursalId        String        @map("sucursal_id") @db.Uuid
   zonaId            String        @map("zona_id") @db.Uuid
   tipoReserva       TipoReserva   @map("tipo_reserva")
-  fechaReserva      DateTime      @map("fecha_reserva") @db.Date
-  horaReserva       DateTime      @map("hora_reserva") @db.Time(0)
-  cantidadPersonas  Int           @map("cantidad_personas")
+  fechaReserva     DateTime @map("fecha_reserva") @db.Date
+  horaReserva      DateTime @map("hora_reserva") @db.Time(0)
+  duracionMinutos  Int      @default(120) @map("duracion_minutos")
+  cantidadPersonas Int      @map("cantidad_personas")
   nombreEvento      String?       @map("nombre_evento") @db.VarChar(180)
   observaciones     String?       @db.Text
   totalEstimado     Decimal       @default(0) @map("total_estimado") @db.Decimal(12, 2)
