@@ -58,16 +58,61 @@ export async function apiRequest(
         );
     }
 
-    let result;
+let responseText;
 
-    try {
-        result = await response.json();
-    } catch {
-        throw new ApiError(
-            "El servidor devolvió una respuesta no válida.",
-            response.status,
-            "INVALID_SERVER_RESPONSE"
-        );
+try {
+    responseText =
+        await response.text();
+} catch (error) {
+    if (
+        error instanceof DOMException &&
+        error.name === "AbortError"
+    ) {
+        throw error;
+    }
+
+    throw new ApiError(
+        "No se pudo leer la respuesta del servidor.",
+        response.status,
+        "SERVER_RESPONSE_READ_ERROR"
+    );
+}
+
+    let result = {};
+
+    if (responseText.trim()) {
+        try {
+            result =
+                JSON.parse(
+                    responseText
+                );
+        } catch {
+            console.error(
+                "Respuesta no JSON recibida:",
+                {
+                    endpoint,
+                    status:
+                        response.status,
+
+                    contentType:
+                        response.headers.get(
+                            "content-type"
+                        ),
+
+                    response:
+                        responseText.slice(
+                            0,
+                            500
+                        )
+                }
+            );
+
+            throw new ApiError(
+                "El servidor devolvió una respuesta no válida.",
+                response.status,
+                "INVALID_SERVER_RESPONSE"
+            );
+        }
     }
 
     if (!response.ok) {

@@ -6,10 +6,14 @@ import {
     FaChartLine,
     FaClipboardList,
     FaCog,
+    FaGift,
     FaStore,
     FaTimes,
     FaUsers,
-    FaUtensils
+    FaUtensils,
+    FaFireAlt,
+    FaTruck,
+    FaTags,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 
@@ -32,6 +36,16 @@ const menuItems = [
         nombre: "Pedidos",
         ruta: "/admin/pedidos",
         icono: FaClipboardList
+    },
+    {
+        nombre: "Comandas",
+        ruta: "/admin/comandas",
+        icono: FaFireAlt
+    },
+    {
+        nombre: "Entregas",
+        ruta: "/admin/entregas",
+        icono: FaTruck
     },
     {
         nombre: "Ventas y caja",
@@ -63,6 +77,21 @@ const menuItems = [
         nombre: "Reportes",
         ruta: "/admin/reportes",
         icono: FaChartBar
+    },
+    {
+        nombre: "Fidelización",
+        ruta: "/admin/fidelizacion",
+        icono: FaGift
+    },
+    {
+        nombre: "Clientes y premios",
+        ruta: "/admin/fidelizacion/clientes",
+        icono: FaUsers
+    },
+    {
+        nombre: "Promociones",
+        ruta: "/admin/promociones",
+        icono: FaTags
     },
     {
         nombre: "Configuración",

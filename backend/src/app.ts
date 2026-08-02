@@ -22,8 +22,72 @@ import {
 } from "./modules/reservations/reservation.routes.js";
 
 import {
+  orderRouter,
+} from "./modules/orders/order.routes.js";
+
+import {
+  commandRouter,
+} from "./modules/commands/command.routes.js";
+
+import {
+  deliveryRouter,
+} from "./modules/deliveries/delivery.routes.js";
+
+import {
   userRouter,
 } from "./modules/users/user.routes.js";
+
+import {
+  cashRouter,
+} from "./modules/cash/cash.routes.js";
+
+import {
+  saleRouter,
+} from "./modules/sales/sale.routes.js";
+
+import {
+  expenseRouter,
+} from "./modules/expenses/expense.routes.js";
+
+import {
+  reportRouter,
+} from "./modules/reports/report.routes.js";
+
+import {
+  branchRouter,
+} from "./modules/branches/branch.routes.js";
+
+import {
+  settingRouter,
+} from "./modules/settings/setting.routes.js";
+
+import {
+  auditMutationMiddleware,
+} from "./middlewares/audit.middleware.js";
+
+import {
+  auditRouter,
+} from "./modules/audit/audit.routes.js";
+
+import {
+  ticketRouter,
+} from "./modules/tickets/ticket.routes.js";
+
+import {
+  branchAvailabilityRouter,
+} from "./modules/branch-availability/branch-availability.routes.js";
+
+import {
+  saleVoidRouter,
+} from "./modules/sale-void/sale-void.routes.js";
+
+import {
+  loyaltyRouter,
+} from "./modules/loyalty/loyalty.routes.js";
+
+import {
+  promotionRouter,
+} from "./modules/promotions/promotions.routes.js";
 
 export const app = express();
 
@@ -40,6 +104,10 @@ app.use(
   express.json({
     limit: "1mb",
   }),
+);
+
+app.use(
+  auditMutationMiddleware,
 );
 
 app.get("/api/health", (_request, response) => {
@@ -76,6 +144,91 @@ app.use(
 app.use(
   "/api/admin/reservations",
   reservationRouter,
+);
+
+app.use(
+  "/api/orders",
+  orderRouter,
+);
+
+app.use(
+  "/api/commands",
+  commandRouter,
+);
+
+app.use(
+  "/api/deliveries",
+  deliveryRouter,
+);
+
+app.use(
+  "/api/cash",
+  cashRouter,
+);
+
+app.use(
+  "/api/sales",
+  saleRouter,
+);
+
+app.use(
+  "/api/sales",
+  saleRouter,
+);
+
+app.use(
+  "/api/sales",
+  saleVoidRouter,
+);
+
+app.use(
+  "/api/expenses",
+  expenseRouter,
+);
+
+app.use(
+  "/api/reports",
+  reportRouter,
+);
+
+app.use(
+  "/api/branches",
+  branchRouter,
+);
+
+app.use(
+  "/api/branches",
+  branchRouter,
+);
+
+app.use(
+  "/api/branches",
+  branchAvailabilityRouter,
+);
+
+app.use(
+  "/api/settings",
+  settingRouter,
+);
+
+app.use(
+  "/api/audit",
+  auditRouter,
+);
+
+app.use(
+  "/api/tickets",
+  ticketRouter,
+);
+
+app.use(
+  "/api/loyalty",
+  loyaltyRouter,
+);
+
+app.use(
+  "/api/promotions",
+  promotionRouter,
 );
 
 app.use((_request, response) => {

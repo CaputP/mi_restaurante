@@ -1,5 +1,18 @@
 //==================================
-// IMPORTAMOS HOME
+// IMPORTACION
+//==================================
+
+import OperationalLayout from "./layouts/OperationalLayout";
+import OperationHome from "./pages/operation/OperationHome";
+
+import LoyaltyAdmin from "./pages/admin/loyalty/LoyaltyAdmin";
+
+import LoyaltyCustomersAdmin from "./pages/admin/loyalty/LoyaltyCustomersAdmin";
+
+import PromotionsAdmin from "./pages/admin/promotions/PromotionsAdmin";
+
+//==================================
+// IMPORTACION ADMIN
 //==================================
 
 import {BrowserRouter, Routes, Route} from "react-router-dom"
@@ -15,6 +28,18 @@ import CatalogAdmin from "./pages/admin/catalog/CatalogAdmin";
 import InventoryAdmin from "./pages/admin/inventory/InventoryAdmin";
 import UsersAdmin from "./pages/admin/users/UsersAdmin";
 import ReservationsAdmin from "./pages/admin/reservations/ReservationsAdmin";
+import OrdersAdmin from "./pages/admin/orders/OrdersAdmin";
+import CommandsAdmin from "./pages/admin/commands/CommandsAdmin";   
+import DeliveriesAdmin from "./pages/admin/deliveries/DeliveriesAdmin";
+import SalesCashAdmin from "./pages/admin/sales/SalesCashAdmin";
+import ReportsAdmin from "./pages/admin/reports/ReportsAdmin";
+import BranchesAdmin from "./pages/admin/branches/BranchesAdmin";
+import BranchAvailabilityAdmin from "./pages/admin/branches/BranchAvailabilityAdmin";
+import SettingsAdmin from "./pages/admin/settings/SettingsAdmin";
+
+import VoidSalePage from "./pages/admin/sales/VoidSalePage";
+
+import SaleTicketPage from "./pages/admin/sales/SaleTicketPage";
 
 import ForgotPassword from "./pages/authActions/ForgotPassword";
 import ResetPassword from "./pages/authActions/ResetPassword";
@@ -62,22 +87,32 @@ function App(){
 
             <Route
                 path="pedidos"
-                element={
-                    <AdminPlaceholder
-                        title="Gestión de pedidos"
-                        description="Aquí se administrarán los pedidos, comandas, cocina, bar y entregas parciales."
-                    />
-                }
+                element={<OrdersAdmin />}
+            />
+
+            <Route
+                path="comandas"
+                element={<CommandsAdmin />}
+            />
+
+            <Route
+                path="entregas"
+                element={<DeliveriesAdmin />}
             />
 
             <Route
                 path="ventas"
-                element={
-                    <AdminPlaceholder
-                        title="Ventas y caja"
-                        description="Aquí se administrarán las ventas, pagos, comprobantes, aperturas, cierres y movimientos de caja."
-                    />
-                }
+                element={<SalesCashAdmin />}
+            />
+
+            <Route
+                path="ventas/ticket/:saleId"
+                element={<SaleTicketPage />}
+            />
+
+            <Route
+                path="ventas/anular/:saleId"
+                element={<VoidSalePage />}
             />
 
             <Route
@@ -96,32 +131,138 @@ function App(){
             />
 
             <Route
+                path="sucursales/:branchId/disponibilidad"
+                element={
+                    <BranchAvailabilityAdmin />
+                }
+            />
+
+            <Route
                 path="sucursales"
                 element={
-                    <AdminPlaceholder
-                        title="Sucursales"
-                        description="Aquí se administrarán las sucursales, zonas de atención y asignación de trabajadores."
-                    />
+                    <ProtectedRoute
+                        allowedRoles={[
+                            "ADMINISTRADOR_GENERAL"
+                        ]}
+                    >
+                        <BranchesAdmin />
+                    </ProtectedRoute>
                 }
             />
 
             <Route
                 path="reportes"
+                element={<ReportsAdmin />}
+            />
+
+            <Route
+                path="fidelizacion"
                 element={
-                    <AdminPlaceholder
-                        title="Reportes"
-                        description="Aquí se mostrarán los reportes de ventas, reservas, inventario, productos y caja."
-                    />
+                    <LoyaltyAdmin />
+                }
+            />
+
+            <Route
+                path="fidelizacion/clientes"
+                element={
+                    <LoyaltyCustomersAdmin />
+                }
+            />
+
+            <Route
+                path="promociones"
+                element={
+                    <PromotionsAdmin />
                 }
             />
 
             <Route
                 path="configuracion"
+                element={<SettingsAdmin />}
+            />
+
+        </Route>
+
+        <Route
+            path="/operacion"
+            element={
+                <ProtectedRoute
+                    allowedRoles={[
+                        "ADMINISTRADOR_GENERAL",
+                        "ADMINISTRADOR_SUCURSAL",
+                        "VENDEDOR",
+                        "MOZO",
+                        "COCINA"
+                    ]}
+                >
+                    <OperationalLayout />
+                </ProtectedRoute>
+            }
+        >
+            <Route
+                index
                 element={
-                    <AdminPlaceholder
-                        title="Configuración"
-                        description="Aquí se configurarán los datos del negocio, métodos de pago, correlativos y parámetros del sistema."
-                    />
+                    <OperationHome />
+                }
+            />
+
+            <Route
+                path="pedidos"
+                element={
+                    <ProtectedRoute
+                        allowedRoles={[
+                            "ADMINISTRADOR_GENERAL",
+                            "ADMINISTRADOR_SUCURSAL",
+                            "VENDEDOR"
+                        ]}
+                    >
+                        <OrdersAdmin />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="cocina"
+                element={
+                    <ProtectedRoute
+                        allowedRoles={[
+                            "ADMINISTRADOR_GENERAL",
+                            "ADMINISTRADOR_SUCURSAL",
+                            "COCINA"
+                        ]}
+                    >
+                        <CommandsAdmin />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="entregas"
+                element={
+                    <ProtectedRoute
+                        allowedRoles={[
+                            "ADMINISTRADOR_GENERAL",
+                            "ADMINISTRADOR_SUCURSAL",
+                            "MOZO"
+                        ]}
+                    >
+                        <DeliveriesAdmin />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="ventas"
+                element={
+                    <ProtectedRoute
+                        allowedRoles={[
+                            "ADMINISTRADOR_GENERAL",
+                            "ADMINISTRADOR_SUCURSAL",
+                            "VENDEDOR"
+                        ]}
+                    >
+                        <SalesCashAdmin />
+                    </ProtectedRoute>
                 }
             />
         </Route>

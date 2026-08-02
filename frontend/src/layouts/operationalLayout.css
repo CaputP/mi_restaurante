@@ -1,0 +1,55 @@
+.operational-layout {
+    width: 100%;
+    min-height: 100vh;
+
+    background: #f3f6f3;
+}
+
+.operational-main {
+    min-width: 0;
+    min-height: 100vh;
+    margin-left: 255px;
+}
+
+.operational-content {
+    width: 100%;
+    min-width: 0;
+    padding: 22px;
+}
+
+.operational-sidebar-overlay {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .operational-main {
+        margin-left: 0;
+    }
+
+    .operational-content {
+        padding: 16px;
+    }
+
+    .operational-sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1050;
+
+        display: block;
+
+        border: none;
+        background:
+            rgba(
+                0,
+                0,
+                0,
+                0.45
+            );
+    }
+}
+
+@media (max-width: 550px) {
+    .operational-content {
+        padding: 11px;
+    }
+}

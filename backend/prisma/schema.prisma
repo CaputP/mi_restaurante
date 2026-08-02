@@ -490,9 +490,11 @@ model Usuario {
   programasFidelizacionCreados ProgramaFidelizacion[] @relation("ProgramasFidelizacionCreados")
   promocionesCreadas           Promocion[]            @relation("PromocionesCreadas")
 
-  progresosFidelizacion ProgresoFidelizacion[] @relation("ProgresoFidelizacionCliente")
-  premiosObtenidos      PremioCliente[]        @relation("PremiosCliente")
-  premiosCanjeados      PremioCliente[]        @relation("PremiosCanjeadosPor")
+  progresosFidelizacion             ProgresoFidelizacion[]   @relation("ProgresoFidelizacionCliente")
+  premiosObtenidos                  PremioCliente[]          @relation("PremiosCliente")
+  premiosCanjeados                  PremioCliente[]          @relation("PremiosCanjeadosPor")
+  movimientosFidelizacionCliente    MovimientoFidelizacion[] @relation("MovimientosFidelizacionCliente")
+  movimientosFidelizacionRevertidos MovimientoFidelizacion[] @relation("MovimientosFidelizacionRevertidosPor")
 
   configuracionesActualizadas ConfiguracionSistema[] @relation("ConfiguracionesActualizadasPor")
   notificaciones              Notificacion[]         @relation("NotificacionesUsuario")
@@ -696,10 +698,10 @@ model Reserva {
   sucursalId        String        @map("sucursal_id") @db.Uuid
   zonaId            String        @map("zona_id") @db.Uuid
   tipoReserva       TipoReserva   @map("tipo_reserva")
-  fechaReserva     DateTime @map("fecha_reserva") @db.Date
-  horaReserva      DateTime @map("hora_reserva") @db.Time(0)
-  duracionMinutos  Int      @default(120) @map("duracion_minutos")
-  cantidadPersonas Int      @map("cantidad_personas")
+  fechaReserva      DateTime      @map("fecha_reserva") @db.Date
+  horaReserva       DateTime      @map("hora_reserva") @db.Time(0)
+  duracionMinutos   Int           @default(120) @map("duracion_minutos")
+  cantidadPersonas  Int           @map("cantidad_personas")
   nombreEvento      String?       @map("nombre_evento") @db.VarChar(180)
   observaciones     String?       @db.Text
   totalEstimado     Decimal       @default(0) @map("total_estimado") @db.Decimal(12, 2)
@@ -1069,10 +1071,11 @@ model Venta {
   caja       Caja     @relation(fields: [cajaId], references: [id], onDelete: Restrict)
   anuladaPor Usuario? @relation("VentasAnuladasPor", fields: [anuladaPorId], references: [id], onDelete: Restrict)
 
-  detalles             DetalleVenta[]
-  pagos                PagoVenta[]
-  premiosCanjeados     PremioCliente[]
-  promocionesAplicadas VentaPromocion[]
+  detalles                DetalleVenta[]
+  pagos                   PagoVenta[]
+  premiosCanjeados        PremioCliente[]
+  promocionesAplicadas    VentaPromocion[]
+  movimientosFidelizacion MovimientoFidelizacion[]
 
   @@unique([sucursalId, numeroTicket])
   @@index([sucursalId, createdAt])
@@ -1217,8 +1220,9 @@ model ProgramaFidelizacion {
   creadoPor      Usuario   @relation("ProgramasFidelizacionCreados", fields: [creadoPorId], references: [id], onDelete: Restrict)
   productoPremio Producto? @relation("ProductoPremioPrograma", fields: [productoPremioId], references: [id], onDelete: Restrict)
 
-  progresos ProgresoFidelizacion[]
-  premios   PremioCliente[]
+  progresos   ProgresoFidelizacion[]
+  premios     PremioCliente[]
+  movimientos MovimientoFidelizacion[]
 
   @@index([sucursalId, activo, fechaInicio, fechaFin])
   @@index([tipo, activo])
@@ -1241,10 +1245,49 @@ model ProgresoFidelizacion {
   cliente  Usuario              @relation("ProgresoFidelizacionCliente", fields: [clienteId], references: [id], onDelete: Restrict)
   programa ProgramaFidelizacion @relation(fields: [programaId], references: [id], onDelete: Restrict)
 
+  movimientos MovimientoFidelizacion[]
+
   @@unique([clienteId, programaId])
   @@index([programaId])
   @@index([clienteId, updatedAt])
   @@map("progreso_fidelizacion")
+}
+
+model MovimientoFidelizacion {
+  id         String @id @default(uuid()) @db.Uuid
+  ventaId    String @map("venta_id") @db.Uuid
+  clienteId  String @map("cliente_id") @db.Uuid
+  programaId String @map("programa_id") @db.Uuid
+  progresoId String @map("progreso_id") @db.Uuid
+
+  visitasAplicadas Int     @default(0) @map("visitas_aplicadas")
+  montoAplicado    Decimal @default(0) @map("monto_aplicado") @db.Decimal(12, 2)
+  ciclosGenerados  Int     @default(0) @map("ciclos_generados")
+
+  estado EstadoRegistro @default(ACTIVO)
+
+  revertidoAt     DateTime? @map("revertido_at") @db.Timestamptz(3)
+  revertidoPorId  String?   @map("revertido_por_id") @db.Uuid
+  motivoReversion String?   @map("motivo_reversion") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  venta    Venta                @relation(fields: [ventaId], references: [id], onDelete: Restrict)
+  cliente  Usuario              @relation("MovimientosFidelizacionCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  programa ProgramaFidelizacion @relation(fields: [programaId], references: [id], onDelete: Restrict)
+  progreso ProgresoFidelizacion @relation(fields: [progresoId], references: [id], onDelete: Restrict)
+
+  revertidoPor Usuario? @relation("MovimientosFidelizacionRevertidosPor", fields: [revertidoPorId], references: [id], onDelete: Restrict)
+
+  premios PremioCliente[]
+
+  @@unique([ventaId, programaId])
+  @@index([clienteId, createdAt])
+  @@index([programaId, estado])
+  @@index([progresoId])
+  @@index([revertidoPorId])
+  @@map("movimiento_fidelizacion")
 }
 
 model PremioCliente {
@@ -1254,6 +1297,7 @@ model PremioCliente {
   productoPremioId String? @map("producto_premio_id") @db.Uuid
   ventaCanjeId     String? @map("venta_canje_id") @db.Uuid
   canjeadoPorId    String? @map("canjeado_por_id") @db.Uuid
+  movimientoId     String? @map("movimiento_id") @db.Uuid
 
   descripcion      String   @db.VarChar(250)
   cantidadProducto Decimal? @map("cantidad_producto") @db.Decimal(12, 3)
@@ -1275,10 +1319,13 @@ model PremioCliente {
   ventaCanje     Venta?               @relation(fields: [ventaCanjeId], references: [id], onDelete: Restrict)
   canjeadoPor    Usuario?             @relation("PremiosCanjeadosPor", fields: [canjeadoPorId], references: [id], onDelete: Restrict)
 
+  movimiento MovimientoFidelizacion? @relation(fields: [movimientoId], references: [id], onDelete: Restrict)
+
   @@index([clienteId, estado, fechaVencimiento])
   @@index([programaId])
   @@index([ventaCanjeId])
   @@index([productoPremioId])
+  @@index([movimientoId])
   @@map("premio_cliente")
 }
 

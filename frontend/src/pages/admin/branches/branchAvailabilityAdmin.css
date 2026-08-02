@@ -1,0 +1,592 @@
+.branch-availability-admin {
+    width: 100%;
+    max-width: 1500px;
+    min-width: 0;
+    margin: 0 auto;
+}
+
+.branch-availability-heading,
+.branch-schedules-card,
+.branch-blocks-card {
+    width: 100%;
+    min-width: 0;
+
+    border: 1px solid #dce4dd;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.branch-availability-heading {
+    margin-bottom: 18px;
+    padding: 23px 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.branch-availability-heading h2 {
+    margin: 6px 0;
+    color: #2d4231;
+}
+
+.branch-availability-heading p {
+    margin: 0;
+    color: #748078;
+    font-size: 0.76rem;
+}
+
+.branch-back-button {
+    margin-bottom: 12px;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    border: none;
+    background: transparent;
+    color: #45664b;
+
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.branch-refresh-button,
+.branch-section-heading > button,
+.branch-schedule-actions > button {
+    min-height: 42px;
+    padding: 9px 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #355e3b;
+    color: #ffffff;
+
+    font: inherit;
+    font-size: 0.73rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.branch-refresh-button:disabled,
+.branch-schedule-actions > button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.branch-availability-feedback {
+    margin-bottom: 17px;
+    padding: 12px 15px;
+
+    border-radius: 9px;
+    font-size: 0.8rem;
+}
+
+.branch-availability-feedback.success {
+    border: 1px solid #a5d6a7;
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+.branch-availability-feedback.error {
+    border: 1px solid #ef9a9a;
+    background: #ffebee;
+    color: #9b111e;
+}
+
+.branch-availability-stats {
+    margin-bottom: 18px;
+
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.branch-availability-stats article {
+    min-width: 0;
+    padding: 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    border: 1px solid #dce4dd;
+    border-radius: 11px;
+    background: #ffffff;
+}
+
+.branch-availability-stats article > svg {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    padding: 11px;
+
+    border-radius: 10px;
+    background: #eef4ef;
+    color: #355e3b;
+}
+
+.branch-availability-stats article > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.branch-availability-stats span {
+    color: #758078;
+    font-size: 0.66rem;
+}
+
+.branch-availability-stats strong {
+    color: #2d4231;
+}
+
+.branch-schedules-card,
+.branch-blocks-card {
+    margin-bottom: 20px;
+    padding: 22px;
+}
+
+.branch-section-heading {
+    margin-bottom: 18px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.branch-section-heading h3 {
+    margin: 5px 0;
+    color: #2d4231;
+}
+
+.branch-section-heading p {
+    margin: 0;
+    color: #748078;
+    font-size: 0.73rem;
+}
+
+.branch-schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.branch-schedule-row {
+    min-width: 0;
+    padding: 12px;
+
+    display: grid;
+    grid-template-columns:
+        32px
+        minmax(150px, 1fr)
+        minmax(130px, 0.7fr)
+        minmax(130px, 0.7fr)
+        auto
+        38px;
+    align-items: end;
+    gap: 10px;
+
+    border: 1px solid #dce4dd;
+    border-radius: 10px;
+    background: #fafbfa;
+}
+
+.branch-schedule-number {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background: #e7efe8;
+    color: #355e3b;
+
+    font-size: 0.7rem;
+    font-weight: 750;
+}
+
+.branch-schedule-row label,
+.branch-block-form-grid label {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    color: #465249;
+    font-size: 0.69rem;
+    font-weight: 650;
+}
+
+.branch-schedule-row select,
+.branch-schedule-row input[type="time"],
+.branch-block-form-grid select,
+.branch-block-form-grid input,
+.branch-block-form-grid textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    padding: 8px 10px;
+
+    border: 1px solid #cbd5cc;
+    border-radius: 8px;
+    background: #ffffff;
+
+    font: inherit;
+    outline: none;
+}
+
+.branch-block-form-grid textarea {
+    resize: vertical;
+}
+
+.branch-schedule-active {
+    min-height: 40px;
+
+    flex-direction: row !important;
+    align-items: center;
+}
+
+.branch-schedule-active input {
+    width: 17px;
+    height: 17px;
+    accent-color: #355e3b;
+}
+
+.branch-remove-schedule {
+    width: 38px;
+    height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #efc5c5;
+    border-radius: 8px;
+
+    background: #fff5f5;
+    color: #b71c1c;
+    cursor: pointer;
+}
+
+.branch-schedule-actions {
+    margin-top: 17px;
+
+    display: flex;
+    justify-content: flex-end;
+}
+
+.branch-block-form {
+    margin-bottom: 20px;
+    padding: 18px;
+
+    border: 1px solid #cddace;
+    border-left: 4px solid #355e3b;
+    border-radius: 11px;
+    background: #fafcfa;
+}
+
+.branch-block-form-heading {
+    margin-bottom: 16px;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.branch-block-form-heading h4 {
+    margin: 4px 0;
+    color: #2d4231;
+}
+
+.branch-block-form-heading > button {
+    width: 35px;
+    height: 35px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #edf2ee;
+    color: #465248;
+    cursor: pointer;
+}
+
+.branch-block-form-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.branch-block-full-field {
+    grid-column: 1 / -1;
+}
+
+.branch-block-form-actions {
+    margin-top: 17px;
+
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
+.branch-block-form-actions button {
+    min-height: 41px;
+    padding: 8px 15px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    border-radius: 8px;
+
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.branch-block-form-actions .secondary {
+    border: 1px solid #cad6cc;
+    background: #ffffff;
+    color: #536057;
+}
+
+.branch-block-form-actions .primary {
+    border: none;
+    background: #355e3b;
+    color: #ffffff;
+}
+
+.branch-block-form-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.branch-block-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.branch-block-table {
+    width: 100%;
+    min-width: 1150px;
+    border-collapse: collapse;
+}
+
+.branch-block-table th,
+.branch-block-table td {
+    padding: 12px 10px;
+
+    border-bottom: 1px solid #e4ebe5;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.branch-block-table th {
+    color: #69766c;
+    font-size: 0.63rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.branch-block-table td {
+    color: #536057;
+    font-size: 0.72rem;
+}
+
+.branch-block-scope {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #3e5543;
+    font-weight: 650;
+}
+
+.branch-block-reason {
+    max-width: 260px;
+    overflow-wrap: anywhere;
+}
+
+.branch-block-status {
+    padding: 5px 8px;
+
+    display: inline-flex;
+
+    border-radius: 20px;
+
+    font-size: 0.59rem;
+    font-weight: 750;
+}
+
+.branch-block-status.activo {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.branch-block-status.inactivo {
+    background: #fff8e1;
+    color: #936515;
+}
+
+.branch-block-status.archivado {
+    background: #eceff1;
+    color: #546e7a;
+}
+
+.branch-block-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.branch-block-actions button {
+    width: 34px;
+    height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #d2dcd4;
+    border-radius: 7px;
+
+    background: #ffffff;
+    color: #355e3b;
+    cursor: pointer;
+}
+
+.branch-block-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.branch-availability-empty,
+.branch-availability-loading {
+    min-height: 210px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+
+    color: #768078;
+    text-align: center;
+}
+
+.branch-availability-empty svg,
+.branch-availability-loading svg {
+    color: #8ba08e;
+    font-size: 2rem;
+}
+
+.branch-availability-empty span {
+    font-size: 0.72rem;
+}
+
+@media (max-width: 1200px) {
+    .branch-availability-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .branch-schedule-row {
+        grid-template-columns:
+            32px
+            repeat(2, minmax(0, 1fr))
+            38px;
+    }
+
+    .branch-schedule-row label:first-of-type {
+        grid-column:
+            2 / 4;
+    }
+
+    .branch-schedule-active {
+        grid-column:
+            2 / 3;
+    }
+}
+
+@media (max-width: 850px) {
+    .branch-availability-heading,
+    .branch-section-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .branch-refresh-button,
+    .branch-section-heading > button {
+        width: 100%;
+    }
+
+    .branch-block-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .branch-block-full-field {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 650px) {
+    .branch-availability-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .branch-schedule-row {
+        grid-template-columns:
+            30px
+            minmax(0, 1fr)
+            38px;
+    }
+
+    .branch-schedule-row label,
+    .branch-schedule-row label:first-of-type,
+    .branch-schedule-active {
+        grid-column:
+            2 / 3;
+    }
+
+    .branch-remove-schedule {
+        grid-column:
+            3 / 4;
+        grid-row:
+            1 / 2;
+    }
+
+    .branch-schedule-actions,
+    .branch-block-form-actions {
+        flex-direction: column;
+    }
+
+    .branch-schedule-actions button,
+    .branch-block-form-actions button {
+        width: 100%;
+    }
+}

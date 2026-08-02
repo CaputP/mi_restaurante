@@ -1,16 +1,25 @@
 .reservations-admin {
+    width: 100%;
     max-width: 1500px;
+    min-width: 0;
     margin: 0 auto;
 }
+
 
 .reservations-heading,
 .reservation-form-card,
 .reservation-table-card,
 .reservation-detail-card,
-.reservation-operation-card {
-    border: 1px solid #dce4dd;
-    border-radius: 14px;
-    background: #ffffff;
+.reservation-operation-card,
+.reservation-filters {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+.reservation-filters > *,
+.reservation-search,
+.reservation-search input {
+    min-width: 0;
 }
 
 .reservations-heading {
@@ -370,6 +379,8 @@
 }
 
 .reservation-table-wrapper {
+    width: 100%;
+    max-width: 100%;
     overflow-x: auto;
 }
 
@@ -911,7 +922,7 @@
     font-size: 0.72rem;
 }
 
-@media (max-width: 1250px) {
+@media (max-width: 1500px) {
     .reservation-filters {
         grid-template-columns:
             repeat(3, minmax(0, 1fr));

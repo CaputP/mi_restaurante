@@ -5,6 +5,10 @@ import "./login.css";
 import logo from "../../assets/images/logo.png";
 
 import {
+    getHomePathByRole
+} from "../../utils/roleRoutes";
+
+import {
     Link,
     useNavigate
 } from "react-router-dom";
@@ -85,27 +89,18 @@ function Login() {
         setTelefono("");
     }
 
-    function redirectAuthenticatedUser(usuario) {
-        const adminRoles = [
-            "ADMINISTRADOR_GENERAL",
-            "ADMINISTRADOR_SUCURSAL"
-        ];
-
-        if (
-            adminRoles.includes(
+    function redirectAuthenticatedUser(
+        usuario
+    ) {
+        navigate(
+            getHomePathByRole(
                 usuario.rol.codigo
-            )
-        ) {
-            navigate("/admin", {
-                replace: true
-            });
-
-            return;
-        }
-
-        navigate("/reservations", {
-            replace: true
-        });
+            ),
+            {
+                replace:
+                    true
+            }
+        );
     }
 
     /*
@@ -258,28 +253,10 @@ function Login() {
                 password
             );
 
-            const adminRoles = [
-                "ADMINISTRADOR_GENERAL",
-                "ADMINISTRADOR_SUCURSAL"
-            ];
-
-            if (
-                adminRoles.includes(
-                    usuario.rol.codigo
-                )
-            ) {
-                navigate(
-                    "/admin",
-                    { replace: true }
-                );
-
-                return;
-            }
-
-            navigate(
-                "/reservations",
-                { replace: true }
+            redirectAuthenticatedUser(
+                usuario
             );
+
         } catch (error) {
             if (error instanceof ApiError) {
                 setServerMessage(error.message);
