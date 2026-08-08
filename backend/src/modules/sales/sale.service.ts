@@ -15,6 +15,20 @@ import {
   applySaleLoyalty,
 } from "../loyalty/loyalty-processing.service.js";
 
+import {
+  calculateAutomaticPromotions,
+  persistAutomaticPromotions,
+} from "../promotions/promotions-calculation.service.js";
+
+import {
+  calculateLoyaltyRedemption,
+  persistRedeemedRewards,
+} from "../loyalty/loyalty-redemption.service.js";
+
+import {
+  evaluateStockNotification,
+} from "../notifications/stock-notification.service.js";
+
 type SaleAuth = {
   usuarioId: string;
   rol: string;
@@ -104,7 +118,7 @@ function createNextLimaDate(
 
   return new Date(
     date.getTime() +
-      24 * 60 * 60 * 1000,
+    24 * 60 * 60 * 1000,
   );
 }
 
@@ -258,7 +272,7 @@ export async function getSaleOptions(
     cashRegisters,
     orders,
   ] = selectedBranchId
-    ? await Promise.all([
+      ? await Promise.all([
         prisma.caja.findMany({
           where: {
             sucursalId:
@@ -268,11 +282,11 @@ export async function getSaleOptions(
               "ABIERTA",
 
             ...(auth.rol ===
-            "VENDEDOR"
+              "VENDEDOR"
               ? {
-                  vendedorId:
-                    auth.usuarioId,
-                }
+                vendedorId:
+                  auth.usuarioId,
+              }
               : {}),
           },
 
@@ -375,7 +389,7 @@ export async function getSaleOptions(
           },
         }),
       ])
-    : [
+      : [
         [],
         [],
       ];
@@ -455,13 +469,13 @@ export async function getSaleOptions(
           cliente:
             order.cliente
               ? {
-                  ...order.cliente,
+                ...order.cliente,
 
-                  nombreCompleto:
-                    userFullName(
-                      order.cliente,
-                    ),
-                }
+                nombreCompleto:
+                  userFullName(
+                    order.cliente,
+                  ),
+              }
               : null,
 
           vendedor: {
@@ -477,15 +491,15 @@ export async function getSaleOptions(
           reserva:
             order.reserva
               ? {
-                  ...order.reserva,
+                ...order.reserva,
 
-                  adelantoPagado:
-                    Number(
-                      order
-                        .reserva
-                        .adelantoPagado,
-                    ),
-                }
+                adelantoPagado:
+                  Number(
+                    order
+                      .reserva
+                      .adelantoPagado,
+                  ),
+              }
               : null,
 
           detalles:
@@ -617,6 +631,56 @@ function mapSale(
       estado: string;
       createdAt: Date;
     }>;
+
+    promocionesAplicadas: Array<{
+      id: string;
+      descripcion: string;
+      montoDescuento: Prisma.Decimal;
+      createdAt: Date;
+
+      promocion: {
+        id: string;
+        nombre: string;
+        tipo: string;
+      };
+    }>;
+
+    canjesPremios: Array<{
+      id: string;
+
+      descripcion: string;
+
+      tipoRecompensa:
+      string;
+
+      montoAplicado:
+      Prisma.Decimal;
+
+      productoPremioNombre:
+      string | null;
+
+      estado:
+      string;
+
+      fechaCanje:
+      Date;
+
+      revertidoAt:
+      Date | null;
+
+      motivoReversion:
+      string | null;
+
+      premio: {
+        id: string;
+
+        programa: {
+          id: string;
+          nombre: string;
+        };
+      };
+    }>;
+
   },
 ) {
   return {
@@ -673,13 +737,13 @@ function mapSale(
     cliente:
       sale.cliente
         ? {
-            ...sale.cliente,
+          ...sale.cliente,
 
-            nombreCompleto:
-              userFullName(
-                sale.cliente,
-              ),
-          }
+          nombreCompleto:
+            userFullName(
+              sale.cliente,
+            ),
+        }
         : null,
 
     detalles:
@@ -722,26 +786,72 @@ function mapSale(
           montoRecibido:
             payment
               .montoRecibido ===
-            null
+              null
               ? null
               : Number(
-                  payment
-                    .montoRecibido,
-                ),
+                payment
+                  .montoRecibido,
+              ),
 
           vuelto:
             payment.vuelto ===
-            null
+              null
               ? null
               : Number(
-                  payment.vuelto,
-                ),
+                payment.vuelto,
+              ),
 
           createdAt:
             payment.createdAt
               .toISOString(),
         }),
       ),
+
+    promocionesAplicadas:
+      sale.promocionesAplicadas
+        .map(
+          (
+            appliedPromotion,
+          ) => ({
+            ...appliedPromotion,
+
+            montoDescuento:
+              Number(
+                appliedPromotion
+                  .montoDescuento,
+              ),
+
+            createdAt:
+              appliedPromotion
+                .createdAt
+                .toISOString(),
+          }),
+        ),
+
+    canjesPremios:
+      sale.canjesPremios.map(
+        (redemption) => ({
+          ...redemption,
+
+          montoAplicado:
+            Number(
+              redemption
+                .montoAplicado,
+            ),
+
+          fechaCanje:
+            redemption
+              .fechaCanje
+              .toISOString(),
+
+          revertidoAt:
+            redemption
+              .revertidoAt
+              ?.toISOString() ??
+            null,
+        }),
+      ),
+
   };
 }
 
@@ -765,9 +875,9 @@ export async function listSales(
     query.sucursalId
       ? [query.sucursalId]
       : branches.map(
-          (branch) =>
-            branch.id,
-        );
+        (branch) =>
+          branch.id,
+      );
 
   if (
     branchIds.length === 0
@@ -786,116 +896,116 @@ export async function listSales(
 
   const where:
     Prisma.VentaWhereInput = {
-      sucursalId: {
-        in: branchIds,
-      },
+    sucursalId: {
+      in: branchIds,
+    },
 
-      ...createSaleAccessWhere(
-        auth,
-      ),
+    ...createSaleAccessWhere(
+      auth,
+    ),
 
-      ...(query.cajaId
-        ? {
-            cajaId:
-              query.cajaId,
-          }
-        : {}),
+    ...(query.cajaId
+      ? {
+        cajaId:
+          query.cajaId,
+      }
+      : {}),
 
-      ...(query.estado !==
+    ...(query.estado !==
       "TODOS"
-        ? {
-            estado:
-              query.estado,
-          }
-        : {}),
+      ? {
+        estado:
+          query.estado,
+      }
+      : {}),
 
-      ...(
-        query.fechaDesde ||
+    ...(
+      query.fechaDesde ||
         query.fechaHasta
-          ? {
-              createdAt: {
-                ...(query.fechaDesde
-                  ? {
-                      gte:
-                        createLimaDateStart(
-                          query
-                            .fechaDesde,
-                        ),
-                    }
-                  : {}),
-
-                ...(query.fechaHasta
-                  ? {
-                      lt:
-                        createNextLimaDate(
-                          query
-                            .fechaHasta,
-                        ),
-                    }
-                  : {}),
-              },
-            }
-          : {}
-      ),
-
-      ...(query.search
         ? {
-            OR: [
-              {
-                numeroTicket: {
-                  contains:
-                    query.search,
+          createdAt: {
+            ...(query.fechaDesde
+              ? {
+                gte:
+                  createLimaDateStart(
+                    query
+                      .fechaDesde,
+                  ),
+              }
+              : {}),
 
-                  mode:
-                    "insensitive",
-                },
-              },
-              {
-                nombreCliente: {
-                  contains:
-                    query.search,
+            ...(query.fechaHasta
+              ? {
+                lt:
+                  createNextLimaDate(
+                    query
+                      .fechaHasta,
+                  ),
+              }
+              : {}),
+          },
+        }
+        : {}
+    ),
 
-                  mode:
-                    "insensitive",
-                },
-              },
-              {
-                pedido: {
-                  codigo: {
-                    contains:
-                      query.search,
+    ...(query.search
+      ? {
+        OR: [
+          {
+            numeroTicket: {
+              contains:
+                query.search,
 
-                    mode:
-                      "insensitive",
-                  },
-                },
-              },
-              {
-                cliente: {
-                  nombres: {
-                    contains:
-                      query.search,
+              mode:
+                "insensitive",
+            },
+          },
+          {
+            nombreCliente: {
+              contains:
+                query.search,
 
-                    mode:
-                      "insensitive",
-                  },
-                },
-              },
-              {
-                cliente: {
-                  apellidos: {
-                    contains:
-                      query.search,
+              mode:
+                "insensitive",
+            },
+          },
+          {
+            pedido: {
+              codigo: {
+                contains:
+                  query.search,
 
-                    mode:
-                      "insensitive",
-                  },
-                },
+                mode:
+                  "insensitive",
               },
-            ],
-          }
-        : {}),
-    };
+            },
+          },
+          {
+            cliente: {
+              nombres: {
+                contains:
+                  query.search,
+
+                mode:
+                  "insensitive",
+              },
+            },
+          },
+          {
+            cliente: {
+              apellidos: {
+                contains:
+                  query.search,
+
+                mode:
+                  "insensitive",
+              },
+            },
+          },
+        ],
+      }
+      : {}),
+  };
 
   const skip =
     (query.page - 1) *
@@ -1052,14 +1162,14 @@ export async function listSales(
           cliente:
             sale.cliente
               ? {
-                  id:
-                    sale.cliente.id,
+                id:
+                  sale.cliente.id,
 
-                  nombreCompleto:
-                    userFullName(
-                      sale.cliente,
-                    ),
-                }
+                nombreCompleto:
+                  userFullName(
+                    sale.cliente,
+                  ),
+              }
               : null,
 
           pagos:
@@ -1104,7 +1214,7 @@ export async function listSales(
           1,
           Math.ceil(
             total /
-              query.limit,
+            query.limit,
           ),
         ),
     },
@@ -1235,6 +1345,89 @@ export async function getSaleById(
             createdAt: true,
           },
         },
+
+        promocionesAplicadas: {
+          orderBy: {
+            createdAt:
+              "asc",
+          },
+
+          select: {
+            id:
+              true,
+
+            descripcion:
+              true,
+
+            montoDescuento:
+              true,
+
+            createdAt:
+              true,
+
+            promocion: {
+              select: {
+                id:
+                  true,
+
+                nombre:
+                  true,
+
+                tipo:
+                  true,
+              },
+            },
+          },
+        },
+
+        canjesPremios: {
+          orderBy: {
+            fechaCanje:
+              "asc",
+          },
+
+          select: {
+            id: true,
+
+            descripcion:
+              true,
+
+            tipoRecompensa:
+              true,
+
+            montoAplicado:
+              true,
+
+            productoPremioNombre:
+              true,
+
+            estado:
+              true,
+
+            fechaCanje:
+              true,
+
+            revertidoAt:
+              true,
+
+            motivoReversion:
+              true,
+
+            premio: {
+              select: {
+                id: true,
+
+                programa: {
+                  select: {
+                    id: true,
+                    nombre: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+
       },
     });
 
@@ -1377,11 +1570,11 @@ export async function createSale(
                   "ABIERTA",
 
                 ...(auth.rol ===
-                "VENDEDOR"
+                  "VENDEDOR"
                   ? {
-                      vendedorId:
-                        auth.usuarioId,
-                    }
+                    vendedorId:
+                      auth.usuarioId,
+                  }
                   : {}),
               },
 
@@ -1559,30 +1752,89 @@ export async function createSale(
             ),
           );
 
+        /*
+        * El cálculo se ejecuta nuevamente dentro de la
+        * misma transacción de venta.
+        *
+        * No se confía únicamente en la vista previa
+        * realizada por el frontend.
+        */
+        const promotionCalculation =
+          await calculateAutomaticPromotions(
+            transaction,
+            {
+              pedidoId:
+                order.id,
+            },
+          );
+
+        const automaticDiscount =
+          roundMoney(
+            Number(
+              promotionCalculation
+                .descuentoTotal,
+            ),
+          );
+
+        const loyaltyRedemption =
+          await calculateLoyaltyRedemption(
+            transaction,
+            {
+              pedidoId:
+                order.id,
+
+              premioIds:
+                input.premioIds,
+
+              promotionCalculation,
+            },
+          );
+
+        const rewardDiscount =
+          roundMoney(
+            Number(
+              loyaltyRedemption
+                .descuentoPremios,
+            ),
+          );
+
+        const totalDiscount =
+          roundMoney(
+            input.descuento +
+            automaticDiscount +
+            rewardDiscount,
+          );
+
         if (
-          input.descuento >
-          subtotal
+          totalDiscount >
+          subtotal + EPSILON
         ) {
           throw new AppError(
             400,
-            "El descuento no puede superar el subtotal.",
-            "DESCUENTO_INVALIDO",
+            `El descuento manual de S/ ${input.descuento.toFixed(
+              2,
+            )} más las promociones de S/ ${automaticDiscount.toFixed(
+              2,
+            )} supera el subtotal de S/ ${subtotal.toFixed(
+              2,
+            )}.`,
+            "DESCUENTO_TOTAL_INVALIDO",
           );
         }
 
         const total =
           roundMoney(
             subtotal -
-              input.descuento +
-              input.propina,
+            totalDiscount +
+            input.propina,
           );
 
         const reservationAdvance =
           order.reserva
             ? Number(
-                order.reserva
-                  .adelantoPagado,
-              )
+              order.reserva
+                .adelantoPagado,
+            )
             : 0;
 
         const appliedAdvance =
@@ -1601,7 +1853,7 @@ export async function createSale(
             Math.max(
               0,
               total -
-                appliedAdvance,
+              appliedAdvance,
             ),
           );
 
@@ -1621,7 +1873,7 @@ export async function createSale(
         if (
           Math.abs(
             paymentTotal -
-              amountToCharge,
+            amountToCharge,
           ) > EPSILON
         ) {
           throw new AppError(
@@ -1663,6 +1915,9 @@ export async function createSale(
         const operationalDate =
           getOperationalDate();
 
+        const stockNotificationsToEvaluate =
+          new Set<string>();
+
         for (
           const detail
           of order.detalles
@@ -1681,9 +1936,9 @@ export async function createSale(
           const ownCommitment =
             reservedDetail
               ? Number(
-                  reservedDetail
-                    .cantidadComprometida,
-                )
+                reservedDetail
+                  .cantidadComprometida,
+              )
               : 0;
 
           if (reservedDetail) {
@@ -1749,7 +2004,7 @@ export async function createSale(
             if (
               quantity >
               availableForSale +
-                EPSILON
+              EPSILON
             ) {
               throw new AppError(
                 409,
@@ -1769,7 +2024,7 @@ export async function createSale(
               Math.max(
                 0,
                 committedQuantity -
-                  ownCommitment,
+                ownCommitment,
               );
 
             await transaction
@@ -1822,6 +2077,10 @@ export async function createSale(
                     order.id,
                 },
               });
+
+            stockNotificationsToEvaluate.add(
+              detail.productoSucursalId,
+            );
           }
 
           if (
@@ -1834,14 +2093,14 @@ export async function createSale(
                 .findUnique({
                   where: {
                     productoSucursalId_fecha:
-                      {
-                        productoSucursalId:
-                          detail
-                            .productoSucursalId,
+                    {
+                      productoSucursalId:
+                        detail
+                          .productoSucursalId,
 
-                        fecha:
-                          operationalDate,
-                      },
+                      fecha:
+                        operationalDate,
+                    },
                   },
 
                   select: {
@@ -1881,7 +2140,7 @@ export async function createSale(
             if (
               quantity >
               availableForSale +
-                EPSILON
+              EPSILON
             ) {
               throw new AppError(
                 409,
@@ -1901,7 +2160,7 @@ export async function createSale(
               Math.max(
                 0,
                 committedQuantity -
-                  ownCommitment,
+                ownCommitment,
               );
 
             await transaction
@@ -1954,6 +2213,10 @@ export async function createSale(
                     order.id,
                 },
               });
+
+            stockNotificationsToEvaluate.add(
+              detail.productoSucursalId,
+            );
           }
         }
 
@@ -2002,6 +2265,25 @@ export async function createSale(
                 });
 
             if (stock) {
+              const currentQuantity =
+                Number(
+                  stock
+                    .cantidadActual,
+                );
+
+              const currentCommitted =
+                Number(
+                  stock
+                    .cantidadComprometida,
+                );
+
+              const resultingCommitted =
+                Math.max(
+                  0,
+                  currentCommitted -
+                  commitment,
+                );
+
               await transaction
                 .stockPermanente
                 .update({
@@ -2012,16 +2294,48 @@ export async function createSale(
 
                   data: {
                     cantidadComprometida:
-                      Math.max(
-                        0,
-                        Number(
-                          stock
-                            .cantidadComprometida,
-                        ) -
-                          commitment,
-                      ),
+                      resultingCommitted,
                   },
                 });
+
+              await transaction
+                .movimientoInventario
+                .create({
+                  data: {
+                    productoSucursalId:
+                      reservedDetail
+                        .productoSucursalId,
+
+                    usuarioId:
+                      auth.usuarioId,
+
+                    tipoMovimiento:
+                      "LIBERACION_RESERVA",
+
+                    cantidad:
+                      commitment,
+
+                    cantidadAnterior:
+                      currentQuantity,
+
+                    cantidadResultante:
+                      currentQuantity,
+
+                    motivo:
+                      `Liberación de compromiso de la reserva ${order.reserva?.codigo ?? ""} al registrar la venta ${order.codigo}.`,
+
+                    referenciaTipo:
+                      "RESERVA",
+
+                    referenciaId:
+                      order.reservaId,
+                  },
+                });
+
+              stockNotificationsToEvaluate.add(
+                reservedDetail
+                  .productoSucursalId,
+              );
             }
           }
 
@@ -2035,18 +2349,37 @@ export async function createSale(
                 .findUnique({
                   where: {
                     productoSucursalId_fecha:
-                      {
-                        productoSucursalId:
-                          reservedDetail
-                            .productoSucursalId,
+                    {
+                      productoSucursalId:
+                        reservedDetail
+                          .productoSucursalId,
 
-                        fecha:
-                          operationalDate,
-                      },
+                      fecha:
+                        operationalDate,
+                    },
                   },
                 });
 
             if (stock) {
+              const currentQuantity =
+                Number(
+                  stock
+                    .cantidadActual,
+                );
+
+              const currentCommitted =
+                Number(
+                  stock
+                    .cantidadComprometida,
+                );
+
+              const resultingCommitted =
+                Math.max(
+                  0,
+                  currentCommitted -
+                  commitment,
+                );
+
               await transaction
                 .stockDiario
                 .update({
@@ -2057,18 +2390,64 @@ export async function createSale(
 
                   data: {
                     cantidadComprometida:
-                      Math.max(
-                        0,
-                        Number(
-                          stock
-                            .cantidadComprometida,
-                        ) -
-                          commitment,
-                      ),
+                      resultingCommitted,
                   },
                 });
+
+              await transaction
+                .movimientoInventario
+                .create({
+                  data: {
+                    productoSucursalId:
+                      reservedDetail
+                        .productoSucursalId,
+
+                    usuarioId:
+                      auth.usuarioId,
+
+                    tipoMovimiento:
+                      "LIBERACION_RESERVA",
+
+                    cantidad:
+                      commitment,
+
+                    cantidadAnterior:
+                      currentQuantity,
+
+                    cantidadResultante:
+                      currentQuantity,
+
+                    motivo:
+                      `Liberación de compromiso de la reserva ${order.reserva?.codigo ?? ""} al registrar la venta ${order.codigo}.`,
+
+                    referenciaTipo:
+                      "RESERVA",
+
+                    referenciaId:
+                      order.reservaId,
+                  },
+                });
+
+              stockNotificationsToEvaluate.add(
+                reservedDetail
+                  .productoSucursalId,
+              );
             }
           }
+        }
+
+        /*
+         * El stock físico y los compromisos de reserva
+         * ya tienen su valor definitivo para esta venta.
+         */
+        for (
+          const productoSucursalId
+          of stockNotificationsToEvaluate
+        ) {
+          await evaluateStockNotification(
+            transaction,
+            productoSucursalId,
+          );
         }
 
         const correlativo =
@@ -2077,13 +2456,13 @@ export async function createSale(
             .upsert({
               where: {
                 sucursalId_tipoDocumento:
-                  {
-                    sucursalId:
-                      order.sucursalId,
+                {
+                  sucursalId:
+                    order.sucursalId,
 
-                    tipoDocumento:
-                      "TICKET",
-                  },
+                  tipoDocumento:
+                    "TICKET",
+                },
               },
 
               update: {
@@ -2126,19 +2505,19 @@ export async function createSale(
             (payment) => {
               const received =
                 payment.metodoPago ===
-                "EFECTIVO"
+                  "EFECTIVO"
                   ? payment
-                      .montoRecibido ??
-                    payment.monto
+                    .montoRecibido ??
+                  payment.monto
                   : null;
 
               const change =
                 received === null
                   ? null
                   : roundMoney(
-                      received -
-                        payment.monto,
-                    );
+                    received -
+                    payment.monto,
+                  );
 
               return {
                 metodoPago:
@@ -2239,15 +2618,15 @@ export async function createSale(
                   (
                     order.cliente
                       ? userFullName(
-                          order.cliente,
-                        )
+                        order.cliente,
+                      )
                       : "Público general"
                   ),
 
                 subtotal,
 
                 descuento:
-                  input.descuento,
+                  totalDiscount,
 
                 propina:
                   input.propina,
@@ -2296,17 +2675,44 @@ export async function createSale(
                     paymentData,
                 },
               },
-              
+
               select: {
                 id: true,
               },
             });
-            
-            await applySaleLoyalty(
-              transaction,
+
+        /*
+         * Guarda VentaPromocion e incrementa usosActuales.
+         */
+        await persistAutomaticPromotions(
+          transaction,
+          sale.id,
+          promotionCalculation,
+        );
+
+        await persistRedeemedRewards(
+          transaction,
+          {
+            saleId:
               sale.id,
-            );
-            
+
+            userId:
+              auth.usuarioId,
+
+            calculation:
+              loyaltyRedemption,
+          },
+        );
+
+        /*
+         * Fidelización utiliza el total consumido después
+         * de descuentos.
+         */
+        await applySaleLoyalty(
+          transaction,
+          sale.id,
+        );
+
         await transaction
           .caja
           .update({
@@ -2354,13 +2760,13 @@ export async function createSale(
               },
 
               totalTransferencia:
-                {
-                  increment:
-                    roundMoney(
-                      paymentTotals
-                        .TRANSFERENCIA,
-                    ),
-                },
+              {
+                increment:
+                  roundMoney(
+                    paymentTotals
+                      .TRANSFERENCIA,
+                  ),
+              },
 
               efectivoEsperado: {
                 increment:

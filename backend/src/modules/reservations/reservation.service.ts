@@ -5,6 +5,17 @@ import {
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../shared/errors/app-error.js";
 
+import {
+  evaluateStockNotification,
+} from "../notifications/stock-notification.service.js";
+
+import {
+  closeReservationConfirmedNotifications,
+  closeReservationPendingNotifications,
+  createReservationConfirmedNotification,
+  createReservationPendingNotifications,
+} from "../notifications/reservation-notification.service.js";
+
 import type {
   ApproveReservationInput,
   CancelReservationInput,
@@ -328,114 +339,114 @@ export async function getReservationOptions(
 
     selectedBranchId
       ? prisma.zona.findMany({
+        where: {
+          sucursalId:
+            selectedBranchId,
+
+          estado: "ACTIVO",
+          deletedAt: null,
+        },
+
+        select: {
+          id: true,
+          nombre: true,
+          descripcion: true,
+          capacidadReferencial:
+            true,
+        },
+
+        orderBy: {
+          nombre: "asc",
+        },
+      })
+      : Promise.resolve([]),
+
+    selectedBranchId
+      ? prisma
+        .productoSucursal
+        .findMany({
           where: {
             sucursalId:
               selectedBranchId,
 
             estado: "ACTIVO",
-            deletedAt: null,
+
+            disponibleVenta:
+              true,
+
+            producto: {
+              estado: "ACTIVO",
+              deletedAt: null,
+            },
           },
 
           select: {
             id: true,
-            nombre: true,
-            descripcion: true,
-            capacidadReferencial:
-              true,
+            precioVenta: true,
+
+            producto: {
+              select: {
+                id: true,
+                codigo: true,
+                nombre: true,
+                descripcion: true,
+                tipoStock: true,
+
+                categoria: {
+                  select: {
+                    id: true,
+                    nombre: true,
+                  },
+                },
+
+                unidadMedida: {
+                  select: {
+                    codigo: true,
+                    nombre: true,
+                    abreviatura:
+                      true,
+                    decimales:
+                      true,
+                  },
+                },
+              },
+            },
           },
 
           orderBy: {
-            nombre: "asc",
+            producto: {
+              nombre: "asc",
+            },
           },
         })
       : Promise.resolve([]),
 
     selectedBranchId
       ? prisma
-          .productoSucursal
-          .findMany({
-            where: {
-              sucursalId:
-                selectedBranchId,
+        .horarioAtencion
+        .findMany({
+          where: {
+            sucursalId:
+              selectedBranchId,
 
-              estado: "ACTIVO",
+            activo: true,
+          },
 
-              disponibleVenta:
-                true,
+          select: {
+            diaSemana: true,
+            horaInicio: true,
+            horaFin: true,
+          },
 
-              producto: {
-                estado: "ACTIVO",
-                deletedAt: null,
-              },
+          orderBy: [
+            {
+              diaSemana: "asc",
             },
-
-            select: {
-              id: true,
-              precioVenta: true,
-
-              producto: {
-                select: {
-                  id: true,
-                  codigo: true,
-                  nombre: true,
-                  descripcion: true,
-                  tipoStock: true,
-
-                  categoria: {
-                    select: {
-                      id: true,
-                      nombre: true,
-                    },
-                  },
-
-                  unidadMedida: {
-                    select: {
-                      codigo: true,
-                      nombre: true,
-                      abreviatura:
-                        true,
-                      decimales:
-                        true,
-                    },
-                  },
-                },
-              },
+            {
+              horaInicio: "asc",
             },
-
-            orderBy: {
-              producto: {
-                nombre: "asc",
-              },
-            },
-          })
-      : Promise.resolve([]),
-
-    selectedBranchId
-      ? prisma
-          .horarioAtencion
-          .findMany({
-            where: {
-              sucursalId:
-                selectedBranchId,
-
-              activo: true,
-            },
-
-            select: {
-              diaSemana: true,
-              horaInicio: true,
-              horaFin: true,
-            },
-
-            orderBy: [
-              {
-                diaSemana: "asc",
-              },
-              {
-                horaInicio: "asc",
-              },
-            ],
-          })
+          ],
+        })
       : Promise.resolve([]),
   ]);
 
@@ -577,8 +588,8 @@ export async function checkReservationAvailability(
   const endInstant =
     new Date(
       startInstant.getTime() +
-        input.duracionMinutos *
-          60_000,
+      input.duracionMinutos *
+      60_000,
     );
 
   const requestStartMinutes =
@@ -590,18 +601,18 @@ export async function checkReservationAvailability(
     requestStartMinutes +
     input.duracionMinutos;
 
-    const dayCode =
+  const dayCode =
     DAY_CODES[
-        dateOnly.getUTCDay()
+    dateOnly.getUTCDay()
     ];
 
-    if (!dayCode) {
+  if (!dayCode) {
     throw new AppError(
-        500,
-        "No se pudo determinar el día de la semana.",
-        "DIA_SEMANA_INVALIDO",
+      500,
+      "No se pudo determinar el día de la semana.",
+      "DIA_SEMANA_INVALIDO",
     );
-    }
+  }
 
   const [
     schedules,
@@ -720,9 +731,9 @@ export async function checkReservationAvailability(
 
   if (
     zone.capacidadReferencial !==
-      null &&
+    null &&
     input.cantidadPersonas >
-      zone.capacidadReferencial
+    zone.capacidadReferencial
   ) {
     reasons.push(
       `La capacidad referencial de la zona es de ${zone.capacidadReferencial} personas.`,
@@ -751,9 +762,9 @@ export async function checkReservationAvailability(
 
           return (
             requestStartMinutes >=
-              opening &&
+            opening &&
             requestEndMinutes <=
-              closing
+            closing
           );
         },
       );
@@ -780,9 +791,9 @@ export async function checkReservationAvailability(
 
         return (
           requestStartMinutes <
-            existingEnd &&
+          existingEnd &&
           requestEndMinutes >
-            existingStart
+          existingStart
         );
       },
     );
@@ -900,114 +911,114 @@ export async function listReservations(
 
   const where:
     Prisma.ReservaWhereInput = {
-      sucursalId: {
-        in:
-          selectedBranchIds,
-      },
+    sucursalId: {
+      in:
+        selectedBranchIds,
+    },
 
-      ...(query.estado !==
+    ...(query.estado !==
       "TODOS"
-        ? {
-            estado:
-              query.estado,
-          }
-        : {}),
+      ? {
+        estado:
+          query.estado,
+      }
+      : {}),
 
-      ...(query.tipoReserva !==
+    ...(query.tipoReserva !==
       "TODOS"
-        ? {
-            tipoReserva:
-              query.tipoReserva,
-          }
-        : {}),
+      ? {
+        tipoReserva:
+          query.tipoReserva,
+      }
+      : {}),
 
-      ...(
-        query.fechaDesde ||
+    ...(
+      query.fechaDesde ||
         query.fechaHasta
-          ? {
-              fechaReserva: {
-                ...(query.fechaDesde
-                  ? {
-                      gte:
-                        parseDateOnly(
-                          query
-                            .fechaDesde,
-                        ),
-                    }
-                  : {}),
-
-                ...(query.fechaHasta
-                  ? {
-                      lte:
-                        parseDateOnly(
-                          query
-                            .fechaHasta,
-                        ),
-                    }
-                  : {}),
-              },
-            }
-          : {}
-      ),
-
-      ...(query.search
         ? {
-            OR: [
-              {
-                codigo: {
-                  contains:
-                    query.search,
+          fechaReserva: {
+            ...(query.fechaDesde
+              ? {
+                gte:
+                  parseDateOnly(
+                    query
+                      .fechaDesde,
+                  ),
+              }
+              : {}),
 
-                  mode:
-                    "insensitive",
-                },
-              },
-              {
-                nombreEvento: {
-                  contains:
-                    query.search,
+            ...(query.fechaHasta
+              ? {
+                lte:
+                  parseDateOnly(
+                    query
+                      .fechaHasta,
+                  ),
+              }
+              : {}),
+          },
+        }
+        : {}
+    ),
 
-                  mode:
-                    "insensitive",
-                },
-              },
-              {
-                cliente: {
-                  nombres: {
-                    contains:
-                      query.search,
+    ...(query.search
+      ? {
+        OR: [
+          {
+            codigo: {
+              contains:
+                query.search,
 
-                    mode:
-                      "insensitive",
-                  },
-                },
-              },
-              {
-                cliente: {
-                  apellidos: {
-                    contains:
-                      query.search,
+              mode:
+                "insensitive",
+            },
+          },
+          {
+            nombreEvento: {
+              contains:
+                query.search,
 
-                    mode:
-                      "insensitive",
-                  },
-                },
-              },
-              {
-                cliente: {
-                  correo: {
-                    contains:
-                      query.search,
+              mode:
+                "insensitive",
+            },
+          },
+          {
+            cliente: {
+              nombres: {
+                contains:
+                  query.search,
 
-                    mode:
-                      "insensitive",
-                  },
-                },
+                mode:
+                  "insensitive",
               },
-            ],
-          }
-        : {}),
-    };
+            },
+          },
+          {
+            cliente: {
+              apellidos: {
+                contains:
+                  query.search,
+
+                mode:
+                  "insensitive",
+              },
+            },
+          },
+          {
+            cliente: {
+              correo: {
+                contains:
+                  query.search,
+
+                mode:
+                  "insensitive",
+              },
+            },
+          },
+        ],
+      }
+      : {}),
+  };
 
   const skip =
     (query.page - 1) *
@@ -1165,7 +1176,7 @@ export async function listReservations(
           1,
           Math.ceil(
             total /
-              query.limit,
+            query.limit,
           ),
         ),
     },
@@ -1511,14 +1522,14 @@ export async function getReservationById(
           confirmadoPor:
             payment.confirmadoPor
               ? {
-                  id:
-                    payment
-                      .confirmadoPor
-                      .id,
+                id:
+                  payment
+                    .confirmadoPor
+                    .id,
 
-                  nombreCompleto:
-                    `${payment.confirmadoPor.nombres} ${payment.confirmadoPor.apellidos}`.trim(),
-                }
+                nombreCompleto:
+                  `${payment.confirmadoPor.nombres} ${payment.confirmadoPor.apellidos}`.trim(),
+              }
               : null,
         }),
       ),
@@ -1578,7 +1589,7 @@ export async function createReservation(
     throw new AppError(
       409,
       availability.motivos[0] ??
-        "El horario seleccionado no se encuentra disponible.",
+      "El horario seleccionado no se encuentra disponible.",
       "HORARIO_NO_DISPONIBLE",
     );
   }
@@ -1619,39 +1630,39 @@ export async function createReservation(
   const products =
     requestedProductIds.length > 0
       ? await prisma
-          .productoSucursal
-          .findMany({
-            where: {
-              id: {
-                in:
-                  requestedProductIds,
-              },
+        .productoSucursal
+        .findMany({
+          where: {
+            id: {
+              in:
+                requestedProductIds,
+            },
 
-              sucursalId:
-                input.sucursalId,
+            sucursalId:
+              input.sucursalId,
 
+            estado: "ACTIVO",
+
+            disponibleVenta:
+              true,
+
+            producto: {
               estado: "ACTIVO",
+              deletedAt: null,
+            },
+          },
 
-              disponibleVenta:
-                true,
+          select: {
+            id: true,
+            precioVenta: true,
 
-              producto: {
-                estado: "ACTIVO",
-                deletedAt: null,
+            producto: {
+              select: {
+                nombre: true,
               },
             },
-
-            select: {
-              id: true,
-              precioVenta: true,
-
-              producto: {
-                select: {
-                  nombre: true,
-                },
-              },
-            },
-          })
+          },
+        })
       : [];
 
   if (
@@ -1788,13 +1799,13 @@ export async function createReservation(
             .upsert({
               where: {
                 sucursalId_tipoDocumento:
-                  {
-                    sucursalId:
-                      input.sucursalId,
+                {
+                  sucursalId:
+                    input.sucursalId,
 
-                    tipoDocumento:
-                      "RESERVA",
-                  },
+                  tipoDocumento:
+                    "RESERVA",
+                },
               },
 
               update: {
@@ -1836,99 +1847,159 @@ export async function createReservation(
         const code =
           `${correlativo.prefijo}-${numberText}`;
 
-        return transaction
-          .reserva
-          .create({
-            data: {
-              codigo: code,
+        const reservation =
+          await transaction
+            .reserva
+            .create({
+              data: {
+                codigo: code,
 
-              clienteId:
-                input.clienteId,
+                clienteId:
+                  input.clienteId,
 
-              sucursalId:
-                input.sucursalId,
+                sucursalId:
+                  input.sucursalId,
 
-              zonaId:
-                input.zonaId,
+                zonaId:
+                  input.zonaId,
 
-              tipoReserva:
-                input.tipoReserva,
+                tipoReserva:
+                  input.tipoReserva,
 
-              fechaReserva:
-                parseDateOnly(
+                fechaReserva:
+                  parseDateOnly(
+                    input
+                      .fechaReserva,
+                  ),
+
+                horaReserva:
+                  parseTimeOnly(
+                    input
+                      .horaReserva,
+                  ),
+
+                duracionMinutos:
                   input
-                    .fechaReserva,
-                ),
+                    .duracionMinutos,
 
-              horaReserva:
-                parseTimeOnly(
+                cantidadPersonas:
                   input
-                    .horaReserva,
-                ),
+                    .cantidadPersonas,
 
-              duracionMinutos:
-                input
-                  .duracionMinutos,
+                nombreEvento:
+                  input.tipoReserva ===
+                    "EVENTO"
+                    ? input.nombreEvento
+                    : null,
 
-              cantidadPersonas:
-                input
-                  .cantidadPersonas,
+                observaciones:
+                  input.observaciones,
 
-              nombreEvento:
-                input.tipoReserva ===
-                "EVENTO"
-                  ? input.nombreEvento
-                  : null,
+                totalEstimado:
+                  estimatedTotal,
 
-              observaciones:
-                input.observaciones,
+                adelantoRequerido:
+                  input
+                    .adelantoRequerido,
 
-              totalEstimado:
-                estimatedTotal,
+                adelantoPagado: 0,
 
-              adelantoRequerido:
-                input
-                  .adelantoRequerido,
+                saldoEstimado:
+                  estimatedTotal,
 
-              adelantoPagado: 0,
+                estado:
+                  "SOLICITADA",
 
-              saldoEstimado:
-                estimatedTotal,
-
-              estado:
-                "SOLICITADA",
-
-              ...(detailData.length >
-              0
-                ? {
+                ...(detailData.length >
+                  0
+                  ? {
                     detalles: {
                       create:
                         detailData,
                     },
                   }
-                : {}),
+                  : {}),
 
-              historial: {
-                create: {
-                  usuarioId:
-                    auth.usuarioId,
+                historial: {
+                  create: {
+                    usuarioId:
+                      auth.usuarioId,
 
-                  estadoAnterior:
-                    null,
+                    estadoAnterior:
+                      null,
 
-                  estadoNuevo:
-                    "SOLICITADA",
+                    estadoNuevo:
+                      "SOLICITADA",
 
-                  observacion:
-                    "Reserva registrada.",
+                    observacion:
+                      "Reserva registrada.",
+                  },
                 },
               },
-            },
 
-            select: {
-              id: true,
-            },
-          });
+              select: {
+                id:
+                  true,
+
+                codigo:
+                  true,
+
+                sucursalId:
+                  true,
+
+                fechaReserva:
+                  true,
+
+                horaReserva:
+                  true,
+
+                cantidadPersonas:
+                  true,
+
+                cliente: {
+                  select: {
+                    nombres:
+                      true,
+
+                    apellidos:
+                      true,
+                  },
+                },
+              },
+            });
+
+        await createReservationPendingNotifications(
+          transaction,
+          {
+            reservationId:
+              reservation.id,
+
+            reservationCode:
+              reservation.codigo,
+
+            branchId:
+              reservation
+                .sucursalId,
+
+            customerName:
+              `${reservation.cliente.nombres} ${reservation.cliente.apellidos}`
+                .trim(),
+
+            reservationDate:
+              reservation
+                .fechaReserva,
+
+            reservationTime:
+              reservation
+                .horaReserva,
+
+            people:
+              reservation
+                .cantidadPersonas,
+          },
+        );
+
+        return reservation;
       },
     );
 
@@ -2086,7 +2157,12 @@ export async function reviewReservation(
               input.observacion ??
               "La reserva pasó a revisión.",
           },
+
         });
+      await closeReservationPendingNotifications(
+        transaction,
+        reservation.id,
+      );
     },
   );
 
@@ -2157,6 +2233,10 @@ export async function rejectReservation(
               input.motivo,
           },
         });
+      await closeReservationPendingNotifications(
+        transaction,
+        reservation.id,
+      );
     },
   );
 
@@ -2209,7 +2289,7 @@ export async function approveReservation(
 
   if (
     existingDetailIds.size !==
-      receivedDetailIds.size ||
+    receivedDetailIds.size ||
     Array.from(
       existingDetailIds,
     ).some(
@@ -2306,12 +2386,26 @@ export async function approveReservation(
 
   const nextStatus =
     input.adelantoRequerido >
-    paidAdvance
+      paidAdvance
       ? "ESPERANDO_ADELANTO"
       : "CONFIRMADA";
 
+
   await prisma.$transaction(
     async (transaction) => {
+
+      const stockNotificationsToEvaluate =
+        new Set<string>();
+
+      const operationalDate =
+        getOperationalDate();
+
+      const reservationIsToday =
+        reservation
+          .fechaReserva
+          .getTime() ===
+        operationalDate.getTime();
+
       for (
         const detail
         of reservation.detalles
@@ -2405,17 +2499,17 @@ export async function approveReservation(
           const currentQuantity =
             stock
               ? Number(
-                  stock
-                    .cantidadActual,
-                )
+                stock
+                  .cantidadActual,
+              )
               : 0;
 
           const currentlyCommitted =
             stock
               ? Number(
-                  stock
-                    .cantidadComprometida,
-                )
+                stock
+                  .cantidadComprometida,
+              )
               : 0;
 
           const availableQuantity =
@@ -2450,10 +2544,10 @@ export async function approveReservation(
 
               data: {
                 cantidadComprometida:
-                  {
-                    increment:
-                      approvedQuantity,
-                  },
+                {
+                  increment:
+                    approvedQuantity,
+                },
               },
             });
 
@@ -2491,6 +2585,10 @@ export async function approveReservation(
               },
             });
 
+          stockNotificationsToEvaluate.add(
+            detail.productoSucursalId,
+          );
+
           committedQuantity =
             approvedQuantity;
 
@@ -2508,15 +2606,15 @@ export async function approveReservation(
               .findUnique({
                 where: {
                   productoSucursalId_fecha:
-                    {
-                      productoSucursalId:
-                        detail
-                          .productoSucursalId,
+                  {
+                    productoSucursalId:
+                      detail
+                        .productoSucursalId,
 
-                      fecha:
-                        reservation
-                          .fechaReserva,
-                    },
+                    fecha:
+                      reservation
+                        .fechaReserva,
+                  },
                 },
               });
 
@@ -2562,10 +2660,10 @@ export async function approveReservation(
 
                 data: {
                   cantidadComprometida:
-                    {
-                      increment:
-                        approvedQuantity,
-                    },
+                  {
+                    increment:
+                      approvedQuantity,
+                  },
                 },
               });
 
@@ -2602,7 +2700,13 @@ export async function approveReservation(
                     reservation.id,
                 },
               });
-
+            if (
+              reservationIsToday
+            ) {
+              stockNotificationsToEvaluate.add(
+                detail.productoSucursalId,
+              );
+            }
             committedQuantity =
               approvedQuantity;
 
@@ -2633,6 +2737,16 @@ export async function approveReservation(
           });
       }
 
+      for (
+        const productoSucursalId
+        of stockNotificationsToEvaluate
+      ) {
+        await evaluateStockNotification(
+          transaction,
+          productoSucursalId,
+        );
+      }
+
       await transaction
         .reserva
         .update({
@@ -2654,7 +2768,7 @@ export async function approveReservation(
                 0,
                 input
                   .totalEstimado -
-                  paidAdvance,
+                paidAdvance,
               ),
 
             estado:
@@ -2688,13 +2802,30 @@ export async function approveReservation(
               input.observacion ??
               (
                 nextStatus ===
-                "ESPERANDO_ADELANTO"
+                  "ESPERANDO_ADELANTO"
                   ? "Reserva aprobada. Se encuentra esperando el adelanto."
                   : "Reserva aprobada y confirmada."
               ),
           },
+
         });
+
+      await closeReservationPendingNotifications(
+        transaction,
+        reservation.id,
+      );
+
+      if (
+        nextStatus ===
+        "CONFIRMADA"
+      ) {
+        await createReservationConfirmedNotification(
+          transaction,
+          reservation.id,
+        );
+      }
     },
+
   );
 
   return getReservationById(
@@ -2731,7 +2862,7 @@ export async function registerReservationPayment(
 
   if (
     input.metodoPago !==
-      "EFECTIVO" &&
+    "EFECTIVO" &&
     !input.numeroOperacion
   ) {
     throw new AppError(
@@ -2906,9 +3037,9 @@ export async function confirmReservationPayment(
 
             ...(input.observacion
               ? {
-                    observaciones:
-                      input.observacion,
-                 }
+                observaciones:
+                  input.observacion,
+              }
               : {}),
           },
         });
@@ -2951,7 +3082,7 @@ export async function confirmReservationPayment(
       const nextStatus =
         reservation.estado ===
           "ESPERANDO_ADELANTO" &&
-        confirmedAmount >=
+          confirmedAmount >=
           requiredAdvance
           ? "CONFIRMADA"
           : reservation.estado;
@@ -2971,7 +3102,7 @@ export async function confirmReservationPayment(
               Math.max(
                 0,
                 estimatedTotal -
-                  confirmedAmount,
+                confirmedAmount,
               ),
 
             estado:
@@ -3004,6 +3135,15 @@ export async function confirmReservationPayment(
                 "Adelanto confirmado. La reserva quedó confirmada.",
             },
           });
+        if (
+          nextStatus ===
+          "CONFIRMADA"
+        ) {
+          await createReservationConfirmedNotification(
+            transaction,
+            reservation.id,
+          );
+        }
       }
     },
   );
@@ -3064,13 +3204,26 @@ export async function cancelReservation(
       Math.max(
         0,
         paidAmount -
-          input
-            .penalidadCancelacion,
+        input
+          .penalidadCancelacion,
       ).toFixed(2),
     );
 
   await prisma.$transaction(
     async (transaction) => {
+
+      const stockNotificationsToEvaluate =
+        new Set<string>();
+
+      const operationalDate =
+        getOperationalDate();
+
+      const reservationIsToday =
+        reservation
+          .fechaReserva
+          .getTime() ===
+        operationalDate.getTime();
+
       for (
         const detail
         of reservation.detalles
@@ -3090,7 +3243,7 @@ export async function cancelReservation(
         if (
           committedQuantity > 0 &&
           stockType ===
-            "PERMANENTE"
+          "PERMANENTE"
         ) {
           const stock =
             await transaction
@@ -3143,10 +3296,10 @@ export async function cancelReservation(
 
               data: {
                 cantidadComprometida:
-                  {
-                    decrement:
-                      committedQuantity,
-                  },
+                {
+                  decrement:
+                    committedQuantity,
+                },
               },
             });
 
@@ -3183,6 +3336,10 @@ export async function cancelReservation(
                   reservation.id,
               },
             });
+
+          stockNotificationsToEvaluate.add(
+            detail.productoSucursalId,
+          );
         }
 
         if (
@@ -3195,15 +3352,15 @@ export async function cancelReservation(
               .findUnique({
                 where: {
                   productoSucursalId_fecha:
-                    {
-                      productoSucursalId:
-                        detail
-                          .productoSucursalId,
+                  {
+                    productoSucursalId:
+                      detail
+                        .productoSucursalId,
 
-                      fecha:
-                        reservation
-                          .fechaReserva,
-                    },
+                    fecha:
+                      reservation
+                        .fechaReserva,
+                  },
                 },
               });
 
@@ -3248,10 +3405,10 @@ export async function cancelReservation(
 
               data: {
                 cantidadComprometida:
-                  {
-                    decrement:
-                      committedQuantity,
-                  },
+                {
+                  decrement:
+                    committedQuantity,
+                },
               },
             });
 
@@ -3288,6 +3445,14 @@ export async function cancelReservation(
                   reservation.id,
               },
             });
+
+          if (
+            reservationIsToday
+          ) {
+            stockNotificationsToEvaluate.add(
+              detail.productoSucursalId,
+            );
+          }
         }
 
         await transaction
@@ -3303,11 +3468,21 @@ export async function cancelReservation(
 
               estado:
                 detail.estado ===
-                "RECHAZADO"
+                  "RECHAZADO"
                   ? "RECHAZADO"
                   : "LIBERADO",
             },
           });
+      }
+
+      for (
+        const productoSucursalId
+        of stockNotificationsToEvaluate
+      ) {
+        await evaluateStockNotification(
+          transaction,
+          productoSucursalId,
+        );
       }
 
       /*
@@ -3381,6 +3556,16 @@ export async function cancelReservation(
               input.motivo,
           },
         });
+
+      await closeReservationPendingNotifications(
+        transaction,
+        reservation.id,
+      );
+
+      await closeReservationConfirmedNotifications(
+        transaction,
+        reservation.id,
+      );
     },
   );
 
@@ -3388,4 +3573,6 @@ export async function cancelReservation(
     auth,
     reservation.id,
   );
+
+
 }

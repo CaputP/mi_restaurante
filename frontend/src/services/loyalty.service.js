@@ -193,3 +193,60 @@ export async function getLoyaltyCustomerRequest(
 
     return response.data.cliente;
 }
+
+export async function getLoyaltyRedemptionOptionsRequest(
+    token,
+    pedidoId,
+    signal
+) {
+    const query =
+        buildQueryString({
+            pedidoId
+        });
+
+    const response =
+        await apiRequest(
+            `/loyalty/redemptions/options${query}`,
+            {
+                token,
+                signal
+            }
+        );
+
+    return response.data;
+}
+
+export async function previewLoyaltyRedemptionRequest(
+    token,
+    data,
+    signal
+) {
+    const response =
+        await apiRequest(
+            "/loyalty/redemptions/preview",
+            {
+                method: "POST",
+                token,
+                signal,
+                body: data
+            }
+        );
+
+    return response.data;
+}
+
+export async function getMyLoyaltyProfileRequest(
+    token,
+    signal
+) {
+    const response =
+        await apiRequest(
+            "/loyalty/me",
+            {
+                token,
+                signal
+            }
+        );
+
+    return response.data;
+}

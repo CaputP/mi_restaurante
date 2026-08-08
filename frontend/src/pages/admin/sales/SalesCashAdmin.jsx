@@ -24,6 +24,7 @@ import {
     FaFileInvoiceDollar,
     FaTag,
     FaPrint,
+    FaGift,
 } from "react-icons/fa";
 
 import {
@@ -62,6 +63,15 @@ import {
     listExpensesRequest,
     voidExpenseRequest
 } from "../../../services/expense.service";
+
+import {
+    previewAutomaticPromotionsRequest
+} from "../../../services/promotions.service";
+
+import {
+    getLoyaltyRedemptionOptionsRequest,
+    previewLoyaltyRedemptionRequest
+} from "../../../services/loyalty.service";
 
 import "./salesCashAdmin.css";
 
@@ -165,6 +175,32 @@ function roundMoney(value) {
     );
 }
 
+function getPromotionalDiscount(
+    sale
+) {
+    if (!sale) {
+        return 0;
+    }
+
+    return roundMoney(
+        (
+            sale.promocionesAplicadas ??
+            []
+        ).reduce(
+            (
+                total,
+                promotion
+            ) =>
+                total +
+                numberValue(
+                    promotion
+                        .montoDescuento
+                ),
+            0
+        )
+    );
+}
+
 function formatMoney(value) {
     return new Intl.NumberFormat(
         "es-PE",
@@ -204,7 +240,7 @@ function formatLabel(value) {
         );
 }
 
-function  SalesCashAdmin() {
+function SalesCashAdmin() {
     const {
         token,
         usuario
@@ -310,6 +346,50 @@ function  SalesCashAdmin() {
         selectedOrderId,
         setSelectedOrderId
     ] = useState("");
+
+    const [
+        promotionPreview,
+        setPromotionPreview
+    ] = useState(null);
+
+    const [
+        loyaltyRedemptionOptions,
+        setLoyaltyRedemptionOptions
+    ] = useState({
+        pedidoId: null,
+        cliente: null,
+        premios: []
+    });
+
+    const [
+        selectedRewardIds,
+        setSelectedRewardIds
+    ] = useState([]);
+
+    const [
+        loyaltyRedemptionPreview,
+        setLoyaltyRedemptionPreview
+    ] = useState(null);
+
+    const [
+        isLoadingRewards,
+        setIsLoadingRewards
+    ] = useState(false);
+
+    const [
+        isLoadingRewardPreview,
+        setIsLoadingRewardPreview
+    ] = useState(false);
+
+    const [
+        isLoadingPromotionPreview,
+        setIsLoadingPromotionPreview
+    ] = useState(false);
+
+    const [
+        autoBalancePayment,
+        setAutoBalancePayment
+    ] = useState(true);
 
     const [
         selectedSale,
@@ -478,9 +558,36 @@ function  SalesCashAdmin() {
     const subtotal =
         selectedOrder?.subtotal ?? 0;
 
+    /*
+     * Este valor corresponde únicamente al descuento
+     * manual ingresado por el vendedor.
+     */
     const discount =
         numberValue(
             saleForm.descuento
+        );
+
+    /*
+     * Este valor proviene del cálculo realizado por
+     * el backend.
+     */
+    const automaticDiscount =
+        numberValue(
+            promotionPreview
+                ?.descuentoTotal
+        );
+
+    const rewardDiscount =
+        numberValue(
+            loyaltyRedemptionPreview
+                ?.descuentoPremios
+        );
+
+    const totalDiscount =
+        roundMoney(
+            discount +
+            automaticDiscount +
+            rewardDiscount
         );
 
     const tip =
@@ -495,13 +602,13 @@ function  SalesCashAdmin() {
                     Math.max(
                         0,
                         subtotal -
-                            discount +
-                            tip
+                        totalDiscount +
+                        tip
                     )
                 ),
             [
                 subtotal,
-                discount,
+                totalDiscount,
                 tip
             ]
         );
@@ -526,7 +633,7 @@ function  SalesCashAdmin() {
             Math.max(
                 0,
                 saleTotal -
-                    appliedAdvance
+                appliedAdvance
             )
         );
 
@@ -548,8 +655,181 @@ function  SalesCashAdmin() {
     const pendingAmount =
         roundMoney(
             amountToCharge -
-                paymentsTotal
+            paymentsTotal
         );
+
+    const selectedSalePromotionalDiscount =
+        useMemo(
+            () =>
+                getPromotionalDiscount(
+                    selectedSale
+                ),
+            [
+                selectedSale
+            ]
+        );
+
+    const selectedSaleRewardDiscount =
+        useMemo(
+            () =>
+                roundMoney(
+                    (
+                        selectedSale
+                            ?.canjesPremios ??
+                        []
+                    ).reduce(
+                        (
+                            total,
+                            redemption
+                        ) =>
+                            total +
+                            numberValue(
+                                redemption
+                                    .montoAplicado
+                            ),
+                        0
+                    )
+                ),
+            [
+                selectedSale
+            ]
+        );
+
+    const selectedSaleManualDiscount =
+        useMemo(
+            () =>
+                roundMoney(
+                    Math.max(
+                        0,
+
+                        numberValue(
+                            selectedSale
+                                ?.descuento
+                        ) -
+                        selectedSalePromotionalDiscount -
+                        selectedSaleRewardDiscount
+                    )
+                ),
+            [
+                selectedSale,
+                selectedSalePromotionalDiscount,
+                selectedSaleRewardDiscount
+            ]
+        );
+
+    useEffect(() => {
+        if (
+            !selectedOrder ||
+            !promotionPreview ||
+            !autoBalancePayment ||
+            isLoadingRewardPreview
+        ) {
+            return;
+        }
+
+        if (
+            selectedRewardIds.length >
+            0 &&
+            !loyaltyRedemptionPreview
+        ) {
+            return;
+        }
+
+        setSaleForm(
+            (previous) => {
+                if (
+                    amountToCharge <= 0
+                ) {
+                    if (
+                        previous.pagos
+                            .length === 0
+                    ) {
+                        return previous;
+                    }
+
+                    return {
+                        ...previous,
+                        pagos: []
+                    };
+                }
+
+                /*
+                 * Cuando ya existe pago mixto,
+                 * respetamos los montos ingresados
+                 * manualmente.
+                 */
+                if (
+                    previous.pagos
+                        .length > 1
+                ) {
+                    return previous;
+                }
+
+                const currentPayment =
+                    previous.pagos[0] ??
+                    createPaymentRow(
+                        amountToCharge
+                    );
+
+                const amountText =
+                    amountToCharge.toFixed(
+                        2
+                    );
+
+                const received =
+                    numberValue(
+                        currentPayment
+                            .montoRecibido
+                    );
+
+                const receivedText =
+                    currentPayment
+                        .metodoPago ===
+                        "EFECTIVO"
+                        ? Math.max(
+                            received,
+                            amountToCharge
+                        ).toFixed(2)
+                        : "";
+
+                if (
+                    previous.pagos
+                        .length === 1 &&
+                    currentPayment.monto ===
+                    amountText &&
+                    currentPayment
+                        .montoRecibido ===
+                    receivedText
+                ) {
+                    return previous;
+                }
+
+                return {
+                    ...previous,
+
+                    pagos: [
+                        {
+                            ...currentPayment,
+
+                            monto:
+                                amountText,
+
+                            montoRecibido:
+                                receivedText
+                        }
+                    ]
+                };
+            }
+        );
+    }, [
+        selectedOrder,
+        promotionPreview,
+        loyaltyRedemptionPreview,
+        selectedRewardIds,
+        isLoadingRewardPreview,
+        amountToCharge,
+        autoBalancePayment
+    ]);
 
     const registeredExpenseTotal =
         useMemo(
@@ -581,7 +861,7 @@ function  SalesCashAdmin() {
                     .filter(
                         (expense) =>
                             expense.estado ===
-                                "REGISTRADO" &&
+                            "REGISTRADO" &&
                             expense.salioDeCaja
                     )
                     .reduce(
@@ -641,7 +921,7 @@ function  SalesCashAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar las sucursales."
+                    "No se pudieron cargar las sucursales."
                 );
             } finally {
                 if (
@@ -826,11 +1106,11 @@ function  SalesCashAdmin() {
                             cajaId:
                                 cashExists
                                     ? previous
-                                          .cajaId
+                                        .cajaId
                                     : saleOptionsResult
-                                          .cajas[0]
-                                          ?.id ??
-                                      ""
+                                        .cajas[0]
+                                        ?.id ??
+                                    ""
                         };
                     }
                 );
@@ -847,7 +1127,7 @@ function  SalesCashAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar ventas y cajas."
+                    "No se pudieron cargar ventas y cajas."
                 );
             } finally {
                 if (
@@ -919,9 +1199,9 @@ function  SalesCashAdmin() {
                         efectivoContado:
                             result
                                 ? String(
-                                      result
-                                          .efectivoEsperado
-                                  )
+                                    result
+                                        .efectivoEsperado
+                                )
                                 : ""
                     })
                 );
@@ -938,7 +1218,7 @@ function  SalesCashAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudo consultar la caja abierta."
+                    "No se pudo consultar la caja abierta."
                 );
             } finally {
                 if (
@@ -1089,7 +1369,7 @@ function  SalesCashAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar los gastos."
+                    "No se pudieron cargar los gastos."
                 );
             }
         }
@@ -1241,7 +1521,7 @@ function  SalesCashAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo abrir la caja."
+                "No se pudo abrir la caja."
             );
         } finally {
             setIsSaving(false);
@@ -1326,14 +1606,54 @@ function  SalesCashAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cerrar la caja."
+                "No se pudo cerrar la caja."
             );
         } finally {
             setIsSaving(false);
         }
     }
 
-    function handleSelectOrder(
+    function closeChargeForm() {
+        setSelectedOrderId(
+            ""
+        );
+
+        setPromotionPreview(
+            null
+        );
+
+        setLoyaltyRedemptionOptions({
+            pedidoId: null,
+            cliente: null,
+            premios: []
+        });
+
+        setSelectedRewardIds(
+            []
+        );
+
+        setLoyaltyRedemptionPreview(
+            null
+        );
+
+        setIsLoadingPromotionPreview(
+            false
+        );
+
+        setIsLoadingRewards(
+            false
+        );
+
+        setIsLoadingRewardPreview(
+            false
+        );
+
+        setAutoBalancePayment(
+            true
+        );
+    }
+
+    async function handleSelectOrder(
         orderId
     ) {
         clearFeedback();
@@ -1341,37 +1661,55 @@ function  SalesCashAdmin() {
         const order =
             saleOptions.pedidos.find(
                 (item) =>
-                    item.id === orderId
+                    item.id ===
+                    orderId
             );
+
+        if (!order) {
+            setError(
+                "El pedido seleccionado ya no está disponible."
+            );
+            return;
+        }
 
         setSelectedOrderId(
             orderId
         );
 
-        if (!order) {
-            return;
-        }
+        setPromotionPreview(
+            null
+        );
 
-        const initialTotal =
-            roundMoney(
-                order.subtotal
-            );
+        setLoyaltyRedemptionPreview(
+            null
+        );
 
-        const advance =
-            roundMoney(
-                Math.min(
-                    initialTotal,
-                    order.reserva
-                        ?.adelantoPagado ??
-                        0
-                )
-            );
+        setSelectedRewardIds(
+            []
+        );
 
-        const balance =
-            roundMoney(
-                initialTotal -
-                    advance
-            );
+        setLoyaltyRedemptionOptions({
+            pedidoId:
+                order.id,
+
+            cliente:
+                order.cliente
+                    ? {
+                        id:
+                            order.cliente.id,
+
+                        nombreCompleto:
+                            order.cliente
+                                .nombreCompleto
+                    }
+                    : null,
+
+            premios: []
+        });
+
+        setAutoBalancePayment(
+            true
+        );
 
         setSaleForm(
             (previous) => ({
@@ -1392,18 +1730,194 @@ function  SalesCashAdmin() {
                     "",
 
                 pagos:
-                    balance > 0
-                        ? [
-                              createPaymentRow(
-                                  balance
-                              )
-                          ]
-                        : []
+                    []
             })
+        );
+
+        setIsLoadingPromotionPreview(
+            true
+        );
+
+        setIsLoadingRewards(
+            true
+        );
+
+        try {
+            const [
+                promotionResult,
+                rewardsResult
+            ] =
+                await Promise.all([
+                    previewAutomaticPromotionsRequest(
+                        token,
+                        order.id
+                    ),
+
+                    getLoyaltyRedemptionOptionsRequest(
+                        token,
+                        order.id
+                    )
+                ]);
+
+            setPromotionPreview(
+                promotionResult
+            );
+
+            setLoyaltyRedemptionOptions(
+                rewardsResult
+            );
+        } catch (requestError) {
+            setPromotionPreview(
+                null
+            );
+
+            setLoyaltyRedemptionOptions({
+                pedidoId:
+                    order.id,
+
+                cliente:
+                    order.cliente
+                        ? {
+                            id:
+                                order.cliente.id,
+
+                            nombreCompleto:
+                                order.cliente
+                                    .nombreCompleto
+                        }
+                        : null,
+
+                premios: []
+            });
+
+            setError(
+                getErrorMessage(
+                    requestError
+                ) ??
+                "No se pudieron preparar las promociones y premios del pedido."
+            );
+        } finally {
+            setIsLoadingPromotionPreview(
+                false
+            );
+
+            setIsLoadingRewards(
+                false
+            );
+        }
+    }
+
+    async function updateSelectedRewards(
+        nextRewardIds
+    ) {
+        setSelectedRewardIds(
+            nextRewardIds
+        );
+
+        setAutoBalancePayment(
+            true
+        );
+
+        if (
+            !selectedOrder
+        ) {
+            setLoyaltyRedemptionPreview(
+                null
+            );
+            return;
+        }
+
+        if (
+            nextRewardIds.length ===
+            0
+        ) {
+            setLoyaltyRedemptionPreview(
+                null
+            );
+            return;
+        }
+
+        setIsLoadingRewardPreview(
+            true
+        );
+
+        setLoyaltyRedemptionPreview(
+            null
+        );
+
+        try {
+            const result =
+                await previewLoyaltyRedemptionRequest(
+                    token,
+                    {
+                        pedidoId:
+                            selectedOrder.id,
+
+                        premioIds:
+                            nextRewardIds
+                    }
+                );
+
+            setLoyaltyRedemptionPreview(
+                result
+            );
+        } catch (requestError) {
+            setSelectedRewardIds(
+                []
+            );
+
+            setLoyaltyRedemptionPreview(
+                null
+            );
+
+            setError(
+                getErrorMessage(
+                    requestError
+                ) ??
+                "No se pudieron aplicar los premios seleccionados."
+            );
+        } finally {
+            setIsLoadingRewardPreview(
+                false
+            );
+        }
+    }
+
+    function toggleReward(
+        rewardId
+    ) {
+        const isSelected =
+            selectedRewardIds.includes(
+                rewardId
+            );
+
+        const nextRewardIds =
+            isSelected
+                ? selectedRewardIds.filter(
+                    (id) =>
+                        id !==
+                        rewardId
+                )
+                : [
+                    ...selectedRewardIds,
+                    rewardId
+                ];
+
+        void updateSelectedRewards(
+            nextRewardIds
+        );
+    }
+
+    function clearSelectedRewards() {
+        void updateSelectedRewards(
+            []
         );
     }
 
     function addPayment() {
+        setAutoBalancePayment(
+            false
+        );
         setSaleForm(
             (previous) => ({
                 ...previous,
@@ -1426,6 +1940,14 @@ function  SalesCashAdmin() {
         field,
         value
     ) {
+        if (
+            field === "monto"
+        ) {
+            setAutoBalancePayment(
+                false
+            );
+        }
+
         setSaleForm(
             (previous) => ({
                 ...previous,
@@ -1452,16 +1974,16 @@ function  SalesCashAdmin() {
 
                                     numeroOperacion:
                                         value ===
-                                        "EFECTIVO"
+                                            "EFECTIVO"
                                             ? ""
                                             : payment
-                                                  .numeroOperacion,
+                                                .numeroOperacion,
 
                                     montoRecibido:
                                         value ===
-                                        "EFECTIVO"
+                                            "EFECTIVO"
                                             ? payment
-                                                  .monto
+                                                .monto
                                             : ""
                                 };
                             }
@@ -1480,6 +2002,10 @@ function  SalesCashAdmin() {
     function removePayment(
         paymentId
     ) {
+        setAutoBalancePayment(
+            false
+        );
+
         setSaleForm(
             (previous) => ({
                 ...previous,
@@ -1499,18 +2025,58 @@ function  SalesCashAdmin() {
             return "Selecciona un pedido entregado.";
         }
 
+        if (
+            isLoadingPromotionPreview
+        ) {
+            return "Espera mientras se calculan las promociones.";
+        }
+
+        if (
+            !promotionPreview ||
+            promotionPreview.pedidoId !==
+            selectedOrder.id
+        ) {
+            return "No se pudo validar el cálculo promocional del pedido.";
+        }
+
+        if (
+            isLoadingRewards ||
+            isLoadingRewardPreview
+        ) {
+            return "Espera mientras se validan los premios del cliente.";
+        }
+
+        if (
+            selectedRewardIds.length >
+            0 &&
+            !loyaltyRedemptionPreview
+        ) {
+            return "Los premios seleccionados todavía no fueron validados.";
+        }
+
+        if (
+            loyaltyRedemptionPreview &&
+            loyaltyRedemptionPreview.pedidoId !==
+            selectedOrder.id
+        ) {
+            return "El cálculo de premios no corresponde al pedido seleccionado.";
+        }
+
         if (!saleForm.cajaId) {
             return "Selecciona una caja abierta.";
         }
 
-        if (discount > subtotal) {
-            return "El descuento no puede superar el subtotal.";
+        if (
+            totalDiscount >
+            subtotal + 0.01
+        ) {
+            return "La suma de promociones, premios y descuento manual no puede superar el subtotal.";
         }
 
         if (
             Math.abs(
                 paymentsTotal -
-                    amountToCharge
+                amountToCharge
             ) > 0.01
         ) {
             return `Los pagos deben sumar ${formatMoney(
@@ -1533,7 +2099,7 @@ function  SalesCashAdmin() {
 
             if (
                 payment.metodoPago !==
-                    "EFECTIVO" &&
+                "EFECTIVO" &&
                 !payment.numeroOperacion
                     .trim()
             ) {
@@ -1612,6 +2178,9 @@ function  SalesCashAdmin() {
                         propina:
                             tip,
 
+                        premioIds:
+                            selectedRewardIds,
+
                         observaciones:
                             saleForm
                                 .observaciones
@@ -1642,11 +2211,11 @@ function  SalesCashAdmin() {
                                     montoRecibido:
                                         payment
                                             .metodoPago ===
-                                        "EFECTIVO"
+                                            "EFECTIVO"
                                             ? numberValue(
-                                                  payment
-                                                      .montoRecibido
-                                              )
+                                                payment
+                                                    .montoRecibido
+                                            )
                                             : null
                                 })
                             )
@@ -1658,6 +2227,28 @@ function  SalesCashAdmin() {
             );
 
             setSelectedOrderId("");
+
+            setPromotionPreview(
+                null
+            );
+
+            setAutoBalancePayment(
+                true
+            );
+
+            setLoyaltyRedemptionOptions({
+                pedidoId: null,
+                cliente: null,
+                premios: []
+            });
+
+            setSelectedRewardIds(
+                []
+            );
+
+            setLoyaltyRedemptionPreview(
+                null
+            );
 
             setSaleForm(
                 (previous) => ({
@@ -1684,7 +2275,7 @@ function  SalesCashAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo registrar la venta."
+                "No se pudo registrar la venta."
             );
         } finally {
             setIsSaving(false);
@@ -1710,7 +2301,7 @@ function  SalesCashAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cargar la venta."
+                "No se pudo cargar la venta."
             );
         } finally {
             setIsLoadingDetail(false);
@@ -1738,7 +2329,7 @@ function  SalesCashAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cargar la caja."
+                "No se pudo cargar la caja."
             );
         } finally {
             setIsLoadingDetail(false);
@@ -1888,7 +2479,7 @@ function  SalesCashAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo crear la categoría."
+                "No se pudo crear la categoría."
             );
         } finally {
             setIsSaving(false);
@@ -2046,7 +2637,7 @@ function  SalesCashAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo registrar el gasto."
+                "No se pudo registrar el gasto."
             );
         } finally {
             setIsSaving(false);
@@ -2086,7 +2677,7 @@ function  SalesCashAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cargar el gasto."
+                "No se pudo cargar el gasto."
             );
         } finally {
             setIsLoadingDetail(false);
@@ -2161,7 +2752,7 @@ function  SalesCashAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo anular el gasto."
+                "No se pudo anular el gasto."
             );
         } finally {
             setIsSaving(false);
@@ -2260,7 +2851,7 @@ function  SalesCashAdmin() {
                     type="button"
                     className={
                         activeTab ===
-                        "COBROS"
+                            "COBROS"
                             ? "active"
                             : ""
                     }
@@ -2278,7 +2869,7 @@ function  SalesCashAdmin() {
                     type="button"
                     className={
                         activeTab ===
-                        "CAJA"
+                            "CAJA"
                             ? "active"
                             : ""
                     }
@@ -2296,7 +2887,7 @@ function  SalesCashAdmin() {
                     type="button"
                     className={
                         activeTab ===
-                        "VENTAS"
+                            "VENTAS"
                             ? "active"
                             : ""
                     }
@@ -2313,7 +2904,7 @@ function  SalesCashAdmin() {
                     type="button"
                     className={
                         activeTab ===
-                        "GASTOS"
+                            "GASTOS"
                             ? "active"
                             : ""
                     }
@@ -2415,7 +3006,7 @@ function  SalesCashAdmin() {
                         </div>
 
                         {saleOptions.pedidos.length ===
-                        0 ? (
+                            0 ? (
                             <div className="sales-empty-state">
                                 <FaCheck />
 
@@ -2436,7 +3027,7 @@ function  SalesCashAdmin() {
                                             }
                                             className={
                                                 selectedOrderId ===
-                                                order.id
+                                                    order.id
                                                     ? "selected"
                                                     : ""
                                             }
@@ -2512,7 +3103,7 @@ function  SalesCashAdmin() {
                                                             order
                                                                 .reserva
                                                                 ?.adelantoPagado ??
-                                                                0
+                                                            0
                                                         )}
                                                     </dd>
                                                 </div>
@@ -2560,10 +3151,8 @@ function  SalesCashAdmin() {
                                 <button
                                     type="button"
                                     className="sales-close-button"
-                                    onClick={() =>
-                                        setSelectedOrderId(
-                                            ""
-                                        )
+                                    onClick={
+                                        closeChargeForm
                                     }
                                 >
                                     <FaTimes />
@@ -2657,7 +3246,7 @@ function  SalesCashAdmin() {
                                 </label>
 
                                 <label>
-                                    Descuento
+                                    Descuento manual
 
                                     <input
                                         type="number"
@@ -2746,6 +3335,282 @@ function  SalesCashAdmin() {
                                 </label>
                             </div>
 
+                            <section className="charge-promotions">
+                                <div className="charge-promotions-heading">
+                                    <div>
+                                        <FaTag />
+
+                                        <div>
+                                            <strong>
+                                                Promociones automáticas
+                                            </strong>
+
+                                            <span>
+                                                Calculadas según el pedido, sucursal y vigencia.
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <strong>
+                                        -
+                                        {formatMoney(
+                                            automaticDiscount
+                                        )}
+                                    </strong>
+                                </div>
+
+                                {isLoadingPromotionPreview ? (
+                                    <div className="charge-promotions-loading">
+                                        <FaSyncAlt />
+                                        Calculando promociones...
+                                    </div>
+                                ) : !promotionPreview ? (
+                                    <div className="charge-promotions-warning">
+                                        No se pudo validar el cálculo promocional.
+                                    </div>
+                                ) : promotionPreview
+                                    .promociones
+                                    .length === 0 ? (
+                                    <div className="charge-promotions-empty">
+                                        El pedido no tiene promociones aplicables.
+                                    </div>
+                                ) : (
+                                    <div className="charge-promotions-list">
+                                        {promotionPreview.promociones.map(
+                                            (promotion) => (
+                                                <article
+                                                    key={
+                                                        promotion.promocionId
+                                                    }
+                                                >
+                                                    <div>
+                                                        <strong>
+                                                            {
+                                                                promotion.nombre
+                                                            }
+                                                        </strong>
+
+                                                        <span>
+                                                            {
+                                                                promotion.descripcion
+                                                            }
+                                                        </span>
+                                                    </div>
+
+                                                    <strong>
+                                                        -
+                                                        {formatMoney(
+                                                            promotion.montoDescuento
+                                                        )}
+                                                    </strong>
+                                                </article>
+                                            )
+                                        )}
+                                    </div>
+                                )}
+                            </section>
+
+                            <section className="charge-rewards">
+                                <div className="charge-rewards-heading">
+                                    <div>
+                                        <FaGift />
+
+                                        <div>
+                                            <strong>
+                                                Premios de fidelización
+                                            </strong>
+
+                                            <span>
+                                                Beneficios disponibles para el cliente del pedido.
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <strong>
+                                        -
+                                        {formatMoney(
+                                            rewardDiscount
+                                        )}
+                                    </strong>
+                                </div>
+
+                                {isLoadingRewards ? (
+                                    <div className="charge-rewards-message">
+                                        <FaSyncAlt />
+                                        Cargando premios...
+                                    </div>
+                                ) : !loyaltyRedemptionOptions
+                                    .cliente ? (
+                                    <div className="charge-rewards-message">
+                                        Este pedido no está asociado a un cliente registrado.
+                                    </div>
+                                ) : loyaltyRedemptionOptions
+                                    .premios.length ===
+                                    0 ? (
+                                    <div className="charge-rewards-message">
+                                        {
+                                            loyaltyRedemptionOptions
+                                                .cliente
+                                                .nombreCompleto
+                                        }{" "}
+                                        no tiene premios disponibles.
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="charge-rewards-customer">
+                                            <span>
+                                                Cliente
+                                            </span>
+
+                                            <strong>
+                                                {
+                                                    loyaltyRedemptionOptions
+                                                        .cliente
+                                                        .nombreCompleto
+                                                }
+                                            </strong>
+
+                                            <span>
+                                                {
+                                                    loyaltyRedemptionOptions
+                                                        .premios
+                                                        .length
+                                                }{" "}
+                                                premio(s) disponible(s)
+                                            </span>
+                                        </div>
+
+                                        <div className="charge-rewards-list">
+                                            {loyaltyRedemptionOptions
+                                                .premios
+                                                .map(
+                                                    (
+                                                        reward
+                                                    ) => {
+                                                        const isSelected =
+                                                            selectedRewardIds.includes(
+                                                                reward.id
+                                                            );
+
+                                                        return (
+                                                            <label
+                                                                key={
+                                                                    reward.id
+                                                                }
+                                                                className={`charge-reward-option ${isSelected
+                                                                    ? "selected"
+                                                                    : ""
+                                                                    } ${!reward.aplicable
+                                                                        ? "disabled"
+                                                                        : ""
+                                                                    }`}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={
+                                                                        isSelected
+                                                                    }
+                                                                    disabled={
+                                                                        !reward.aplicable ||
+                                                                        isLoadingRewardPreview
+                                                                    }
+                                                                    onChange={() =>
+                                                                        toggleReward(
+                                                                            reward.id
+                                                                        )
+                                                                    }
+                                                                />
+
+                                                                <div className="charge-reward-info">
+                                                                    <div>
+                                                                        <strong>
+                                                                            {
+                                                                                reward.descripcion
+                                                                            }
+                                                                        </strong>
+
+                                                                        <span>
+                                                                            {
+                                                                                reward
+                                                                                    .programa
+                                                                                    .nombre
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div className="charge-reward-meta">
+                                                                        <span>
+                                                                            {formatLabel(
+                                                                                reward.tipoRecompensa
+                                                                            )}
+                                                                        </span>
+
+                                                                        <span>
+                                                                            Vence{" "}
+                                                                            {formatDate(
+                                                                                reward.fechaVencimiento
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    {!reward.aplicable && (
+                                                                        <small>
+                                                                            {
+                                                                                reward.motivoNoAplicable
+                                                                            }
+                                                                        </small>
+                                                                    )}
+                                                                </div>
+
+                                                                <strong className="charge-reward-value">
+                                                                    {reward.tipoRecompensa ===
+                                                                        "BENEFICIO"
+                                                                        ? "Beneficio"
+                                                                        : `-${formatMoney(
+                                                                            reward.montoEstimado
+                                                                        )}`}
+                                                                </strong>
+                                                            </label>
+                                                        );
+                                                    }
+                                                )}
+                                        </div>
+
+                                        {selectedRewardIds.length >
+                                            0 && (
+                                                <div className="charge-rewards-selected">
+                                                    <span>
+                                                        {
+                                                            selectedRewardIds
+                                                                .length
+                                                        }{" "}
+                                                        premio(s) seleccionado(s)
+                                                    </span>
+
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            isLoadingRewardPreview
+                                                        }
+                                                        onClick={
+                                                            clearSelectedRewards
+                                                        }
+                                                    >
+                                                        Quitar todos
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                        {isLoadingRewardPreview && (
+                                            <div className="charge-rewards-message calculating">
+                                                <FaSyncAlt />
+                                                Recalculando premios...
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </section>
+
                             <div className="charge-summary">
                                 <div>
                                     <span>
@@ -2761,13 +3626,52 @@ function  SalesCashAdmin() {
 
                                 <div>
                                     <span>
-                                        Descuento
+                                        Promociones
+                                    </span>
+
+                                    <strong>
+                                        -
+                                        {formatMoney(
+                                            automaticDiscount
+                                        )}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    <span>
+                                        Premios
+                                    </span>
+
+                                    <strong>
+                                        -
+                                        {formatMoney(
+                                            rewardDiscount
+                                        )}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    <span>
+                                        Descuento manual
                                     </span>
 
                                     <strong>
                                         -
                                         {formatMoney(
                                             discount
+                                        )}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    <span>
+                                        Descuento total
+                                    </span>
+
+                                    <strong>
+                                        -
+                                        {formatMoney(
+                                            totalDiscount
                                         )}
                                     </strong>
                                 </div>
@@ -2872,12 +3776,12 @@ function  SalesCashAdmin() {
                                         const change =
                                             payment
                                                 .metodoPago ===
-                                            "EFECTIVO"
+                                                "EFECTIVO"
                                                 ? Math.max(
-                                                      0,
-                                                      received -
-                                                          paymentAmount
-                                                  )
+                                                    0,
+                                                    received -
+                                                    paymentAmount
+                                                )
                                                 : 0;
 
                                         return (
@@ -2946,7 +3850,7 @@ function  SalesCashAdmin() {
                                                 />
 
                                                 {payment.metodoPago ===
-                                                "EFECTIVO" ? (
+                                                    "EFECTIVO" ? (
                                                     <div className="cash-payment-fields">
                                                         <input
                                                             type="number"
@@ -3023,10 +3927,8 @@ function  SalesCashAdmin() {
                                 <button
                                     type="button"
                                     className="secondary"
-                                    onClick={() =>
-                                        setSelectedOrderId(
-                                            ""
-                                        )
+                                    onClick={
+                                        closeChargeForm
                                     }
                                 >
                                     Cancelar
@@ -3037,19 +3939,33 @@ function  SalesCashAdmin() {
                                     className="primary"
                                     disabled={
                                         isSaving ||
+                                        isLoadingPromotionPreview ||
+                                        isLoadingRewards ||
+                                        isLoadingRewardPreview ||
+                                        !promotionPreview ||
+                                        (
+                                            selectedRewardIds
+                                                .length > 0 &&
+                                            !loyaltyRedemptionPreview
+                                        ) ||
                                         saleOptions
                                             .cajas
-                                            .length ===
-                                            0
+                                            .length === 0
                                     }
                                 >
                                     <FaSave />
 
                                     {isSaving
                                         ? "Registrando..."
-                                        : "Registrar venta"}
+                                        : isLoadingPromotionPreview
+                                            ? "Calculando promociones..."
+                                            : isLoadingRewards
+                                                ? "Consultando premios..."
+                                                : isLoadingRewardPreview
+                                                    ? "Calculando premios..."
+                                                    : "Registrar venta"}
                                 </button>
-                                
+
                             </div>
                         </form>
                     )}
@@ -3266,8 +4182,8 @@ function  SalesCashAdmin() {
                                                     closeCashForm
                                                         .efectivoContado
                                                 ) -
-                                                    currentCash
-                                                        .efectivoEsperado
+                                                currentCash
+                                                    .efectivoEsperado
                                             )}
                                         </div>
                                     </label>
@@ -3514,11 +4430,11 @@ function  SalesCashAdmin() {
 
                                                 <td>
                                                     {cash.diferencia ===
-                                                    null
+                                                        null
                                                         ? "-"
                                                         : formatMoney(
-                                                              cash.diferencia
-                                                          )}
+                                                            cash.diferencia
+                                                        )}
                                                 </td>
 
                                                 <td>
@@ -3580,7 +4496,7 @@ function  SalesCashAdmin() {
                                                 Math.max(
                                                     1,
                                                     value -
-                                                        1
+                                                    1
                                                 )
                                         )
                                     }
@@ -3810,19 +4726,19 @@ function  SalesCashAdmin() {
 
                                                     {sale.estado ===
                                                         "CONFIRMADA" && (
-                                                        <button
-                                                            type="button"
-                                                            className="sales-icon-button"
-                                                            title="Anular venta"
-                                                            onClick={() =>
-                                                                navigate(
-                                                                    `/admin/ventas/anular/${sale.id}`
-                                                                )
-                                                            }
-                                                        >
-                                                            <FaBan />
-                                                        </button>
-                                                    )}
+                                                            <button
+                                                                type="button"
+                                                                className="sales-icon-button"
+                                                                title="Anular venta"
+                                                                onClick={() =>
+                                                                    navigate(
+                                                                        `/admin/ventas/anular/${sale.id}`
+                                                                    )
+                                                                }
+                                                            >
+                                                                <FaBan />
+                                                            </button>
+                                                        )}
 
                                                 </div>
                                             </td>
@@ -3858,7 +4774,7 @@ function  SalesCashAdmin() {
                                             Math.max(
                                                 1,
                                                 value -
-                                                    1
+                                                1
                                             )
                                     )
                                 }
@@ -4330,7 +5246,7 @@ function  SalesCashAdmin() {
                                         expenseOptions
                                             .categorias
                                             .length ===
-                                            0
+                                        0
                                     }
                                 >
                                     <FaSave />
@@ -4771,6 +5687,70 @@ function  SalesCashAdmin() {
 
                         <article>
                             <span>
+                                Subtotal
+                            </span>
+
+                            <strong>
+                                {formatMoney(
+                                    selectedSale.subtotal
+                                )}
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>
+                                Promociones
+                            </span>
+
+                            <strong className="sale-discount-value">
+                                -
+                                {formatMoney(
+                                    selectedSalePromotionalDiscount
+                                )}
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>
+                                Premios
+                            </span>
+
+                            <strong className="sale-discount-value">
+                                -
+                                {formatMoney(
+                                    selectedSaleRewardDiscount
+                                )}
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>
+                                Descuento manual
+                            </span>
+
+                            <strong className="sale-discount-value">
+                                -
+                                {formatMoney(
+                                    selectedSaleManualDiscount
+                                )}
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>
+                                Descuento total
+                            </span>
+
+                            <strong className="sale-discount-value">
+                                -
+                                {formatMoney(
+                                    selectedSale.descuento
+                                )}
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>
                                 Total
                             </span>
 
@@ -4858,7 +5838,7 @@ function  SalesCashAdmin() {
                             </h4>
 
                             {selectedSale.pagos.length ===
-                            0 ? (
+                                0 ? (
                                 <p className="sale-no-payments">
                                     Venta cubierta
                                     completamente con el
@@ -4900,6 +5880,189 @@ function  SalesCashAdmin() {
                             )}
                         </section>
                     </div>
+
+                    <section className="sale-applied-promotions">
+                        <div className="sale-applied-promotions-heading">
+                            <div>
+                                <FaTag />
+
+                                <div>
+                                    <h4>
+                                        Promociones aplicadas
+                                    </h4>
+
+                                    <p>
+                                        Beneficios registrados al momento del cobro.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <strong>
+                                -
+                                {formatMoney(
+                                    selectedSalePromotionalDiscount
+                                )}
+                            </strong>
+                        </div>
+
+                        {(
+                            selectedSale
+                                .promocionesAplicadas ??
+                            []
+                        ).length === 0 ? (
+                            <p className="sale-no-promotions">
+                                Esta venta no utilizó promociones.
+                            </p>
+                        ) : (
+                            <div className="sale-applied-promotions-list">
+                                {selectedSale
+                                    .promocionesAplicadas
+                                    .map(
+                                        (
+                                            appliedPromotion
+                                        ) => (
+                                            <article
+                                                key={
+                                                    appliedPromotion.id
+                                                }
+                                            >
+                                                <div>
+                                                    <strong>
+                                                        {
+                                                            appliedPromotion
+                                                                .promocion
+                                                                .nombre
+                                                        }
+                                                    </strong>
+
+                                                    <span>
+                                                        {formatLabel(
+                                                            appliedPromotion
+                                                                .promocion
+                                                                .tipo
+                                                        )}
+                                                    </span>
+
+                                                    <small>
+                                                        {
+                                                            appliedPromotion
+                                                                .descripcion
+                                                        }
+                                                    </small>
+                                                </div>
+
+                                                <strong>
+                                                    -
+                                                    {formatMoney(
+                                                        appliedPromotion
+                                                            .montoDescuento
+                                                    )}
+                                                </strong>
+                                            </article>
+                                        )
+                                    )}
+                            </div>
+                        )}
+                    </section>
+
+                    <section className="sale-redeemed-rewards">
+                        <div className="sale-redeemed-rewards-heading">
+                            <div>
+                                <FaGift />
+
+                                <div>
+                                    <h4>
+                                        Premios canjeados
+                                    </h4>
+
+                                    <p>
+                                        Beneficios de fidelización utilizados en esta venta.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <strong>
+                                -
+                                {formatMoney(
+                                    selectedSaleRewardDiscount
+                                )}
+                            </strong>
+                        </div>
+
+                        {(
+                            selectedSale
+                                .canjesPremios ??
+                            []
+                        ).length === 0 ? (
+                            <p className="sale-no-rewards">
+                                Esta venta no utilizó premios de fidelización.
+                            </p>
+                        ) : (
+                            <div className="sale-redeemed-rewards-list">
+                                {selectedSale
+                                    .canjesPremios
+                                    .map(
+                                        (
+                                            redemption
+                                        ) => (
+                                            <article
+                                                key={
+                                                    redemption.id
+                                                }
+                                            >
+                                                <div>
+                                                    <strong>
+                                                        {
+                                                            redemption.descripcion
+                                                        }
+                                                    </strong>
+
+                                                    <span>
+                                                        {
+                                                            redemption
+                                                                .premio
+                                                                .programa
+                                                                .nombre
+                                                        }
+                                                    </span>
+
+                                                    <small>
+                                                        {formatLabel(
+                                                            redemption.tipoRecompensa
+                                                        )}
+
+                                                        {redemption
+                                                            .productoPremioNombre
+                                                            ? ` · ${redemption.productoPremioNombre}`
+                                                            : ""}
+                                                    </small>
+
+                                                    {redemption.estado ===
+                                                        "REVERTIDO" && (
+                                                            <small className="sale-reward-reverted">
+                                                                Canje revertido por anulación de venta
+                                                            </small>
+                                                        )}
+                                                </div>
+
+                                                <strong>
+                                                    {numberValue(
+                                                        redemption
+                                                            .montoAplicado
+                                                    ) > 0
+                                                        ? `-${formatMoney(
+                                                            redemption
+                                                                .montoAplicado
+                                                        )}`
+                                                        : "Beneficio"}
+                                                </strong>
+                                            </article>
+                                        )
+                                    )}
+                            </div>
+                        )}
+                    </section>
+
                 </article>
             )}
 
@@ -5050,38 +6213,38 @@ function  SalesCashAdmin() {
 
                         {selectedExpense
                             .motivoAnulacion && (
-                            <div>
-                                <dt>
-                                    Motivo de anulación
-                                </dt>
+                                <div>
+                                    <dt>
+                                        Motivo de anulación
+                                    </dt>
 
-                                <dd>
-                                    {
-                                        selectedExpense
-                                            .motivoAnulacion
-                                    }
-                                </dd>
-                            </div>
-                        )}
+                                    <dd>
+                                        {
+                                            selectedExpense
+                                                .motivoAnulacion
+                                        }
+                                    </dd>
+                                </div>
+                            )}
                     </dl>
 
                     {selectedExpense.estado ===
                         "REGISTRADO" && (
-                        <div className="expense-detail-actions">
-                            <button
-                                type="button"
-                                disabled={
-                                    isSaving
-                                }
-                                onClick={
-                                    handleVoidExpense
-                                }
-                            >
-                                <FaBan />
-                                Anular gasto
-                            </button>
-                        </div>
-                    )}
+                            <div className="expense-detail-actions">
+                                <button
+                                    type="button"
+                                    disabled={
+                                        isSaving
+                                    }
+                                    onClick={
+                                        handleVoidExpense
+                                    }
+                                >
+                                    <FaBan />
+                                    Anular gasto
+                                </button>
+                            </div>
+                        )}
                 </article>
             )}
 
@@ -5169,12 +6332,12 @@ function  SalesCashAdmin() {
                             <strong>
                                 {selectedCashDetail
                                     .efectivoContado ===
-                                null
+                                    null
                                     ? "-"
                                     : formatMoney(
-                                          selectedCashDetail
-                                              .efectivoContado
-                                      )}
+                                        selectedCashDetail
+                                            .efectivoContado
+                                    )}
                             </strong>
                         </article>
 
@@ -5186,12 +6349,12 @@ function  SalesCashAdmin() {
                             <strong>
                                 {selectedCashDetail
                                     .diferencia ===
-                                null
+                                    null
                                     ? "-"
                                     : formatMoney(
-                                          selectedCashDetail
-                                              .diferencia
-                                      )}
+                                        selectedCashDetail
+                                            .diferencia
+                                    )}
                             </strong>
                         </article>
 

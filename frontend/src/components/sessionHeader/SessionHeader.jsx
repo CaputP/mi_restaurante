@@ -9,6 +9,7 @@ import {
     useNavigate
 } from "react-router-dom";
 
+import NotificationBell from "../notificationBell/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/images/logo.png";
 import "./SessionHeader.css";
@@ -20,6 +21,7 @@ function SessionHeader({
     const navigate = useNavigate();
 
     const {
+        token,
         usuario,
         logout
     } = useAuth();
@@ -60,37 +62,45 @@ function SessionHeader({
             </div>
 
             <div className="session-header-actions">
-                <div className="session-user">
-                    <FaUserCircle />
+                <div className="session-header-actions">
+                    <NotificationBell
+                        token={token}
+                        role={
+                            usuario?.rol?.codigo
+                        }
+                    />
+                    <div className="session-user">
+                        <FaUserCircle />
 
-                    <div>
-                        <strong>
-                            {usuario.nombreCompleto ??
-                                `${usuario.nombres} ${usuario.apellidos}`}
-                        </strong>
+                        <div>
+                            <strong>
+                                {usuario.nombreCompleto ??
+                                    `${usuario.nombres} ${usuario.apellidos}`}
+                            </strong>
 
-                        <span>
-                            {usuario.rol.nombre}
-                        </span>
+                            <span>
+                                {usuario.rol.nombre}
+                            </span>
+                        </div>
                     </div>
+
+                    <Link
+                        to="/"
+                        className="session-home-link"
+                    >
+                        <FaHome />
+                        <span>Inicio</span>
+                    </Link>
+
+                    <button
+                        type="button"
+                        className="session-logout-button"
+                        onClick={handleLogout}
+                    >
+                        <FaSignOutAlt />
+                        <span>Cerrar sesión</span>
+                    </button>
                 </div>
-
-                <Link
-                    to="/"
-                    className="session-home-link"
-                >
-                    <FaHome />
-                    <span>Inicio</span>
-                </Link>
-
-                <button
-                    type="button"
-                    className="session-logout-button"
-                    onClick={handleLogout}
-                >
-                    <FaSignOutAlt />
-                    <span>Cerrar sesión</span>
-                </button>
             </div>
         </header>
     );

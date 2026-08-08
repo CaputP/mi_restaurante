@@ -197,6 +197,60 @@
     font-weight: 800;
 }
 
+.sale-ticket-promotions h3 {
+    margin: 0 0 5px;
+
+    font-size: 11px;
+    text-align: center;
+}
+
+.sale-ticket-promotions article {
+    padding: 4px 0;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+
+    border-bottom: 1px dotted #777777;
+}
+
+.sale-ticket-promotions article > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sale-ticket-promotions article strong {
+    font-size: 10px;
+}
+
+.sale-ticket-promotions article small {
+    margin-top: 1px;
+
+    color: #444444;
+    font-size: 8px;
+
+    overflow-wrap: anywhere;
+}
+
+.sale-ticket-promotions article > span {
+    white-space: nowrap;
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.sale-ticket-totals .discount-total {
+    margin-top: 2px;
+    padding-top: 3px;
+
+    border-top: 1px dotted #777777;
+
+    font-weight: 700;
+}
+
 .sale-ticket-payments h3 {
     margin: 0 0 5px;
     font-size: 11px;
@@ -349,4 +403,54 @@
     .sale-ticket-toolbar {
         display: none !important;
     }
+}
+
+.sale-ticket-rewards h3 {
+    margin: 0 0 5px;
+
+    font-size: 11px;
+    text-align: center;
+}
+
+.sale-ticket-rewards article {
+    padding: 4px 0;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+
+    border-bottom: 1px dotted #777777;
+}
+
+.sale-ticket-rewards article > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sale-ticket-rewards article strong {
+    font-size: 10px;
+}
+
+.sale-ticket-rewards article small {
+    margin-top: 1px;
+
+    color: #444444;
+    font-size: 8px;
+
+    overflow-wrap: anywhere;
+}
+
+.sale-ticket-rewards article > span {
+    white-space: nowrap;
+
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.sale-ticket-rewards .reward-reverted {
+    color: #b71c1c;
+    font-weight: 700;
 }

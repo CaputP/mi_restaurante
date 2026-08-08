@@ -1181,3 +1181,236 @@ export async function previewAutomaticPromotions(
     },
   );
 }
+
+export async function persistAutomaticPromotions(
+  transaction:
+    Prisma.TransactionClient,
+  saleId: string,
+  calculation:
+    PromotionCalculationResult,
+): Promise<void> {
+  if (
+    calculation.promociones
+      .length === 0
+  ) {
+    return;
+  }
+
+  const now =
+    new Date();
+
+  for (
+    const appliedPromotion
+    of calculation.promociones
+  ) {
+    const currentPromotion =
+      await transaction
+        .promocion
+        .findUnique({
+          where: {
+            id:
+              appliedPromotion
+                .promocionId,
+          },
+
+          select: {
+            id:
+              true,
+
+            nombre:
+              true,
+
+            estado:
+              true,
+
+            automatica:
+              true,
+
+            fechaInicio:
+              true,
+
+            fechaFin:
+              true,
+
+            maximoUsos:
+              true,
+
+            usosActuales:
+              true,
+          },
+        });
+
+    if (
+      !currentPromotion ||
+      currentPromotion.estado !==
+        "ACTIVA" ||
+      !currentPromotion.automatica ||
+      currentPromotion.fechaInicio >
+        now ||
+      currentPromotion.fechaFin <
+        now
+    ) {
+      throw new AppError(
+        409,
+        `La promoción "${appliedPromotion.nombre}" dejó de estar disponible.`,
+        "PROMOCION_NO_DISPONIBLE",
+      );
+    }
+
+    if (
+      currentPromotion.maximoUsos !==
+        null &&
+      currentPromotion.usosActuales >=
+        currentPromotion.maximoUsos
+    ) {
+      throw new AppError(
+        409,
+        `La promoción "${currentPromotion.nombre}" alcanzó su límite de usos.`,
+        "PROMOCION_LIMITE_ALCANZADO",
+      );
+    }
+
+    /*
+     * Reclama un uso de la promoción.
+     *
+     * updateMany permite comprobar nuevamente el límite
+     * y evita aplicar una promoción agotada.
+     */
+    const claimedPromotion =
+      await transaction
+        .promocion
+        .updateMany({
+          where: {
+            id:
+              currentPromotion.id,
+
+            estado:
+              "ACTIVA",
+
+            automatica:
+              true,
+
+            fechaInicio: {
+              lte:
+                now,
+            },
+
+            fechaFin: {
+              gte:
+                now,
+            },
+
+            ...(currentPromotion
+              .maximoUsos === null
+              ? {}
+              : {
+                  usosActuales: {
+                    lt:
+                      currentPromotion
+                        .maximoUsos,
+                  },
+                }),
+          },
+
+          data: {
+            usosActuales: {
+              increment:
+                1,
+            },
+          },
+        });
+
+    if (
+      claimedPromotion.count !==
+      1
+    ) {
+      throw new AppError(
+        409,
+        `La promoción "${currentPromotion.nombre}" ya no está disponible.`,
+        "PROMOCION_NO_DISPONIBLE",
+      );
+    }
+
+    await transaction
+      .ventaPromocion
+      .create({
+        data: {
+          ventaId:
+            saleId,
+
+          promocionId:
+            currentPromotion.id,
+
+          descripcion:
+            appliedPromotion
+              .descripcion,
+
+          montoDescuento:
+            new Prisma.Decimal(
+              appliedPromotion
+                .montoDescuento,
+            ),
+        },
+      });
+  }
+}
+
+export async function revertSalePromotions(
+  transaction:
+    Prisma.TransactionClient,
+  saleId: string,
+) {
+  const appliedPromotions =
+    await transaction
+      .ventaPromocion
+      .findMany({
+        where: {
+          ventaId:
+            saleId,
+        },
+
+        select: {
+          promocionId:
+            true,
+        },
+      });
+
+  let revertedPromotions =
+    0;
+
+  for (
+    const appliedPromotion
+    of appliedPromotions
+  ) {
+    const reverted =
+      await transaction
+        .promocion
+        .updateMany({
+          where: {
+            id:
+              appliedPromotion
+                .promocionId,
+
+            usosActuales: {
+              gt:
+                0,
+            },
+          },
+
+          data: {
+            usosActuales: {
+              decrement:
+                1,
+            },
+          },
+        });
+
+    revertedPromotions +=
+      reverted.count;
+  }
+
+  return {
+    promocionesRevertidas:
+      revertedPromotions,
+  };
+}

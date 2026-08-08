@@ -5,6 +5,10 @@ import {
 } from "react";
 
 import {
+    useLocation
+} from "react-router-dom";
+
+import {
     FaBan,
     FaBoxOpen,
     FaBuilding,
@@ -213,6 +217,10 @@ function formatLabel(value) {
 }
 
 function ReservationsAdmin() {
+
+    const location =
+        useLocation();
+
     const {
         token
     } = useAuth();
@@ -349,8 +357,8 @@ function ReservationsAdmin() {
                     ) => {
                         const selection =
                             selectedProducts[
-                                product
-                                    .productoSucursalId
+                            product
+                                .productoSucursalId
                             ];
 
                         if (
@@ -380,7 +388,7 @@ function ReservationsAdmin() {
                                 product
                                     .precioVenta
                             ) *
-                                quantity
+                            quantity
                         );
                     },
                     0
@@ -390,6 +398,96 @@ function ReservationsAdmin() {
                 selectedProducts
             ]
         );
+
+    useEffect(() => {
+        const notificationEntityId =
+            location.state
+                ?.notificationEntityId;
+
+        const notificationType =
+            location.state
+                ?.notificationType;
+
+        if (
+            !notificationEntityId ||
+            notificationType !==
+            "RESERVA_PENDIENTE"
+        ) {
+            return;
+        }
+
+        const controller =
+            new AbortController();
+
+        async function openNotificationReservation() {
+            setIsLoadingDetail(
+                true
+            );
+
+            setError("");
+
+            try {
+                const result =
+                    await getReservationByIdRequest(
+                        token,
+                        notificationEntityId,
+                        {
+                            signal:
+                                controller.signal
+                        }
+                    );
+
+                setSelectedReservation(
+                    result
+                );
+
+                /*
+                 * Dejamos limpio el state para que
+                 * no vuelva a abrir la misma reserva
+                 * en renders o navegaciones posteriores.
+                 */
+                window.history.replaceState(
+                    {},
+                    document.title,
+                    window.location.pathname
+                );
+            } catch (
+            requestError
+            ) {
+                if (
+                    isAbortError(
+                        requestError
+                    )
+                ) {
+                    return;
+                }
+
+                setError(
+                    getApiErrorMessage(
+                        requestError
+                    ) ??
+                    "No se pudo abrir la reserva seleccionada."
+                );
+            } finally {
+                if (
+                    !controller.signal
+                        .aborted
+                ) {
+                    setIsLoadingDetail(
+                        false
+                    );
+                }
+            }
+        }
+
+        void openNotificationReservation();
+
+        return () =>
+            controller.abort();
+    }, [
+        token,
+        location.state
+    ]);
 
     useEffect(() => {
         const controller =
@@ -423,7 +521,7 @@ function ReservationsAdmin() {
                     selectedBranchId &&
                     initialOptions
                         .sucursalSeleccionadaId !==
-                        selectedBranchId
+                    selectedBranchId
                 ) {
                     completeOptions =
                         await getReservationOptionsRequest(
@@ -477,7 +575,7 @@ function ReservationsAdmin() {
                     getApiErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar las opciones de reservas."
+                    "No se pudieron cargar las opciones de reservas."
                 );
             } finally {
                 if (
@@ -543,7 +641,7 @@ function ReservationsAdmin() {
                     getApiErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar las reservas."
+                    "No se pudieron cargar las reservas."
                 );
             } finally {
                 if (
@@ -640,7 +738,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudieron cargar los datos de la sucursal."
+                "No se pudieron cargar los datos de la sucursal."
             );
         } finally {
             setIsLoadingOptions(false);
@@ -654,7 +752,7 @@ function ReservationsAdmin() {
             (previous) => {
                 const current =
                     previous[
-                        productId
+                    productId
                     ];
 
                 return {
@@ -803,7 +901,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo comprobar la disponibilidad."
+                "No se pudo comprobar la disponibilidad."
             );
 
             return null;
@@ -823,8 +921,8 @@ function ReservationsAdmin() {
                 (product) => {
                     const selection =
                         selectedProducts[
-                            product
-                                .productoSucursalId
+                        product
+                            .productoSucursalId
                         ];
 
                     return {
@@ -862,7 +960,7 @@ function ReservationsAdmin() {
 
         if (
             form.tipoReserva ===
-                "EVENTO" &&
+            "EVENTO" &&
             form.nombreEvento
                 .trim().length < 2
         ) {
@@ -881,7 +979,7 @@ function ReservationsAdmin() {
                     ) ||
                     detail
                         .cantidadSolicitada <=
-                        0
+                    0
             );
 
         if (invalidDetail) {
@@ -890,7 +988,7 @@ function ReservationsAdmin() {
 
         const estimatedTotal =
             form.totalEstimado ===
-            ""
+                ""
                 ? productTotal
                 : Number(
                     form.totalEstimado
@@ -959,7 +1057,7 @@ function ReservationsAdmin() {
                 setError(
                     currentAvailability
                         ?.motivos[0] ??
-                        "El horario no se encuentra disponible."
+                    "El horario no se encuentra disponible."
                 );
 
                 return;
@@ -1001,10 +1099,10 @@ function ReservationsAdmin() {
 
                         nombreEvento:
                             form.tipoReserva ===
-                            "EVENTO"
+                                "EVENTO"
                                 ? form
-                                      .nombreEvento
-                                      .trim()
+                                    .nombreEvento
+                                    .trim()
                                 : null,
 
                         observaciones:
@@ -1014,16 +1112,16 @@ function ReservationsAdmin() {
 
                         totalEstimado:
                             form.totalEstimado ===
-                            ""
+                                ""
                                 ? Number(
-                                      productTotal.toFixed(
-                                          2
-                                      )
-                                  )
+                                    productTotal.toFixed(
+                                        2
+                                    )
+                                )
                                 : Number(
-                                      form
-                                          .totalEstimado
-                                  ),
+                                    form
+                                        .totalEstimado
+                                ),
 
                         adelantoRequerido:
                             Number(
@@ -1089,7 +1187,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo registrar la reserva."
+                "No se pudo registrar la reserva."
             );
         } finally {
             setIsSaving(false);
@@ -1113,9 +1211,9 @@ function ReservationsAdmin() {
                                         .cantidadAprobada
                                 ) > 0
                                     ? detail
-                                          .cantidadAprobada
+                                        .cantidadAprobada
                                     : detail
-                                          .cantidadSolicitada
+                                        .cantidadSolicitada
                             )
                     })
                 ),
@@ -1179,7 +1277,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cargar el detalle de la reserva."
+                "No se pudo cargar el detalle de la reserva."
             );
         } finally {
             setIsLoadingDetail(false);
@@ -1252,7 +1350,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo iniciar la revisión."
+                "No se pudo iniciar la revisión."
             );
         } finally {
             setIsSaving(false);
@@ -1308,7 +1406,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo rechazar la reserva."
+                "No se pudo rechazar la reserva."
             );
         } finally {
             setIsSaving(false);
@@ -1328,13 +1426,13 @@ function ReservationsAdmin() {
                         (detail) =>
                             detail
                                 .detalleId ===
-                            detailId
+                                detailId
                                 ? {
-                                      ...detail,
+                                    ...detail,
 
-                                      cantidadAprobada:
-                                          value
-                                  }
+                                    cantidadAprobada:
+                                        value
+                                }
                                 : detail
                     )
             })
@@ -1435,7 +1533,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo aprobar la reserva."
+                "No se pudo aprobar la reserva."
             );
         } finally {
             setIsSaving(false);
@@ -1474,11 +1572,11 @@ function ReservationsAdmin() {
         if (
             paymentForm
                 .metodoPago !==
-                "EFECTIVO" &&
+            "EFECTIVO" &&
             paymentForm
                 .numeroOperacion
                 .trim().length ===
-                0
+            0
         ) {
             setError(
                 "Ingresa el número de operación."
@@ -1528,7 +1626,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo registrar el pago."
+                "No se pudo registrar el pago."
             );
         } finally {
             setIsSaving(false);
@@ -1573,7 +1671,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo confirmar el pago."
+                "No se pudo confirmar el pago."
             );
         } finally {
             setIsSaving(false);
@@ -1671,7 +1769,7 @@ function ReservationsAdmin() {
                 getApiErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cancelar la reserva."
+                "No se pudo cancelar la reserva."
             );
         } finally {
             setIsSaving(false);
@@ -1929,43 +2027,43 @@ function ReservationsAdmin() {
                                 {options
                                     .tiposReserva
                                     .length >
-                                0
+                                    0
                                     ? options.tiposReserva.map(
-                                          (
-                                              type
-                                          ) => (
-                                              <option
-                                                  key={
-                                                      type.codigo
-                                                  }
-                                                  value={
-                                                      type.codigo
-                                                  }
-                                              >
-                                                  {
-                                                      type.nombre
-                                                  }
-                                              </option>
-                                          )
-                                      )
+                                        (
+                                            type
+                                        ) => (
+                                            <option
+                                                key={
+                                                    type.codigo
+                                                }
+                                                value={
+                                                    type.codigo
+                                                }
+                                            >
+                                                {
+                                                    type.nombre
+                                                }
+                                            </option>
+                                        )
+                                    )
                                     : RESERVATION_TYPES.map(
-                                          (
-                                              type
-                                          ) => (
-                                              <option
-                                                  key={
-                                                      type
-                                                  }
-                                                  value={
-                                                      type
-                                                  }
-                                              >
-                                                  {formatLabel(
-                                                      type
-                                                  )}
-                                              </option>
-                                          )
-                                      )}
+                                        (
+                                            type
+                                        ) => (
+                                            <option
+                                                key={
+                                                    type
+                                                }
+                                                value={
+                                                    type
+                                                }
+                                            >
+                                                {formatLabel(
+                                                    type
+                                                )}
+                                            </option>
+                                        )
+                                    )}
                             </select>
                         </div>
 
@@ -2093,18 +2191,18 @@ function ReservationsAdmin() {
                                     options
                                         .duraciones
                                         .length >
-                                    0
+                                        0
                                         ? options
-                                              .duraciones
+                                            .duraciones
                                         : [
-                                              60,
-                                              90,
-                                              120,
-                                              180,
-                                              240,
-                                              300,
-                                              360
-                                          ]
+                                            60,
+                                            90,
+                                            120,
+                                            180,
+                                            240,
+                                            300,
+                                            360
+                                        ]
                                 ).map(
                                     (
                                         duration
@@ -2118,7 +2216,7 @@ function ReservationsAdmin() {
                                             }
                                         >
                                             {duration <
-                                            60
+                                                60
                                                 ? `${duration} minutos`
                                                 : `${duration / 60} hora(s)`}
                                         </option>
@@ -2156,33 +2254,33 @@ function ReservationsAdmin() {
 
                         {form.tipoReserva ===
                             "EVENTO" && (
-                            <div className="reservation-field reservation-field-full">
-                                <label>
-                                    Nombre del evento *
-                                </label>
+                                <div className="reservation-field reservation-field-full">
+                                    <label>
+                                        Nombre del evento *
+                                    </label>
 
-                                <input
-                                    type="text"
-                                    maxLength={
-                                        180
-                                    }
-                                    value={
-                                        form
-                                            .nombreEvento
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        updateFormField(
-                                            "nombreEvento",
+                                    <input
+                                        type="text"
+                                        maxLength={
+                                            180
+                                        }
+                                        value={
+                                            form
+                                                .nombreEvento
+                                        }
+                                        onChange={(
                                             event
-                                                .target
-                                                .value
-                                        )
-                                    }
-                                />
-                            </div>
-                        )}
+                                        ) =>
+                                            updateFormField(
+                                                "nombreEvento",
+                                                event
+                                                    .target
+                                                    .value
+                                            )
+                                        }
+                                    />
+                                </div>
+                            )}
 
                         <div className="reservation-field reservation-field-full">
                             <label>
@@ -2226,16 +2324,15 @@ function ReservationsAdmin() {
 
                         {availability && (
                             <div
-                                className={`availability-result ${
-                                    availability.disponible
-                                        ? "available"
-                                        : "unavailable"
-                                }`}
+                                className={`availability-result ${availability.disponible
+                                    ? "available"
+                                    : "unavailable"
+                                    }`}
                             >
                                 {availability.disponible
                                     ? "Horario disponible."
                                     : availability
-                                          .motivos[0]}
+                                        .motivos[0]}
                             </div>
                         )}
                     </div>
@@ -2263,7 +2360,7 @@ function ReservationsAdmin() {
 
                         {options.productos
                             .length ===
-                        0 ? (
+                            0 ? (
                             <div className="reservation-empty-small">
                                 <FaBoxOpen />
                                 No hay productos
@@ -2277,8 +2374,8 @@ function ReservationsAdmin() {
                                     ) => {
                                         const selection =
                                             selectedProducts[
-                                                product
-                                                    .productoSucursalId
+                                            product
+                                                .productoSucursalId
                                             ];
 
                                         const selected =
@@ -2700,7 +2797,7 @@ function ReservationsAdmin() {
                         Cargando reservas...
                     </div>
                 ) : reservations.length ===
-                  0 ? (
+                    0 ? (
                     <div className="reservation-empty-state">
                         <FaCalendarAlt />
 
@@ -2874,7 +2971,7 @@ function ReservationsAdmin() {
                             type="button"
                             disabled={
                                 page >=
-                                    pagination.totalPages ||
+                                pagination.totalPages ||
                                 isLoadingList
                             }
                             onClick={() =>
@@ -3184,13 +3281,13 @@ function ReservationsAdmin() {
 
                             {selectedReservation
                                 .observaciones && (
-                                <p className="reservation-notes">
-                                    {
-                                        selectedReservation
-                                            .observaciones
-                                    }
-                                </p>
-                            )}
+                                    <p className="reservation-notes">
+                                        {
+                                            selectedReservation
+                                                .observaciones
+                                        }
+                                    </p>
+                                )}
                         </section>
 
                         <section>
@@ -3201,7 +3298,7 @@ function ReservationsAdmin() {
                             {selectedReservation
                                 .detalles
                                 .length ===
-                            0 ? (
+                                0 ? (
                                 <div className="reservation-empty-small">
                                     Sin productos
                                     solicitados.
@@ -3292,75 +3389,75 @@ function ReservationsAdmin() {
                                 .detalles
                                 .length >
                                 0 && (
-                                <div className="reservation-approval-list">
-                                    {selectedReservation.detalles.map(
-                                        (
-                                            detail
-                                        ) => {
-                                            const approval =
-                                                approvalForm
-                                                    .detalles
-                                                    .find(
-                                                        (
-                                                            item
-                                                        ) =>
-                                                            item.detalleId ===
+                                    <div className="reservation-approval-list">
+                                        {selectedReservation.detalles.map(
+                                            (
+                                                detail
+                                            ) => {
+                                                const approval =
+                                                    approvalForm
+                                                        .detalles
+                                                        .find(
+                                                            (
+                                                                item
+                                                            ) =>
+                                                                item.detalleId ===
+                                                                detail.id
+                                                        );
+
+                                                return (
+                                                    <label
+                                                        key={
                                                             detail.id
-                                                    );
+                                                        }
+                                                    >
+                                                        <span>
+                                                            <strong>
+                                                                {
+                                                                    detail
+                                                                        .nombreProducto
+                                                                }
+                                                            </strong>
 
-                                            return (
-                                                <label
-                                                    key={
-                                                        detail.id
-                                                    }
-                                                >
-                                                    <span>
-                                                        <strong>
-                                                            {
-                                                                detail
-                                                                    .nombreProducto
-                                                            }
-                                                        </strong>
+                                                            <small>
+                                                                Solicitado:{" "}
+                                                                {
+                                                                    detail
+                                                                        .cantidadSolicitada
+                                                                }
+                                                            </small>
+                                                        </span>
 
-                                                        <small>
-                                                            Solicitado:{" "}
-                                                            {
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            max={
                                                                 detail
                                                                     .cantidadSolicitada
                                                             }
-                                                        </small>
-                                                    </span>
-
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        max={
-                                                            detail
-                                                                .cantidadSolicitada
-                                                        }
-                                                        step="0.001"
-                                                        value={
-                                                            approval
-                                                                ?.cantidadAprobada ??
-                                                            "0"
-                                                        }
-                                                        onChange={(
-                                                            event
-                                                        ) =>
-                                                            updateApprovedQuantity(
-                                                                detail.id,
+                                                            step="0.001"
+                                                            value={
+                                                                approval
+                                                                    ?.cantidadAprobada ??
+                                                                "0"
+                                                            }
+                                                            onChange={(
                                                                 event
-                                                                    .target
-                                                                    .value
-                                                            )
-                                                        }
-                                                    />
-                                                </label>
-                                            );
-                                        }
-                                    )}
-                                </div>
-                            )}
+                                                            ) =>
+                                                                updateApprovedQuantity(
+                                                                    detail.id,
+                                                                    event
+                                                                        .target
+                                                                        .value
+                                                                )
+                                                            }
+                                                        />
+                                                    </label>
+                                                );
+                                            }
+                                        )}
+                                    </div>
+                                )}
 
                             <div className="reservation-form-grid">
                                 <div className="reservation-field">
@@ -3673,7 +3770,7 @@ function ReservationsAdmin() {
 
                         {selectedReservation
                             .pagos.length ===
-                        0 ? (
+                            0 ? (
                             <div className="reservation-empty-small">
                                 No hay pagos registrados.
                             </div>
@@ -3716,21 +3813,21 @@ function ReservationsAdmin() {
 
                                             {payment.estado ===
                                                 "PENDIENTE" && (
-                                                <button
-                                                    type="button"
-                                                    disabled={
-                                                        isSaving
-                                                    }
-                                                    onClick={() =>
-                                                        handleConfirmPayment(
-                                                            payment.id
-                                                        )
-                                                    }
-                                                >
-                                                    <FaCheck />
-                                                    Confirmar
-                                                </button>
-                                            )}
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            isSaving
+                                                        }
+                                                        onClick={() =>
+                                                            handleConfirmPayment(
+                                                                payment.id
+                                                            )
+                                                        }
+                                                    >
+                                                        <FaCheck />
+                                                        Confirmar
+                                                    </button>
+                                                )}
                                         </article>
                                     )
                                 )}

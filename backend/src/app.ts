@@ -1,4 +1,8 @@
 import {
+  notificationRouter,
+} from "./modules/notifications/notifications.routes.js";
+
+import {
   catalogRouter,
 } from "./modules/catalog/catalog.routes.js";
 
@@ -229,6 +233,11 @@ app.use(
 app.use(
   "/api/promotions",
   promotionRouter,
+);
+
+app.use(
+  "/api/notifications",
+  notificationRouter,
 );
 
 app.use((_request, response) => {

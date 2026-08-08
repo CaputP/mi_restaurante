@@ -1,9 +1,13 @@
 import SessionHeader from "../../components/sessionHeader/SessionHeader";
+import ClientNav from "../../components/clientNav/ClientNav";
+
+
 
 function Reservations() {
     return (
         <div>
             <SessionHeader title="Mis reservas" />
+            <ClientNav />
 
             <main
                 style={{

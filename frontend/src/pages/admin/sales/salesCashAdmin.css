@@ -1457,3 +1457,640 @@
     }
 }
 
+.charge-promotions {
+    margin: 17px 0;
+    padding: 15px;
+
+    border: 1px solid #d8e2d9;
+    border-radius: 11px;
+    background: #f8fbf8;
+}
+
+.charge-promotions-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.charge-promotions-heading > div {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.charge-promotions-heading svg {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    padding: 9px;
+
+    border-radius: 9px;
+    background: #e7f0e8;
+    color: #355e3b;
+}
+
+.charge-promotions-heading > div > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.charge-promotions-heading strong {
+    color: #2f4834;
+    font-size: 0.75rem;
+}
+
+.charge-promotions-heading span {
+    color: #77817a;
+    font-size: 0.64rem;
+}
+
+.charge-promotions-heading > strong {
+    color: #2e7d32;
+    white-space: nowrap;
+}
+
+.charge-promotions-list {
+    margin-top: 12px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.charge-promotions-list article {
+    padding: 10px 11px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    border: 1px solid #dce5dd;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.charge-promotions-list article > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.charge-promotions-list article strong {
+    color: #355e3b;
+    font-size: 0.7rem;
+}
+
+.charge-promotions-list article span {
+    color: #7b857e;
+    font-size: 0.62rem;
+}
+
+.charge-promotions-list article > strong {
+    white-space: nowrap;
+}
+
+.charge-promotions-loading,
+.charge-promotions-empty,
+.charge-promotions-warning {
+    margin-top: 12px;
+    padding: 11px;
+
+    border-radius: 8px;
+
+    color: #6f7972;
+    font-size: 0.68rem;
+    text-align: center;
+}
+
+.charge-promotions-loading {
+    background: #eef4ef;
+}
+
+.charge-promotions-loading svg {
+    margin-right: 7px;
+}
+
+.charge-promotions-empty {
+    background: #f1f3f1;
+}
+
+.charge-promotions-warning {
+    border: 1px solid #efb1b1;
+    background: #ffebee;
+    color: #9b111e;
+}
+
+@media (max-width: 650px) {
+    .charge-promotions-heading,
+    .charge-promotions-list article {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+.sale-discount-value {
+    color: #2e7d32;
+}
+
+.sale-applied-promotions {
+    margin-top: 18px;
+    padding: 16px;
+
+    border: 1px solid #d9e3da;
+    border-radius: 11px;
+
+    background: #f8fbf8;
+}
+
+.sale-applied-promotions-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.sale-applied-promotions-heading > div {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sale-applied-promotions-heading svg {
+    flex: 0 0 38px;
+
+    width: 38px;
+    height: 38px;
+    padding: 10px;
+
+    border-radius: 9px;
+
+    background: #e7f0e8;
+    color: #355e3b;
+}
+
+.sale-applied-promotions-heading h4 {
+    margin: 0;
+
+    color: #334638;
+}
+
+.sale-applied-promotions-heading p {
+    margin: 3px 0 0;
+
+    color: #77817a;
+    font-size: 0.65rem;
+}
+
+.sale-applied-promotions-heading > strong {
+    color: #2e7d32;
+}
+
+.sale-applied-promotions-list {
+    margin-top: 13px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sale-applied-promotions-list article {
+    padding: 11px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    border: 1px solid #dde5de;
+    border-radius: 8px;
+
+    background: #ffffff;
+}
+
+.sale-applied-promotions-list article > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sale-applied-promotions-list article > div > strong {
+    color: #35483a;
+    font-size: 0.72rem;
+}
+
+.sale-applied-promotions-list article span {
+    color: #55745a;
+    font-size: 0.62rem;
+}
+
+.sale-applied-promotions-list article small {
+    color: #7c857e;
+    font-size: 0.62rem;
+}
+
+.sale-applied-promotions-list article > strong {
+    color: #2e7d32;
+    white-space: nowrap;
+}
+
+.sale-no-promotions {
+    margin: 13px 0 0;
+    padding: 11px;
+
+    border-radius: 8px;
+
+    background: #eef2ef;
+    color: #748078;
+
+    font-size: 0.68rem;
+    text-align: center;
+}
+
+@media (max-width: 650px) {
+    .sale-applied-promotions-heading,
+    .sale-applied-promotions-list article {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+.charge-rewards {
+    margin: 17px 0;
+    padding: 15px;
+
+    border: 1px solid #e3dcc1;
+    border-radius: 11px;
+
+    background: #fffdf6;
+}
+
+.charge-rewards-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.charge-rewards-heading > div {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.charge-rewards-heading svg {
+    flex: 0 0 38px;
+
+    width: 38px;
+    height: 38px;
+    padding: 10px;
+
+    border-radius: 9px;
+
+    background: #fff3cd;
+    color: #806000;
+}
+
+.charge-rewards-heading > div > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.charge-rewards-heading strong {
+    color: #5d4a08;
+    font-size: 0.75rem;
+}
+
+.charge-rewards-heading span {
+    color: #837b62;
+    font-size: 0.63rem;
+}
+
+.charge-rewards-heading > strong {
+    color: #2e7d32;
+    white-space: nowrap;
+}
+
+.charge-rewards-customer {
+    margin-top: 12px;
+    padding: 9px 11px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #6b654f;
+
+    font-size: 0.65rem;
+}
+
+.charge-rewards-customer strong {
+    color: #4a421f;
+}
+
+.charge-rewards-customer span:last-child {
+    margin-left: auto;
+}
+
+.charge-rewards-list {
+    margin-top: 10px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.charge-reward-option {
+    padding: 11px;
+
+    display: grid;
+    grid-template-columns:
+        auto
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+    gap: 10px;
+
+    border: 1px solid #e0dbc7;
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    cursor: pointer;
+}
+
+.charge-reward-option.selected {
+    border-color: #a88b24;
+    background: #fff9df;
+}
+
+.charge-reward-option.disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+.charge-reward-option > input {
+    width: 17px;
+    height: 17px;
+
+    accent-color: #8a6d0a;
+}
+
+.charge-reward-info {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.charge-reward-info > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.charge-reward-info strong {
+    color: #45412f;
+    font-size: 0.7rem;
+}
+
+.charge-reward-info span {
+    color: #7d7660;
+    font-size: 0.61rem;
+}
+
+.charge-reward-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.charge-reward-meta span {
+    padding: 3px 6px;
+
+    border-radius: 20px;
+
+    background: #f4f1e6;
+}
+
+.charge-reward-info small {
+    color: #a23a3a;
+    font-size: 0.61rem;
+}
+
+.charge-reward-value {
+    color: #2e7d32;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+.charge-rewards-selected {
+    margin-top: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    color: #6e6750;
+    font-size: 0.64rem;
+}
+
+.charge-rewards-selected button {
+    padding: 5px 9px;
+
+    border: 1px solid #d8cfaa;
+    border-radius: 7px;
+
+    background: #ffffff;
+    color: #715e18;
+
+    font: inherit;
+    font-size: 0.62rem;
+
+    cursor: pointer;
+}
+
+.charge-rewards-selected button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.charge-rewards-message {
+    margin-top: 12px;
+    padding: 11px;
+
+    border-radius: 8px;
+
+    background: #f6f3e8;
+    color: #766f58;
+
+    font-size: 0.67rem;
+    text-align: center;
+}
+
+.charge-rewards-message svg {
+    margin-right: 6px;
+}
+
+.charge-rewards-message.calculating {
+    background: #fff3cd;
+    color: #735b00;
+}
+
+@media (max-width: 650px) {
+    .charge-rewards-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .charge-reward-option {
+        grid-template-columns:
+            auto
+            minmax(0, 1fr);
+    }
+
+    .charge-reward-value {
+        grid-column: 2;
+    }
+
+    .charge-rewards-customer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .charge-rewards-customer span:last-child {
+        margin-left: 0;
+    }
+}
+
+.sale-redeemed-rewards {
+    margin-top: 18px;
+    padding: 16px;
+
+    border: 1px solid #e3dcc1;
+    border-radius: 11px;
+
+    background: #fffdf6;
+}
+
+.sale-redeemed-rewards-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.sale-redeemed-rewards-heading > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sale-redeemed-rewards-heading svg {
+    width: 38px;
+    height: 38px;
+    padding: 10px;
+
+    border-radius: 9px;
+
+    background: #fff3cd;
+    color: #806000;
+}
+
+.sale-redeemed-rewards-heading h4 {
+    margin: 0;
+    color: #514718;
+}
+
+.sale-redeemed-rewards-heading p {
+    margin: 3px 0 0;
+
+    color: #827a60;
+    font-size: 0.64rem;
+}
+
+.sale-redeemed-rewards-heading > strong {
+    color: #2e7d32;
+}
+
+.sale-redeemed-rewards-list {
+    margin-top: 12px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sale-redeemed-rewards-list article {
+    padding: 11px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    border: 1px solid #e4dfcc;
+    border-radius: 8px;
+
+    background: #ffffff;
+}
+
+.sale-redeemed-rewards-list article > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sale-redeemed-rewards-list article span,
+.sale-redeemed-rewards-list article small {
+    color: #7b755f;
+    font-size: 0.62rem;
+}
+
+.sale-redeemed-rewards-list article > strong {
+    color: #2e7d32;
+    white-space: nowrap;
+}
+
+.sale-reward-reverted {
+    color: #a33b3b !important;
+    font-weight: 700;
+}
+
+.sale-no-rewards {
+    margin: 12px 0 0;
+    padding: 10px;
+
+    border-radius: 8px;
+
+    background: #f5f2e8;
+    color: #7b755f;
+
+    font-size: 0.67rem;
+    text-align: center;
+}

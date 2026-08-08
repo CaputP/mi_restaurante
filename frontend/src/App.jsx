@@ -11,11 +11,13 @@ import LoyaltyCustomersAdmin from "./pages/admin/loyalty/LoyaltyCustomersAdmin";
 
 import PromotionsAdmin from "./pages/admin/promotions/PromotionsAdmin";
 
+import ClientLoyalty from "./pages/client/loyalty/ClientLoyalty";
+
 //==================================
 // IMPORTACION ADMIN
 //==================================
 
-import {BrowserRouter, Routes, Route} from "react-router-dom"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Home from "./pages/home"
 import Login from "./pages/login/login"
 import Register from "./pages/register/register"
@@ -29,7 +31,7 @@ import InventoryAdmin from "./pages/admin/inventory/InventoryAdmin";
 import UsersAdmin from "./pages/admin/users/UsersAdmin";
 import ReservationsAdmin from "./pages/admin/reservations/ReservationsAdmin";
 import OrdersAdmin from "./pages/admin/orders/OrdersAdmin";
-import CommandsAdmin from "./pages/admin/commands/CommandsAdmin";   
+import CommandsAdmin from "./pages/admin/commands/CommandsAdmin";
 import DeliveriesAdmin from "./pages/admin/deliveries/DeliveriesAdmin";
 import SalesCashAdmin from "./pages/admin/sales/SalesCashAdmin";
 import ReportsAdmin from "./pages/admin/reports/ReportsAdmin";
@@ -49,242 +51,256 @@ import VerifyEmail from "./pages/authActions/VerifyEmail";
 // COMPONENTE PRINCIPAL
 //==================================
 
-function App(){
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-            path="/reservations"
-            element={
-                <ProtectedRoute>
-                    <Reservations />
-                </ProtectedRoute>
-            }
-        />
+function App() {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route
+                    path="/reservations"
+                    element={
+                        <ProtectedRoute>
+                            <Reservations />
+                        </ProtectedRoute>
+                    }
+                />
 
-        <Route
-            path="/admin"
-            element={
-                <ProtectedRoute
-                    allowedRoles={[
-                        "ADMINISTRADOR_GENERAL",
-                        "ADMINISTRADOR_SUCURSAL"
-                    ]}
+                <Route
+                    path="/fidelizacion"
+                    element={
+                        <ProtectedRoute
+                            allowedRoles={[
+                                "CLIENTE",
+                                "USUARIO"
+                            ]}
+                        >
+                            <ClientLoyalty />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/admin"
+                    element={
+                        <ProtectedRoute
+                            allowedRoles={[
+                                "ADMINISTRADOR_GENERAL",
+                                "ADMINISTRADOR_SUCURSAL"
+                            ]}
+                        >
+                            <AdminLayout />
+                        </ProtectedRoute>
+                    }
                 >
-                    <AdminLayout />
-                </ProtectedRoute>
-            }
-        >
-            <Route index element={<Admin />} />
+                    <Route index element={<Admin />} />
 
-            <Route
-                path="reservas"
-                element={<ReservationsAdmin />}
-            />
+                    <Route
+                        path="reservas"
+                        element={<ReservationsAdmin />}
+                    />
 
-            <Route
-                path="pedidos"
-                element={<OrdersAdmin />}
-            />
+                    <Route
+                        path="pedidos"
+                        element={<OrdersAdmin />}
+                    />
 
-            <Route
-                path="comandas"
-                element={<CommandsAdmin />}
-            />
+                    <Route
+                        path="comandas"
+                        element={<CommandsAdmin />}
+                    />
 
-            <Route
-                path="entregas"
-                element={<DeliveriesAdmin />}
-            />
+                    <Route
+                        path="entregas"
+                        element={<DeliveriesAdmin />}
+                    />
 
-            <Route
-                path="ventas"
-                element={<SalesCashAdmin />}
-            />
+                    <Route
+                        path="ventas"
+                        element={<SalesCashAdmin />}
+                    />
 
-            <Route
-                path="ventas/ticket/:saleId"
-                element={<SaleTicketPage />}
-            />
+                    <Route
+                        path="ventas/ticket/:saleId"
+                        element={<SaleTicketPage />}
+                    />
 
-            <Route
-                path="ventas/anular/:saleId"
-                element={<VoidSalePage />}
-            />
+                    <Route
+                        path="ventas/anular/:saleId"
+                        element={<VoidSalePage />}
+                    />
 
-            <Route
-                path="productos"
-                element={<CatalogAdmin />}
-            />
+                    <Route
+                        path="productos"
+                        element={<CatalogAdmin />}
+                    />
 
-            <Route
-                path="inventario"
-                element={<InventoryAdmin />}
-            />
+                    <Route
+                        path="inventario"
+                        element={<InventoryAdmin />}
+                    />
 
-            <Route
-                path="usuarios"
-                element={<UsersAdmin />}
-            />
+                    <Route
+                        path="usuarios"
+                        element={<UsersAdmin />}
+                    />
 
-            <Route
-                path="sucursales/:branchId/disponibilidad"
-                element={
-                    <BranchAvailabilityAdmin />
-                }
-            />
+                    <Route
+                        path="sucursales/:branchId/disponibilidad"
+                        element={
+                            <BranchAvailabilityAdmin />
+                        }
+                    />
 
-            <Route
-                path="sucursales"
-                element={
-                    <ProtectedRoute
-                        allowedRoles={[
-                            "ADMINISTRADOR_GENERAL"
-                        ]}
-                    >
-                        <BranchesAdmin />
-                    </ProtectedRoute>
-                }
-            />
+                    <Route
+                        path="sucursales"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "ADMINISTRADOR_GENERAL"
+                                ]}
+                            >
+                                <BranchesAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
 
-            <Route
-                path="reportes"
-                element={<ReportsAdmin />}
-            />
+                    <Route
+                        path="reportes"
+                        element={<ReportsAdmin />}
+                    />
 
-            <Route
-                path="fidelizacion"
-                element={
-                    <LoyaltyAdmin />
-                }
-            />
+                    <Route
+                        path="fidelizacion"
+                        element={
+                            <LoyaltyAdmin />
+                        }
+                    />
 
-            <Route
-                path="fidelizacion/clientes"
-                element={
-                    <LoyaltyCustomersAdmin />
-                }
-            />
+                    <Route
+                        path="fidelizacion/clientes"
+                        element={
+                            <LoyaltyCustomersAdmin />
+                        }
+                    />
 
-            <Route
-                path="promociones"
-                element={
-                    <PromotionsAdmin />
-                }
-            />
+                    <Route
+                        path="promociones"
+                        element={
+                            <PromotionsAdmin />
+                        }
+                    />
 
-            <Route
-                path="configuracion"
-                element={<SettingsAdmin />}
-            />
+                    <Route
+                        path="configuracion"
+                        element={<SettingsAdmin />}
+                    />
 
-        </Route>
+                </Route>
 
-        <Route
-            path="/operacion"
-            element={
-                <ProtectedRoute
-                    allowedRoles={[
-                        "ADMINISTRADOR_GENERAL",
-                        "ADMINISTRADOR_SUCURSAL",
-                        "VENDEDOR",
-                        "MOZO",
-                        "COCINA"
-                    ]}
+                <Route
+                    path="/operacion"
+                    element={
+                        <ProtectedRoute
+                            allowedRoles={[
+                                "ADMINISTRADOR_GENERAL",
+                                "ADMINISTRADOR_SUCURSAL",
+                                "VENDEDOR",
+                                "MOZO",
+                                "COCINA"
+                            ]}
+                        >
+                            <OperationalLayout />
+                        </ProtectedRoute>
+                    }
                 >
-                    <OperationalLayout />
-                </ProtectedRoute>
-            }
-        >
-            <Route
-                index
-                element={
-                    <OperationHome />
-                }
-            />
+                    <Route
+                        index
+                        element={
+                            <OperationHome />
+                        }
+                    />
 
-            <Route
-                path="pedidos"
-                element={
-                    <ProtectedRoute
-                        allowedRoles={[
-                            "ADMINISTRADOR_GENERAL",
-                            "ADMINISTRADOR_SUCURSAL",
-                            "VENDEDOR"
-                        ]}
-                    >
-                        <OrdersAdmin />
-                    </ProtectedRoute>
-                }
-            />
+                    <Route
+                        path="pedidos"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "ADMINISTRADOR_GENERAL",
+                                    "ADMINISTRADOR_SUCURSAL",
+                                    "VENDEDOR"
+                                ]}
+                            >
+                                <OrdersAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
 
-            <Route
-                path="cocina"
-                element={
-                    <ProtectedRoute
-                        allowedRoles={[
-                            "ADMINISTRADOR_GENERAL",
-                            "ADMINISTRADOR_SUCURSAL",
-                            "COCINA"
-                        ]}
-                    >
-                        <CommandsAdmin />
-                    </ProtectedRoute>
-                }
-            />
+                    <Route
+                        path="cocina"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "ADMINISTRADOR_GENERAL",
+                                    "ADMINISTRADOR_SUCURSAL",
+                                    "COCINA"
+                                ]}
+                            >
+                                <CommandsAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
 
-            <Route
-                path="entregas"
-                element={
-                    <ProtectedRoute
-                        allowedRoles={[
-                            "ADMINISTRADOR_GENERAL",
-                            "ADMINISTRADOR_SUCURSAL",
-                            "MOZO"
-                        ]}
-                    >
-                        <DeliveriesAdmin />
-                    </ProtectedRoute>
-                }
-            />
+                    <Route
+                        path="entregas"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "ADMINISTRADOR_GENERAL",
+                                    "ADMINISTRADOR_SUCURSAL",
+                                    "MOZO"
+                                ]}
+                            >
+                                <DeliveriesAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
 
-            <Route
-                path="ventas"
-                element={
-                    <ProtectedRoute
-                        allowedRoles={[
-                            "ADMINISTRADOR_GENERAL",
-                            "ADMINISTRADOR_SUCURSAL",
-                            "VENDEDOR"
-                        ]}
-                    >
-                        <SalesCashAdmin />
-                    </ProtectedRoute>
-                }
-            />
-        </Route>
+                    <Route
+                        path="ventas"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "ADMINISTRADOR_GENERAL",
+                                    "ADMINISTRADOR_SUCURSAL",
+                                    "VENDEDOR"
+                                ]}
+                            >
+                                <SalesCashAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
+                </Route>
 
-        <Route
-            path="/recuperar-password"
-            element={<ForgotPassword />}
-        />
+                <Route
+                    path="/recuperar-password"
+                    element={<ForgotPassword />}
+                />
 
-        <Route
-            path="/restablecer-password"
-            element={<ResetPassword />}
-        />
+                <Route
+                    path="/restablecer-password"
+                    element={<ResetPassword />}
+                />
 
-        <Route
-            path="/verificar-correo"
-            element={<VerifyEmail />}
-        />
+                <Route
+                    path="/verificar-correo"
+                    element={<VerifyEmail />}
+                />
 
-      </Routes>
-    </BrowserRouter>
-  );
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
 export default App;

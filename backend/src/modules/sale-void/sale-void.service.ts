@@ -18,6 +18,17 @@ import type {
   VoidSaleInput,
 } from "./sale-void.schema.js";
 
+import {
+  revertSalePromotions,
+} from "../promotions/promotions-calculation.service.js";
+
+import {
+  revertRedeemedRewardsForSale,
+} from "../loyalty/loyalty-redemption.service.js";
+
+import {
+  evaluateStockNotification,
+} from "../notifications/stock-notification.service.js";
 
 type VoidSaleAuth = {
   usuarioId: string;
@@ -462,6 +473,25 @@ export async function voidSale(
         },
       );
 
+      await revertRedeemedRewardsForSale(
+        transaction,
+        {
+          saleId:
+            sale.id,
+
+          userId:
+            auth.usuarioId,
+
+          reason:
+            input.motivo,
+        },
+      );
+
+      await revertSalePromotions(
+        transaction,
+        sale.id,
+      );
+
       let cashAmount =
         new Prisma.Decimal(0);
 
@@ -482,7 +512,7 @@ export async function voidSale(
         of sale.pagos
       ) {
         switch (
-          payment.metodoPago
+        payment.metodoPago
         ) {
           case "EFECTIVO":
             cashAmount =
@@ -603,6 +633,18 @@ export async function voidSale(
           sale.createdAt,
         );
 
+      const operationalDate =
+        getOperationalDate();
+
+      const saleIsOperationalToday =
+        saleOperationalDate
+          .getTime() ===
+        operationalDate
+          .getTime();
+
+      const stockNotificationsToEvaluate =
+        new Set<string>();
+
       for (
         const detail
         of sale.detalles
@@ -707,6 +749,10 @@ export async function voidSale(
               },
             });
 
+          stockNotificationsToEvaluate.add(
+            detail.productoSucursalId,
+          );
+
           continue;
         }
 
@@ -797,6 +843,28 @@ export async function voidSale(
                 sale.id,
             },
           });
+
+        if (
+          saleIsOperationalToday
+        ) {
+          stockNotificationsToEvaluate.add(
+            detail.productoSucursalId,
+          );
+        }
+      }
+
+      /*
+ * Todas las cantidades de la venta ya fueron
+ * restituidas. Evaluamos el resultado final.
+ */
+      for (
+        const productoSucursalId
+        of stockNotificationsToEvaluate
+      ) {
+        await evaluateStockNotification(
+          transaction,
+          productoSucursalId,
+        );
       }
 
       await transaction.pedido.update({

@@ -110,7 +110,7 @@ const paymentSchema = z
     (payment, context) => {
       if (
         payment.metodoPago !==
-          "EFECTIVO" &&
+        "EFECTIVO" &&
         !payment.numeroOperacion
       ) {
         context.addIssue({
@@ -128,11 +128,11 @@ const paymentSchema = z
 
       if (
         payment.metodoPago ===
-          "EFECTIVO" &&
+        "EFECTIVO" &&
         payment.montoRecibido !==
-          null &&
+        null &&
         payment.montoRecibido <
-          payment.monto
+        payment.monto
       ) {
         context.addIssue({
           code:
@@ -149,9 +149,9 @@ const paymentSchema = z
 
       if (
         payment.metodoPago !==
-          "EFECTIVO" &&
+        "EFECTIVO" &&
         payment.montoRecibido !==
-          null
+        null
       ) {
         context.addIssue({
           code:
@@ -204,6 +204,24 @@ export const createSaleSchema = z
 
     observaciones:
       optionalText(2000),
+
+    premioIds: z
+      .array(
+        uuidSchema,
+      )
+      .max(
+        10,
+        "No pueden canjearse más de 10 premios en una venta.",
+      )
+      .optional()
+      .default([])
+      .transform(
+        (values) => [
+          ...new Set(
+            values,
+          ),
+        ],
+      ),
 
     pagos: z
       .array(
@@ -316,7 +334,7 @@ export const listSalesQuerySchema =
         !data.fechaDesde ||
         !data.fechaHasta ||
         data.fechaDesde <=
-          data.fechaHasta,
+        data.fechaHasta,
       {
         message:
           "La fecha inicial no puede ser posterior a la fecha final.",

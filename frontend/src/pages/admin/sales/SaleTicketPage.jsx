@@ -166,7 +166,7 @@ function SaleTicketPage() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudo cargar el ticket."
+                    "No se pudo cargar el ticket."
                 );
             } finally {
                 if (
@@ -270,14 +270,14 @@ function SaleTicketPage() {
 
                     {ticket.negocio
                         .razonSocial && (
-                        <p>
-                            {
-                                ticket
-                                    .negocio
-                                    .razonSocial
-                            }
-                        </p>
-                    )}
+                            <p>
+                                {
+                                    ticket
+                                        .negocio
+                                        .razonSocial
+                                }
+                            </p>
+                        )}
 
                     {ticket.negocio.ruc && (
                         <p>
@@ -300,15 +300,15 @@ function SaleTicketPage() {
 
                     {ticket.negocio
                         .telefono && (
-                        <p>
-                            Teléfono:{" "}
-                            {
-                                ticket
-                                    .negocio
-                                    .telefono
-                            }
-                        </p>
-                    )}
+                            <p>
+                                Teléfono:{" "}
+                                {
+                                    ticket
+                                        .negocio
+                                        .telefono
+                                }
+                            </p>
+                        )}
                 </header>
 
                 <div className="sale-ticket-separator">
@@ -498,6 +498,128 @@ function SaleTicketPage() {
                     --------------------------------
                 </div>
 
+                {ticket.promociones?.length > 0 && (
+                    <>
+                        <section className="sale-ticket-promotions">
+                            <h3>
+                                PROMOCIONES
+                            </h3>
+
+                            {ticket.promociones.map(
+                                (
+                                    promotion
+                                ) => (
+                                    <article
+                                        key={
+                                            promotion.id
+                                        }
+                                    >
+                                        <div>
+                                            <strong>
+                                                {
+                                                    promotion.nombre
+                                                }
+                                            </strong>
+
+                                            <small>
+                                                {
+                                                    promotion.descripcion
+                                                }
+                                            </small>
+                                        </div>
+
+                                        <span>
+                                            -
+                                            {formatMoney(
+                                                promotion
+                                                    .montoDescuento
+                                            )}
+                                        </span>
+                                    </article>
+                                )
+                            )}
+                        </section>
+
+                        <div className="sale-ticket-separator">
+                            --------------------------------
+                        </div>
+                    </>
+                )}
+
+                {ticket.premiosCanjeados
+                    ?.length > 0 && (
+                        <>
+                            <section className="sale-ticket-rewards">
+                                <h3>
+                                    PREMIOS CANJEADOS
+                                </h3>
+
+                                {ticket
+                                    .premiosCanjeados
+                                    .map(
+                                        (
+                                            reward
+                                        ) => (
+                                            <article
+                                                key={
+                                                    reward.id
+                                                }
+                                            >
+                                                <div>
+                                                    <strong>
+                                                        {
+                                                            reward.descripcion
+                                                        }
+                                                    </strong>
+
+                                                    <small>
+                                                        {
+                                                            reward.programa
+                                                                .nombre
+                                                        }
+                                                    </small>
+
+                                                    {reward
+                                                        .productoPremioNombre && (
+                                                            <small>
+                                                                Producto:{" "}
+                                                                {
+                                                                    reward
+                                                                        .productoPremioNombre
+                                                                }
+                                                            </small>
+                                                        )}
+
+                                                    {reward.estado ===
+                                                        "REVERTIDO" && (
+                                                            <small className="reward-reverted">
+                                                                Canje revertido
+                                                            </small>
+                                                        )}
+                                                </div>
+
+                                                <span>
+                                                    {numberValue(
+                                                        reward
+                                                            .montoAplicado
+                                                    ) > 0
+                                                        ? `-${formatMoney(
+                                                            reward
+                                                                .montoAplicado
+                                                        )}`
+                                                        : "BENEFICIO"}
+                                                </span>
+                                            </article>
+                                        )
+                                    )}
+                            </section>
+
+                            <div className="sale-ticket-separator">
+                                --------------------------------
+                            </div>
+                        </>
+                    )}
+
                 <dl className="sale-ticket-totals">
                     <div>
                         <dt>
@@ -514,42 +636,98 @@ function SaleTicketPage() {
 
                     {numberValue(
                         ticket.resumen
+                            .descuentoPromocional
+                    ) > 0 && (
+                            <div>
+                                <dt>
+                                    Promociones
+                                </dt>
+
+                                <dd>
+                                    -{" "}
+                                    {formatMoney(
+                                        ticket.resumen
+                                            .descuentoPromocional
+                                    )}
+                                </dd>
+                            </div>
+                        )}
+
+                    {numberValue(
+                        ticket.resumen
+                            .descuentoPremios
+                    ) > 0 && (
+                            <div>
+                                <dt>
+                                    Premios
+                                </dt>
+
+                                <dd>
+                                    -{" "}
+                                    {formatMoney(
+                                        ticket.resumen
+                                            .descuentoPremios
+                                    )}
+                                </dd>
+                            </div>
+                        )}
+
+                    {numberValue(
+                        ticket.resumen
+                            .descuentoManual
+                    ) > 0 && (
+                            <div>
+                                <dt>
+                                    Descuento manual
+                                </dt>
+
+                                <dd>
+                                    -{" "}
+                                    {formatMoney(
+                                        ticket.resumen
+                                            .descuentoManual
+                                    )}
+                                </dd>
+                            </div>
+                        )}
+
+                    {numberValue(
+                        ticket.resumen
                             .descuento
                     ) > 0 && (
-                        <div>
-                            <dt>
-                                Descuento
-                            </dt>
+                            <div className="discount-total">
+                                <dt>
+                                    Descuento total
+                                </dt>
 
-                            <dd>
-                                -{" "}
-                                {formatMoney(
-                                    ticket
-                                        .resumen
-                                        .descuento
-                                )}
-                            </dd>
-                        </div>
-                    )}
+                                <dd>
+                                    -{" "}
+                                    {formatMoney(
+                                        ticket.resumen
+                                            .descuento
+                                    )}
+                                </dd>
+                            </div>
+                        )}
 
                     {numberValue(
                         ticket.resumen
                             .propina
                     ) > 0 && (
-                        <div>
-                            <dt>
-                                Propina
-                            </dt>
+                            <div>
+                                <dt>
+                                    Propina
+                                </dt>
 
-                            <dd>
-                                {formatMoney(
-                                    ticket
-                                        .resumen
-                                        .propina
-                                )}
-                            </dd>
-                        </div>
-                    )}
+                                <dd>
+                                    {formatMoney(
+                                        ticket
+                                            .resumen
+                                            .propina
+                                    )}
+                                </dd>
+                            </div>
+                        )}
 
                     <div className="total">
                         <dt>
@@ -568,20 +746,20 @@ function SaleTicketPage() {
                         ticket.resumen
                             .adelantoAplicado
                     ) > 0 && (
-                        <div>
-                            <dt>
-                                Adelanto aplicado
-                            </dt>
+                            <div>
+                                <dt>
+                                    Adelanto aplicado
+                                </dt>
 
-                            <dd>
-                                {formatMoney(
-                                    ticket
-                                        .resumen
-                                        .adelantoAplicado
-                                )}
-                            </dd>
-                        </div>
-                    )}
+                                <dd>
+                                    {formatMoney(
+                                        ticket
+                                            .resumen
+                                            .adelantoAplicado
+                                    )}
+                                </dd>
+                            </div>
+                        )}
 
                     <div>
                         <dt>
@@ -629,23 +807,23 @@ function SaleTicketPage() {
 
                                 {payment
                                     .numeroOperacion && (
-                                    <small>
-                                        Operación:{" "}
-                                        {
-                                            payment.numeroOperacion
-                                        }
-                                    </small>
-                                )}
+                                        <small>
+                                            Operación:{" "}
+                                            {
+                                                payment.numeroOperacion
+                                            }
+                                        </small>
+                                    )}
 
                                 {payment
                                     .montoRecibido && (
-                                    <small>
-                                        Recibido:{" "}
-                                        {formatMoney(
-                                            payment.montoRecibido
-                                        )}
-                                    </small>
-                                )}
+                                        <small>
+                                            Recibido:{" "}
+                                            {formatMoney(
+                                                payment.montoRecibido
+                                            )}
+                                        </small>
+                                    )}
 
                                 {payment.vuelto && (
                                     <small>
@@ -658,10 +836,10 @@ function SaleTicketPage() {
 
                                 {payment.estado ===
                                     "ANULADO" && (
-                                    <small className="payment-voided">
-                                        Pago anulado
-                                    </small>
-                                )}
+                                        <small className="payment-voided">
+                                            Pago anulado
+                                        </small>
+                                    )}
                             </article>
                         )
                     )}

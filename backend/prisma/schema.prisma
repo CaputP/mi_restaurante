@@ -205,6 +205,11 @@ enum EstadoPremio {
   ANULADO
 }
 
+enum EstadoCanjePremio {
+  APLICADO
+  REVERTIDO
+}
+
 enum TipoPromocion {
   DESCUENTO_FIJO
   DESCUENTO_PORCENTAJE
@@ -500,6 +505,10 @@ model Usuario {
   notificaciones              Notificacion[]         @relation("NotificacionesUsuario")
   auditorias                  Auditoria[]            @relation("AuditoriasUsuario")
   respaldosSolicitados        Respaldo[]             @relation("RespaldosSolicitadosPor")
+
+  canjesPremioCliente    CanjePremioCliente[] @relation("CanjesPremioCliente")
+  canjesPremioRealizados CanjePremioCliente[] @relation("CanjesPremioRealizadosPor")
+  canjesPremioRevertidos CanjePremioCliente[] @relation("CanjesPremioRevertidosPor")
 
   tokensVerificacionCorreo TokenVerificacionCorreo[]
   tokensRecuperacion       TokenRecuperacionPassword[]
@@ -1074,6 +1083,7 @@ model Venta {
   detalles                DetalleVenta[]
   pagos                   PagoVenta[]
   premiosCanjeados        PremioCliente[]
+  canjesPremios           CanjePremioCliente[]
   promocionesAplicadas    VentaPromocion[]
   movimientosFidelizacion MovimientoFidelizacion[]
 
@@ -1299,6 +1309,9 @@ model PremioCliente {
   canjeadoPorId    String? @map("canjeado_por_id") @db.Uuid
   movimientoId     String? @map("movimiento_id") @db.Uuid
 
+  tipoRecompensaSnapshot TipoRecompensa? @map("tipo_recompensa_snapshot")
+  montoAplicado          Decimal?        @map("monto_aplicado") @db.Decimal(12, 2)
+
   descripcion      String   @db.VarChar(250)
   cantidadProducto Decimal? @map("cantidad_producto") @db.Decimal(12, 3)
   valorReferencia  Decimal? @map("valor_referencia") @db.Decimal(12, 2)
@@ -1319,6 +1332,8 @@ model PremioCliente {
   ventaCanje     Venta?               @relation(fields: [ventaCanjeId], references: [id], onDelete: Restrict)
   canjeadoPor    Usuario?             @relation("PremiosCanjeadosPor", fields: [canjeadoPorId], references: [id], onDelete: Restrict)
 
+  canjes CanjePremioCliente[]
+
   movimiento MovimientoFidelizacion? @relation(fields: [movimientoId], references: [id], onDelete: Restrict)
 
   @@index([clienteId, estado, fechaVencimiento])
@@ -1327,6 +1342,46 @@ model PremioCliente {
   @@index([productoPremioId])
   @@index([movimientoId])
   @@map("premio_cliente")
+}
+
+model CanjePremioCliente {
+  id            String @id @default(uuid()) @db.Uuid
+  premioId      String @map("premio_id") @db.Uuid
+  ventaId       String @map("venta_id") @db.Uuid
+  clienteId     String @map("cliente_id") @db.Uuid
+  canjeadoPorId String @map("canjeado_por_id") @db.Uuid
+
+  tipoRecompensa TipoRecompensa @map("tipo_recompensa")
+  descripcion    String         @db.VarChar(250)
+  montoAplicado  Decimal        @map("monto_aplicado") @db.Decimal(12, 2)
+
+  productoPremioNombre String? @map("producto_premio_nombre") @db.VarChar(160)
+
+  estado EstadoCanjePremio @default(APLICADO)
+
+  fechaCanje DateTime @default(now()) @map("fecha_canje") @db.Timestamptz(3)
+
+  revertidoAt     DateTime? @map("revertido_at") @db.Timestamptz(3)
+  revertidoPorId  String?   @map("revertido_por_id") @db.Uuid
+  motivoReversion String?   @map("motivo_reversion") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  premio PremioCliente @relation(fields: [premioId], references: [id], onDelete: Restrict)
+  venta  Venta         @relation(fields: [ventaId], references: [id], onDelete: Restrict)
+
+  cliente      Usuario  @relation("CanjesPremioCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  canjeadoPor  Usuario  @relation("CanjesPremioRealizadosPor", fields: [canjeadoPorId], references: [id], onDelete: Restrict)
+  revertidoPor Usuario? @relation("CanjesPremioRevertidosPor", fields: [revertidoPorId], references: [id], onDelete: Restrict)
+
+  @@unique([premioId, ventaId])
+  @@index([ventaId, estado])
+  @@index([premioId, fechaCanje])
+  @@index([clienteId, fechaCanje])
+  @@index([canjeadoPorId])
+  @@index([revertidoPorId])
+  @@map("canje_premio_cliente")
 }
 
 // ======================================================

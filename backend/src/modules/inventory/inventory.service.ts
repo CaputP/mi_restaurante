@@ -1,6 +1,10 @@
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../shared/errors/app-error.js";
 
+import {
+  evaluateStockNotification,
+} from "../notifications/stock-notification.service.js";
+
 import type {
   CreateDailyStockInput,
   CreateInventoryMovementInput,
@@ -278,34 +282,34 @@ export async function listInventory(
 
           tipoStock:
             query.tipoStock ===
-            "TODOS"
+              "TODOS"
               ? {
-                  in: [
-                    "DIARIO",
-                    "PERMANENTE",
-                  ],
-                }
+                in: [
+                  "DIARIO",
+                  "PERMANENTE",
+                ],
+              }
               : query.tipoStock,
 
           ...(query.search
             ? {
-                OR: [
-                  {
-                    codigo: {
-                      contains:
-                        query.search,
-                      mode: "insensitive",
-                    },
+              OR: [
+                {
+                  codigo: {
+                    contains:
+                      query.search,
+                    mode: "insensitive",
                   },
-                  {
-                    nombre: {
-                      contains:
-                        query.search,
-                      mode: "insensitive",
-                    },
+                },
+                {
+                  nombre: {
+                    contains:
+                      query.search,
+                    mode: "insensitive",
                   },
-                ],
-              }
+                },
+              ],
+            }
             : {}),
         },
       },
@@ -386,7 +390,7 @@ export async function listInventory(
 
       const stock =
         record.producto.tipoStock ===
-        "PERMANENTE"
+          "PERMANENTE"
           ? record.stockPermanente
           : dailyStock;
 
@@ -411,7 +415,7 @@ export async function listInventory(
       const alert =
         minimumStock > 0 &&
         availableStock <=
-          minimumStock;
+        minimumStock;
 
       return {
         productoSucursalId:
@@ -438,9 +442,9 @@ export async function listInventory(
         cantidadInicial:
           dailyStock
             ? Number(
-                dailyStock
-                  .cantidadInicial,
-              )
+              dailyStock
+                .cantidadInicial,
+            )
             : null,
 
         stockDiarioInicializado:
@@ -465,8 +469,8 @@ export async function listInventory(
   const filteredInventory =
     query.soloAlertas
       ? inventory.filter(
-          (item) => item.alerta,
-        )
+        (item) => item.alerta,
+      )
       : inventory;
 
   filteredInventory.sort(
@@ -610,6 +614,17 @@ export async function createDailyStock(
               },
             });
         }
+
+        /*
+         * Evaluamos el stock después de que StockDiario
+         * y MovimientoInventario ya fueron registrados.
+         *
+         * Todo queda dentro de la misma transacción.
+         */
+        await evaluateStockNotification(
+          transaction,
+          productBranch.id,
+        );
 
         return stock;
       },
@@ -851,9 +866,9 @@ export async function createInventoryMovement(
 
                 costoTotal:
                   input.costoUnitario !==
-                  undefined
+                    undefined
                     ? input.costoUnitario *
-                      input.cantidad
+                    input.cantidad
                     : null,
 
                 motivo:
@@ -863,6 +878,22 @@ export async function createInventoryMovement(
                   "MOVIMIENTO_MANUAL",
               },
             });
+
+        /*
+         * El stock ya fue actualizado y el movimiento
+         * de inventario ya quedó registrado.
+         *
+         * Ahora evaluamos si:
+         *
+         * - entró en stock bajo;
+         * - continúa bajo;
+         * - se agotó;
+         * - o se recuperó por encima del mínimo.
+         */
+        await evaluateStockNotification(
+          transaction,
+          productBranch.id,
+        );
 
         return {
           movement,
@@ -902,18 +933,18 @@ export async function createInventoryMovement(
       result.movement
         .costoUnitario !== null
         ? Number(
-            result.movement
-              .costoUnitario,
-          )
+          result.movement
+            .costoUnitario,
+        )
         : null,
 
     costoTotal:
       result.movement
         .costoTotal !== null
         ? Number(
-            result.movement
-              .costoTotal,
-          )
+          result.movement
+            .costoTotal,
+        )
         : null,
 
     motivo:
@@ -985,55 +1016,55 @@ export async function listInventoryMovements(
 
           ...(query.productoSucursalId
             ? {
-                productoSucursalId:
-                  query.productoSucursalId,
-              }
+              productoSucursalId:
+                query.productoSucursalId,
+            }
             : {}),
 
           ...(query.tipoMovimiento !==
-          "TODOS"
+            "TODOS"
             ? {
-                tipoMovimiento:
-                  query.tipoMovimiento,
-              }
+              tipoMovimiento:
+                query.tipoMovimiento,
+            }
             : {}),
 
           ...(query.search
             ? {
-                OR: [
-                  {
-                    motivo: {
-                      contains:
-                        query.search,
-                      mode: "insensitive",
-                    },
+              OR: [
+                {
+                  motivo: {
+                    contains:
+                      query.search,
+                    mode: "insensitive",
                   },
-                  {
-                    productoSucursal: {
-                      producto: {
-                        codigo: {
-                          contains:
-                            query.search,
-                          mode:
-                            "insensitive",
-                        },
+                },
+                {
+                  productoSucursal: {
+                    producto: {
+                      codigo: {
+                        contains:
+                          query.search,
+                        mode:
+                          "insensitive",
                       },
                     },
                   },
-                  {
-                    productoSucursal: {
-                      producto: {
-                        nombre: {
-                          contains:
-                            query.search,
-                          mode:
-                            "insensitive",
-                        },
+                },
+                {
+                  productoSucursal: {
+                    producto: {
+                      nombre: {
+                        contains:
+                          query.search,
+                        mode:
+                          "insensitive",
                       },
                     },
                   },
-                ],
-              }
+                },
+              ],
+            }
             : {}),
         },
 
@@ -1119,19 +1150,19 @@ export async function listInventoryMovements(
 
       costoUnitario:
         movement.costoUnitario !==
-        null
+          null
           ? Number(
-              movement
-                .costoUnitario,
-            )
+            movement
+              .costoUnitario,
+          )
           : null,
 
       costoTotal:
         movement.costoTotal !==
-        null
+          null
           ? Number(
-              movement.costoTotal,
-            )
+            movement.costoTotal,
+          )
           : null,
 
       motivo:

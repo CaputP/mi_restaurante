@@ -10,42 +10,42 @@ type LoyaltyProgramForProcessing = {
   id: string;
 
   tipo:
-    | "VISITAS"
-    | "MONTO_CONSUMIDO"
-    | "AMBOS";
+  | "VISITAS"
+  | "MONTO_CONSUMIDO"
+  | "AMBOS";
 
   visitasRequeridas:
-    number | null;
+  number | null;
 
   montoRequerido:
-    Prisma.Decimal | null;
+  Prisma.Decimal | null;
 
   tipoRecompensa:
-    | "PRODUCTO_GRATIS"
-    | "DESCUENTO_FIJO"
-    | "DESCUENTO_PORCENTAJE"
-    | "BENEFICIO";
+  | "PRODUCTO_GRATIS"
+  | "DESCUENTO_FIJO"
+  | "DESCUENTO_PORCENTAJE"
+  | "BENEFICIO";
 
   productoPremioId:
-    string | null;
+  string | null;
 
   cantidadPremio:
-    Prisma.Decimal | null;
+  Prisma.Decimal | null;
 
   montoDescuento:
-    Prisma.Decimal | null;
+  Prisma.Decimal | null;
 
   porcentajeDescuento:
-    Prisma.Decimal | null;
+  Prisma.Decimal | null;
 
   descripcionBeneficio:
-    string | null;
+  string | null;
 
   vigenciaDiasPremio:
-    number;
+  number;
 
   automatico:
-    boolean;
+  boolean;
 
   productoPremio: {
     nombre: string;
@@ -122,7 +122,7 @@ function addDays(
 
   result.setUTCDate(
     result.getUTCDate() +
-      days,
+    days,
   );
 
   return result;
@@ -139,25 +139,25 @@ function calculateEligibleCycles(
   const visitCycles =
     program.visitasRequeridas
       ? Math.floor(
-          visits /
-            program
-              .visitasRequeridas,
-        )
+        visits /
+        program
+          .visitasRequeridas,
+      )
       : 0;
 
   const amountCycles =
     program.montoRequerido
       ? amount
-          .dividedBy(
-            program
-              .montoRequerido,
-          )
-          .floor()
-          .toNumber()
+        .dividedBy(
+          program
+            .montoRequerido,
+        )
+        .floor()
+        .toNumber()
       : 0;
 
   switch (
-    program.tipo
+  program.tipo
   ) {
     case "VISITAS":
       return visitCycles;
@@ -181,7 +181,7 @@ function buildRewardSnapshot(
     LoyaltyProgramForProcessing,
 ) {
   switch (
-    program.tipoRecompensa
+  program.tipoRecompensa
   ) {
     case "PRODUCTO_GRATIS": {
       const quantity =
@@ -557,11 +557,11 @@ export async function applySaleLoyalty(
     const generatedCycles =
       program.automatico
         ? Math.max(
-            0,
-            eligibleCycles -
-              progress
-                .ciclosCompletados,
-          )
+          0,
+          eligibleCycles -
+          progress
+            .ciclosCompletados,
+        )
         : 0;
 
     if (
@@ -652,6 +652,9 @@ export async function applySaleLoyalty(
 
             movimientoId:
               movement.id,
+
+            tipoRecompensaSnapshot:
+              program.tipoRecompensa,
 
             descripcion:
               reward.descripcion,
@@ -851,8 +854,8 @@ export async function revertSaleLoyalty(
         0,
         movement.progreso
           .visitasAcumuladas -
-          movement
-            .visitasAplicadas,
+        movement
+          .visitasAplicadas,
       );
 
     let newAmount =
@@ -877,8 +880,8 @@ export async function revertSaleLoyalty(
         0,
         movement.progreso
           .ciclosCompletados -
-          movement
-            .ciclosGenerados,
+        movement
+          .ciclosGenerados,
       );
 
     await transaction

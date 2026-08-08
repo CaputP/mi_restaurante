@@ -96,9 +96,9 @@ async function assertSaleAccess(
 
   if (
     auth.rol ===
-      "VENDEDOR" &&
+    "VENDEDOR" &&
     sale.vendedorId ===
-      auth.usuarioId
+    auth.usuarioId
   ) {
     return;
   }
@@ -361,6 +361,78 @@ export async function getSaleTicket(
               true,
           },
         },
+
+        promocionesAplicadas: {
+          orderBy: {
+            createdAt:
+              "asc",
+          },
+
+          select: {
+            id:
+              true,
+
+            descripcion:
+              true,
+
+            montoDescuento:
+              true,
+
+            promocion: {
+              select: {
+                id:
+                  true,
+
+                nombre:
+                  true,
+
+                tipo:
+                  true,
+              },
+            },
+          },
+        },
+
+        canjesPremios: {
+          orderBy: {
+            fechaCanje:
+              "asc",
+          },
+
+          select: {
+            id: true,
+
+            descripcion:
+              true,
+
+            tipoRecompensa:
+              true,
+
+            montoAplicado:
+              true,
+
+            productoPremioNombre:
+              true,
+
+            estado:
+              true,
+
+            fechaCanje:
+              true,
+
+            premio: {
+              select: {
+                programa: {
+                  select: {
+                    id: true,
+                    nombre: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+
       },
     });
 
@@ -386,14 +458,54 @@ export async function getSaleTicket(
   const registeredCustomerName =
     sale.cliente
       ? getFullName(
-          sale.cliente,
-        )
+        sale.cliente,
+      )
       : null;
 
   const customerName =
     sale.nombreCliente?.trim() ||
     registeredCustomerName ||
     "Cliente general";
+
+  const promotionalDiscount =
+    sale.promocionesAplicadas
+      .reduce(
+        (
+          total,
+          appliedPromotion,
+        ) =>
+          total +
+          Number(
+            appliedPromotion
+              .montoDescuento,
+          ),
+        0,
+      );
+
+  const rewardDiscount =
+    sale.canjesPremios
+      .reduce(
+        (
+          total,
+          redemption,
+        ) =>
+          total +
+          Number(
+            redemption
+              .montoAplicado,
+          ),
+        0,
+      );
+
+  const manualDiscount =
+    Math.max(
+      0,
+      Number(
+        sale.descuento,
+      ) -
+      promotionalDiscount -
+      rewardDiscount,
+    );
 
   return {
     id:
@@ -499,6 +611,84 @@ export async function getSaleTicket(
         }),
       ),
 
+    promociones:
+      sale.promocionesAplicadas
+        .map(
+          (
+            appliedPromotion,
+          ) => ({
+            id:
+              appliedPromotion.id,
+
+            promocionId:
+              appliedPromotion
+                .promocion.id,
+
+            nombre:
+              appliedPromotion
+                .promocion.nombre,
+
+            tipo:
+              appliedPromotion
+                .promocion.tipo,
+
+            descripcion:
+              appliedPromotion
+                .descripcion,
+
+            montoDescuento:
+              appliedPromotion
+                .montoDescuento
+                .toString(),
+          }),
+        ),
+
+    premiosCanjeados:
+      sale.canjesPremios
+        .map(
+          (redemption) => ({
+            id:
+              redemption.id,
+
+            descripcion:
+              redemption
+                .descripcion,
+
+            tipoRecompensa:
+              redemption
+                .tipoRecompensa,
+
+            montoAplicado:
+              redemption
+                .montoAplicado
+                .toString(),
+
+            productoPremioNombre:
+              redemption
+                .productoPremioNombre,
+
+            estado:
+              redemption.estado,
+
+            fechaCanje:
+              redemption
+                .fechaCanje
+                .toISOString(),
+
+            programa: {
+              id:
+                redemption
+                  .premio
+                  .programa.id,
+
+              nombre:
+                redemption
+                  .premio
+                  .programa.nombre,
+            },
+          }),
+        ),
+
     resumen: {
       subtotal:
         sale.subtotal
@@ -507,6 +697,18 @@ export async function getSaleTicket(
       descuento:
         sale.descuento
           .toString(),
+
+      descuentoPromocional:
+        promotionalDiscount
+          .toFixed(
+            2,
+          ),
+
+      descuentoManual:
+        manualDiscount
+          .toFixed(
+            2,
+          ),
 
       propina:
         sale.propina
@@ -523,6 +725,12 @@ export async function getSaleTicket(
       saldoCobrar:
         sale.saldoCobrar
           .toString(),
+
+      descuentoPremios:
+        rewardDiscount
+          .toFixed(
+            2,
+          ),
     },
 
     pagos:
@@ -563,24 +771,24 @@ export async function getSaleTicket(
 
     anulacion:
       sale.estado ===
-      "ANULADA"
+        "ANULADA"
         ? {
-            fecha:
-              sale.anuladaAt
-                ?.toISOString() ??
-              null,
+          fecha:
+            sale.anuladaAt
+              ?.toISOString() ??
+            null,
 
-            motivo:
-              sale
-                .motivoAnulacion,
+          motivo:
+            sale
+              .motivoAnulacion,
 
-            responsable:
-              sale.anuladaPor
-                ? getFullName(
-                    sale.anuladaPor,
-                  )
-                : null,
-          }
+          responsable:
+            sale.anuladaPor
+              ? getFullName(
+                sale.anuladaPor,
+              )
+              : null,
+        }
         : null,
   };
 }   
