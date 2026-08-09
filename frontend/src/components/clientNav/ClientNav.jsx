@@ -1,6 +1,7 @@
 import {
     FaCalendarAlt,
-    FaGift
+    FaGift,
+    FaStar
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 
@@ -42,6 +43,20 @@ function ClientNav() {
                 >
                     <FaGift />
                     <span>Mi fidelización</span>
+                </NavLink>
+            )}
+
+            {permissions.has("CLIENTE_HISTORIAL_VER") && (
+                <NavLink
+                    to="/opiniones"
+                    className={({ isActive }) =>
+                        isActive
+                            ? "client-nav-link active"
+                            : "client-nav-link"
+                    }
+                >
+                    <FaStar />
+                    <span>Mis opiniones</span>
                 </NavLink>
             )}
         </nav>

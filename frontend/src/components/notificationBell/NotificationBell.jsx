@@ -18,9 +18,11 @@ import {
     FaCheck,
     FaCheckDouble,
     FaClock,
+    FaCommentDots,
     FaExclamationTriangle,
     FaGift,
     FaInfoCircle,
+    FaUtensils,
     FaTimes
 } from "react-icons/fa";
 
@@ -139,17 +141,27 @@ function getNotificationIcon(
             return <FaCalendarAlt />;
 
         case "RESERVA_CONFIRMADA":
+        case "RESERVA_ACTUALIZADA":
             return <FaCalendarCheck />;
+
+        case "COMANDA_NUEVA":
+            return <FaUtensils />;
 
         case "PEDIDO_LISTO":
             return <FaCheck />;
 
         case "CAJA_ABIERTA":
+        case "CAJA_CERRADA":
         case "CAJA_PENDIENTE_CIERRE":
             return <FaCashRegister />;
 
         case "PREMIO_DISPONIBLE":
             return <FaGift />;
+
+        case "RESENA_DISPONIBLE":
+        case "RESENA_PENDIENTE":
+        case "RESENA_MODERADA":
+            return <FaCommentDots />;
 
         case "RESPALDO":
             return <FaClock />;
@@ -213,6 +225,7 @@ function getNotificationDestination(
             };
 
         case "RESERVA_CONFIRMADA":
+        case "RESERVA_ACTUALIZADA":
             return {
                 pathname:
                     "/reservations",
@@ -225,6 +238,32 @@ function getNotificationDestination(
                         notification.entidadId
                 }
             };
+
+        case "COMANDA_NUEVA":
+            if (role === "COCINA") {
+                return {
+                    pathname: "/operacion/cocina",
+                    state: {
+                        notificationType: notification.tipo,
+                        notificationEntityId: notification.entidadId
+                    }
+                };
+            }
+
+            if (
+                role === "ADMINISTRADOR_GENERAL" ||
+                role === "ADMINISTRADOR_SUCURSAL"
+            ) {
+                return {
+                    pathname: "/admin/comandas",
+                    state: {
+                        notificationType: notification.tipo,
+                        notificationEntityId: notification.entidadId
+                    }
+                };
+            }
+
+            return null;
 
         case "PEDIDO_LISTO":
             if (
@@ -241,6 +280,16 @@ function getNotificationDestination(
 
                         notificationEntityId:
                             notification.entidadId
+                    }
+                };
+            }
+
+            if (role === "VENDEDOR") {
+                return {
+                    pathname: "/operacion/pedidos",
+                    state: {
+                        notificationType: notification.tipo,
+                        notificationEntityId: notification.entidadId
                     }
                 };
             }
@@ -268,6 +317,7 @@ function getNotificationDestination(
             return null;
 
         case "CAJA_ABIERTA":
+        case "CAJA_CERRADA":
         case "CAJA_PENDIENTE_CIERRE":
             if (
                 role ===
@@ -308,6 +358,50 @@ function getNotificationDestination(
             }
 
             return null;
+
+        case "RESENA_DISPONIBLE":
+        case "RESENA_MODERADA":
+            if (
+                role === "CLIENTE" ||
+                role === "USUARIO"
+            ) {
+                return {
+                    pathname: "/opiniones",
+                    state: {
+                        notificationType: notification.tipo,
+                        notificationEntityId: notification.entidadId
+                    }
+                };
+            }
+
+            return null;
+
+        case "RESENA_PENDIENTE":
+            if (
+                role === "ADMINISTRADOR_GENERAL" ||
+                role === "ADMINISTRADOR_SUCURSAL"
+            ) {
+                return {
+                    pathname: "/admin/resenas",
+                    state: {
+                        notificationType: notification.tipo,
+                        notificationEntityId: notification.entidadId
+                    }
+                };
+            }
+
+            return null;
+
+        case "RESPALDO":
+            return role === "ADMINISTRADOR_GENERAL"
+                ? {
+                    pathname: "/admin/respaldos",
+                    state: {
+                        notificationType: notification.tipo,
+                        notificationEntityId: notification.entidadId
+                    }
+                }
+                : null;
 
         case "PREMIO_DISPONIBLE":
             if (

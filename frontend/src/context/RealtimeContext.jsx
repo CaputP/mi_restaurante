@@ -41,7 +41,9 @@ const ALL_REALTIME_RESOURCES = [
     "BRANCHES",
     "SETTINGS",
     "AUDIT",
-    "CLAIMS"
+    "CLAIMS",
+    "REVIEWS",
+    "BACKUPS"
 ];
 
 export function RealtimeProvider({

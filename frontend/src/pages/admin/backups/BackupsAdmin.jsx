@@ -19,6 +19,9 @@ import {
 
 import AdminDialog from "../../../components/adminDialog/AdminDialog";
 import { useAuth } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 import { ApiError } from "../../../services/api";
 import {
     listBackupsRequest,
@@ -96,6 +99,8 @@ const EMPTY_DATA = {
 
 function BackupsAdmin() {
     const { token } = useAuth();
+    const realtimeVersion =
+        useRealtimeVersion(["BACKUPS"]);
     const [data, setData] =
         useState(EMPTY_DATA);
     const [isLoading, setIsLoading] =
@@ -170,7 +175,7 @@ function BackupsAdmin() {
 
         void initializeBackups();
         return () => controller.abort();
-    }, [token]);
+    }, [token, realtimeVersion]);
 
     const hasRunningBackup = useMemo(
         () => data.respaldos.some(

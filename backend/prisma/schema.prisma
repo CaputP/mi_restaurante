@@ -240,10 +240,16 @@ enum TipoNotificacion {
   STOCK_BAJO
   RESERVA_PENDIENTE
   RESERVA_CONFIRMADA
+  RESERVA_ACTUALIZADA
+  COMANDA_NUEVA
   PEDIDO_LISTO
   CAJA_ABIERTA
+  CAJA_CERRADA
   CAJA_PENDIENTE_CIERRE
   PREMIO_DISPONIBLE
+  RESENA_DISPONIBLE
+  RESENA_PENDIENTE
+  RESENA_MODERADA
   RESPALDO
   SISTEMA
 }
@@ -307,6 +313,13 @@ enum EstadoRespaldo {
   FALLIDO
 }
 
+enum EstadoResena {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+  OCULTA
+}
+
 // ======================================================
 // ORGANIZACIÓN Y SUCURSALES
 // ======================================================
@@ -343,6 +356,7 @@ model Sucursal {
   promociones           Promocion[]
   configuraciones       ConfiguracionSistema[]
   notificaciones        Notificacion[]
+  resenas               Resena[]
   auditorias            Auditoria[]
   correlativos          Correlativo[]
   respaldos             Respaldo[]
@@ -518,9 +532,11 @@ model Usuario {
   comandasProcesadas Comanda[]       @relation("ComandasProcesadas")
   entregasRealizadas EntregaPedido[] @relation("EntregasMozo")
 
-  ventasComoCliente  Venta[] @relation("VentasCliente")
-  ventasComoVendedor Venta[] @relation("VentasVendedor")
-  ventasAnuladas     Venta[] @relation("VentasAnuladasPor")
+  ventasComoCliente  Venta[]  @relation("VentasCliente")
+  ventasComoVendedor Venta[]  @relation("VentasVendedor")
+  ventasAnuladas     Venta[]  @relation("VentasAnuladasPor")
+  resenasComoCliente Resena[] @relation("ResenasCliente")
+  resenasModeradas   Resena[] @relation("ResenasModeradasPor")
 
   cajasComoVendedor Caja[] @relation("CajasVendedor")
   cajasAbiertas     Caja[] @relation("CajasAbiertasPor")
@@ -1127,6 +1143,7 @@ model Venta {
   canjesPremios           CanjePremioCliente[]
   promocionesAplicadas    VentaPromocion[]
   movimientosFidelizacion MovimientoFidelizacion[]
+  resena                  Resena?
 
   @@unique([sucursalId, numeroTicket])
   @@index([sucursalId, createdAt])
@@ -1523,6 +1540,42 @@ model ConfiguracionSistema {
   @@index([sucursalId, clave])
   @@index([actualizadoPorId])
   @@map("configuracion_sistema")
+}
+
+// ======================================================
+// RESEÑAS VERIFICADAS
+// ======================================================
+
+model Resena {
+  id         String @id @default(uuid()) @db.Uuid
+  ventaId    String @unique @map("venta_id") @db.Uuid
+  clienteId  String @map("cliente_id") @db.Uuid
+  sucursalId String @map("sucursal_id") @db.Uuid
+
+  calificacion  Int
+  comentario    String @db.Text
+  nombrePublico String @map("nombre_publico") @db.VarChar(100)
+
+  consentimientoPublicacionAt DateTime     @map("consentimiento_publicacion_at") @db.Timestamptz(3)
+  estado                      EstadoResena @default(PENDIENTE)
+  destacada                   Boolean      @default(false)
+
+  moderadaPorId    String?   @map("moderada_por_id") @db.Uuid
+  moderadaAt       DateTime? @map("moderada_at") @db.Timestamptz(3)
+  motivoModeracion String?   @map("motivo_moderacion") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  venta       Venta    @relation(fields: [ventaId], references: [id], onDelete: Restrict)
+  cliente     Usuario  @relation("ResenasCliente", fields: [clienteId], references: [id], onDelete: Restrict)
+  sucursal    Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  moderadaPor Usuario? @relation("ResenasModeradasPor", fields: [moderadaPorId], references: [id], onDelete: Restrict)
+
+  @@index([estado, destacada, createdAt])
+  @@index([sucursalId, estado, createdAt])
+  @@index([clienteId, createdAt])
+  @@map("resena")
 }
 
 // ======================================================

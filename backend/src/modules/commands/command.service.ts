@@ -5,6 +5,9 @@ import {
 import { prisma } from "../../lib/prisma.js";
 import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import {
+  createOrderReadyNotifications,
+} from "../notifications/operational-notification.service.js";
 
 import type {
   CommandOptionsQuery,
@@ -1352,6 +1355,11 @@ export async function completeCommand(
       }
 
       await synchronizeOrderStatus(
+        transaction,
+        command.pedidoId,
+      );
+
+      await createOrderReadyNotifications(
         transaction,
         command.pedidoId,
       );

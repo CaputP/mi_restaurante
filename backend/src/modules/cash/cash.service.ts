@@ -6,6 +6,9 @@ import { prisma } from "../../lib/prisma.js";
 import { withSerializableTransaction } from "../../lib/transaction.js";
 import { reauthenticateUser } from "../../shared/security/reauthentication.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import {
+  createCashStatusNotifications,
+} from "../notifications/operational-notification.service.js";
 
 import type {
   CashOptionsQuery,
@@ -1443,9 +1446,10 @@ export async function openCashRegister(
         const code =
           `${correlativo.prefijo}-${numberText}`;
 
-        return transaction
-          .caja
-          .create({
+        const created =
+          await transaction
+            .caja
+            .create({
             data: {
               codigo: code,
 
@@ -1473,8 +1477,25 @@ export async function openCashRegister(
 
             select: {
               id: true,
+              codigo: true,
             },
           });
+
+        await createCashStatusNotifications(
+          transaction,
+          {
+            cashId:
+              created.id,
+            cashCode:
+              created.codigo,
+            branchId:
+              input.sucursalId,
+            event:
+              "ABIERTA",
+          },
+        );
+
+        return created;
       },
       );
 
@@ -1638,7 +1659,8 @@ export async function closeCashRegister(
           )
           .join("\n");
 
-        return transaction.caja.updateMany({
+        const result =
+          await transaction.caja.updateMany({
           where: {
             id: cash.id,
             estado: "ABIERTA",
@@ -1657,7 +1679,28 @@ export async function closeCashRegister(
             observaciones:
               lockedObservations || null,
           },
-        });
+          });
+
+        if (
+          result.count ===
+          1
+        ) {
+          await createCashStatusNotifications(
+            transaction,
+            {
+              cashId:
+                cash.id,
+              cashCode:
+                cash.codigo,
+              branchId:
+                cash.sucursalId,
+              event:
+                "CERRADA",
+            },
+          );
+        }
+
+        return result;
       },
     );
 
@@ -1787,6 +1830,20 @@ export async function reopenCashRegister(
                 : auditNote,
           },
         });
+
+        await createCashStatusNotifications(
+          transaction,
+          {
+            cashId:
+              cash.id,
+            cashCode:
+              cash.codigo,
+            branchId:
+              cash.sucursalId,
+            event:
+              "ABIERTA",
+          },
+        );
       },
     );
   } catch (error: unknown) {

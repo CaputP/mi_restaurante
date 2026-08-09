@@ -32,6 +32,8 @@ export const REALTIME_RESOURCES = [
   "SETTINGS",
   "AUDIT",
   "CLAIMS",
+  "REVIEWS",
+  "BACKUPS",
 ] as const;
 
 export type RealtimeResource =
@@ -43,6 +45,7 @@ type RealtimeEvent = {
   resources:
     RealtimeResource[];
   createdAt: string;
+  userIds?: string[];
 };
 
 type RealtimeClient = {
@@ -98,7 +101,19 @@ function sendEvent(
 function broadcast(
   event: RealtimeEvent,
 ): void {
+  const targetUsers =
+    event.userIds?.length
+      ? new Set(event.userIds)
+      : null;
+
   for (const client of clients.values()) {
+    if (
+      targetUsers &&
+      !targetUsers.has(client.userId)
+    ) {
+      continue;
+    }
+
     sendEvent(
       client.response,
       "data-changed",

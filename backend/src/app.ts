@@ -118,6 +118,11 @@ import {
 import {
   realtimeRouter,
 } from "./modules/realtime/realtime.routes.js";
+import {
+  adminReviewRouter,
+  clientReviewRouter,
+  publicReviewRouter,
+} from "./modules/reviews/review.routes.js";
 
 export const app = express();
 
@@ -367,6 +372,10 @@ app.use(
   realtimeRouter,
 );
 
+app.use("/api/reviews", publicReviewRouter);
+app.use("/api/reviews", clientReviewRouter);
+app.use("/api/admin/reviews", adminReviewRouter);
+
 app.use(
   "/api/backups",
   backupRouter,
@@ -469,6 +478,9 @@ app.use(
   "/api/v1/realtime",
   realtimeRouter,
 );
+app.use("/api/v1/reviews", publicReviewRouter);
+app.use("/api/v1/reviews", clientReviewRouter);
+app.use("/api/v1/admin/reviews", adminReviewRouter);
 app.use("/api/v1/backups", backupRouter);
 app.use("/api/v1/consumer-claims", consumerClaimPublicRouter);
 app.use("/api/v1/admin/consumer-claims", consumerClaimAdminRouter);

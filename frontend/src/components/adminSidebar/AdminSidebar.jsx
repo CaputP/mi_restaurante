@@ -17,6 +17,7 @@ import {
     FaDatabase,
     FaUserShield,
     FaBookOpen,
+    FaCommentDots,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 
@@ -129,6 +130,12 @@ const menuItems = [
         ruta: "/admin/reclamaciones",
         icono: FaBookOpen,
         permiso: "RECLAMO_GESTIONAR"
+    },
+    {
+        nombre: "Reseñas",
+        ruta: "/admin/resenas",
+        icono: FaCommentDots,
+        permiso: "RESENA_GESTIONAR"
     }
 ];
 

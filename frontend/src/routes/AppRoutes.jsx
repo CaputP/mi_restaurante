@@ -20,6 +20,9 @@ const Reservations = lazy(() =>
 const ClientLoyalty = lazy(() =>
     import("../pages/client/loyalty/ClientLoyalty")
 );
+const ClientReviews = lazy(() =>
+    import("../pages/client/reviews/ClientReviews")
+);
 const ForgotPassword = lazy(() =>
     import("../pages/authActions/ForgotPassword")
 );
@@ -111,6 +114,9 @@ const BackupsAdmin = lazy(() =>
 const ConsumerClaimsAdmin = lazy(() =>
     import("../pages/admin/claims/ConsumerClaimsAdmin")
 );
+const ReviewsAdmin = lazy(() =>
+    import("../pages/admin/reviews/ReviewsAdmin")
+);
 
 const OperationalLayout = lazy(() =>
     import("../layouts/OperationalLayout")
@@ -178,6 +184,14 @@ const routes = [
             <ClientLoyalty />,
             ["CLIENTE"],
             ["CLIENTE_PREMIOS_VER"]
+        )
+    },
+    {
+        path: "/opiniones",
+        element: protect(
+            <ClientReviews />,
+            ["CLIENTE"],
+            ["CLIENTE_HISTORIAL_VER"]
         )
     },
     {
@@ -393,6 +407,14 @@ const routes = [
                     <ConsumerClaimsAdmin />,
                     ADMIN_ROLES,
                     ["RECLAMO_GESTIONAR"]
+                )
+            },
+            {
+                path: "resenas",
+                element: protect(
+                    <ReviewsAdmin />,
+                    ADMIN_ROLES,
+                    ["RESENA_GESTIONAR"]
                 )
             }
         ]

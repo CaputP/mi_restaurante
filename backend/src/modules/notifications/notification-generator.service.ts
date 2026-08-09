@@ -9,10 +9,16 @@ type NotificationType =
   | "STOCK_BAJO"
   | "RESERVA_PENDIENTE"
   | "RESERVA_CONFIRMADA"
+  | "RESERVA_ACTUALIZADA"
+  | "COMANDA_NUEVA"
   | "PEDIDO_LISTO"
   | "CAJA_ABIERTA"
+  | "CAJA_CERRADA"
   | "CAJA_PENDIENTE_CIERRE"
   | "PREMIO_DISPONIBLE"
+  | "RESENA_DISPONIBLE"
+  | "RESENA_PENDIENTE"
+  | "RESENA_MODERADA"
   | "RESPALDO"
   | "SISTEMA";
 
@@ -150,59 +156,63 @@ export async function createBranchRoleNotifications(
 
   const recipients =
     await transaction
-      .usuarioSucursal
+      .usuario
       .findMany({
         where: {
-          sucursalId:
-            input.sucursalId,
+          estado:
+            "ACTIVO",
 
-          activo:
-            true,
+          rol: {
+            codigo: {
+              in:
+                input.roles,
+            },
 
-          fechaInicio: {
-            lte:
-              now,
+            activo:
+              true,
           },
 
           OR: [
             {
-              fechaFin:
-                null,
+              rol: {
+                codigo:
+                  "ADMINISTRADOR_GENERAL",
+              },
             },
             {
-              fechaFin: {
-                gte:
-                  now,
+              sucursales: {
+                some: {
+                  sucursalId:
+                    input.sucursalId,
+                  activo:
+                    true,
+                  fechaInicio: {
+                    lte:
+                      now,
+                  },
+                  OR: [
+                    {
+                      fechaFin:
+                        null,
+                    },
+                    {
+                      fechaFin: {
+                        gte:
+                          now,
+                      },
+                    },
+                  ],
+                },
               },
             },
           ],
-
-          usuario: {
-            estado:
-              "ACTIVO",
-
-            rol: {
-              codigo: {
-                in:
-                  input.roles,
-              },
-
-              activo:
-                true,
-            },
-          },
         },
 
         select: {
-          usuarioId:
+          id:
             true,
-
-          usuario: {
-            select: {
-              rolId:
-                true,
-            },
-          },
+          rolId:
+            true,
         },
       });
 
@@ -216,22 +226,91 @@ export async function createBranchRoleNotifications(
     };
   }
 
+  const existingRecipients =
+    input.entidad &&
+    input.entidadId
+      ? await transaction
+        .notificacion
+        .findMany({
+          where: {
+            usuarioId: {
+              in:
+                recipients.map(
+                  (recipient) =>
+                    recipient.id,
+                ),
+            },
+            tipo:
+              input.tipo,
+            entidad:
+              input.entidad,
+            entidadId:
+              input.entidadId,
+            OR: [
+              {
+                expiraAt:
+                  null,
+              },
+              {
+                expiraAt: {
+                  gt:
+                    now,
+                },
+              },
+            ],
+          },
+          select: {
+            usuarioId:
+              true,
+          },
+        })
+      : [];
+
+  const alreadyNotified =
+    new Set(
+      existingRecipients
+        .map(
+          (notification) =>
+            notification.usuarioId,
+        )
+        .filter(
+          (userId): userId is string =>
+            Boolean(userId),
+        ),
+    );
+
+  const missingRecipients =
+    recipients.filter(
+      (recipient) =>
+        !alreadyNotified.has(
+          recipient.id,
+        ),
+    );
+
+  if (
+    missingRecipients.length ===
+    0
+  ) {
+    return {
+      creadas:
+        0,
+    };
+  }
+
   await transaction
     .notificacion
     .createMany({
       data:
-        recipients.map(
+        missingRecipients.map(
           (recipient) => ({
             usuarioId:
-              recipient
-                .usuarioId,
+              recipient.id,
 
             sucursalId:
               input.sucursalId,
 
             rolId:
               recipient
-                .usuario
                 .rolId,
 
             tipo:
@@ -264,6 +343,161 @@ export async function createBranchRoleNotifications(
 
   return {
     creadas:
-      recipients.length,
+      missingRecipients.length,
+  };
+}
+
+export async function createRoleNotifications(
+  transaction:
+    NotificationTransaction,
+  input: {
+    roles: string[];
+    tipo: NotificationType;
+    prioridad?: NotificationPriority;
+    titulo: string;
+    mensaje: string;
+    entidad?: string | null;
+    entidadId?: string | null;
+    expiraAt?: Date | null;
+  },
+) {
+  const recipients =
+    await transaction
+      .usuario
+      .findMany({
+        where: {
+          estado:
+            "ACTIVO",
+          rol: {
+            codigo: {
+              in:
+                input.roles,
+            },
+            activo:
+              true,
+          },
+        },
+        select: {
+          id: true,
+          rolId: true,
+        },
+      });
+
+  if (
+    recipients.length ===
+    0
+  ) {
+    return {
+      creadas:
+        0,
+    };
+  }
+
+  const existing =
+    input.entidad &&
+    input.entidadId
+      ? await transaction
+        .notificacion
+        .findMany({
+          where: {
+            usuarioId: {
+              in:
+                recipients.map(
+                  (recipient) =>
+                    recipient.id,
+                ),
+            },
+            tipo:
+              input.tipo,
+            entidad:
+              input.entidad,
+            entidadId:
+              input.entidadId,
+            OR: [
+              {
+                expiraAt:
+                  null,
+              },
+              {
+                expiraAt: {
+                  gt:
+                    new Date(),
+                },
+              },
+            ],
+          },
+          select: {
+            usuarioId:
+              true,
+          },
+        })
+      : [];
+
+  const alreadyNotified =
+    new Set(
+      existing
+        .map(
+          (notification) =>
+            notification.usuarioId,
+        )
+        .filter(
+          (userId): userId is string =>
+            Boolean(userId),
+        ),
+    );
+
+  const missingRecipients =
+    recipients.filter(
+      (recipient) =>
+        !alreadyNotified.has(
+          recipient.id,
+        ),
+    );
+
+  if (
+    missingRecipients.length ===
+    0
+  ) {
+    return {
+      creadas:
+        0,
+    };
+  }
+
+  await transaction
+    .notificacion
+    .createMany({
+      data:
+        missingRecipients.map(
+          (recipient) => ({
+            usuarioId:
+              recipient.id,
+            rolId:
+              recipient.rolId,
+            tipo:
+              input.tipo,
+            prioridad:
+              input.prioridad ??
+              "NORMAL",
+            titulo:
+              input.titulo,
+            mensaje:
+              input.mensaje,
+            entidad:
+              input.entidad ??
+              null,
+            entidadId:
+              input.entidadId ??
+              null,
+            expiraAt:
+              input.expiraAt ??
+              null,
+          }),
+        ),
+    });
+
+  return {
+    creadas:
+      missingRecipients.length,
   };
 }

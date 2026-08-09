@@ -26,6 +26,12 @@ import { prisma } from "../../lib/prisma.js";
 import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { reauthenticateUser } from "../../shared/security/reauthentication.js";
+import {
+  createRoleNotifications,
+} from "../notifications/notification-generator.service.js";
+import {
+  publishRealtimeChange,
+} from "../realtime/realtime-broker.js";
 
 import type {
   ListBackupsQuery,
@@ -381,6 +387,35 @@ export async function executeBackup(
 
     await applyRetentionPolicy();
 
+    await prisma.$transaction(
+      async (transaction) => {
+        await createRoleNotifications(
+          transaction,
+          {
+            roles: [
+              "ADMINISTRADOR_GENERAL",
+            ],
+            tipo:
+              "RESPALDO",
+            prioridad:
+              "NORMAL",
+            titulo:
+              "Respaldo completado",
+            mensaje:
+              "La copia de seguridad de la base de datos finalizó correctamente.",
+            entidad:
+              "Respaldo",
+            entidadId:
+              backupId,
+          },
+        );
+      },
+    );
+
+    await publishRealtimeChange([
+      "BACKUPS",
+    ]);
+
     logger.info(
       {
         backupId,
@@ -410,6 +445,35 @@ export async function executeBackup(
         mensajeError: message,
       },
     });
+
+    await prisma.$transaction(
+      async (transaction) => {
+        await createRoleNotifications(
+          transaction,
+          {
+            roles: [
+              "ADMINISTRADOR_GENERAL",
+            ],
+            tipo:
+              "RESPALDO",
+            prioridad:
+              "CRITICA",
+            titulo:
+              "Falló el respaldo",
+            mensaje:
+              "La copia de seguridad no pudo completarse. Revisa el módulo de respaldos y los registros del servidor.",
+            entidad:
+              "Respaldo",
+            entidadId:
+              backupId,
+          },
+        );
+      },
+    );
+
+    await publishRealtimeChange([
+      "BACKUPS",
+    ]);
 
     logger.error(
       {

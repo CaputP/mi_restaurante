@@ -11,6 +11,10 @@ import {
 } from "../../shared/orders/order-stock-policy.js";
 import { findAvailableCustomerRewards } from "../loyalty/loyalty-reward-query.service.js";
 import { evaluateStockNotification } from "../notifications/stock-notification.service.js";
+import {
+  createNewCommandNotifications,
+  createOrderReadyNotifications,
+} from "../notifications/operational-notification.service.js";
 
 import type {
   CreateOrderInput,
@@ -2898,7 +2902,8 @@ export async function sendOrder(
         const commandCode =
           `${correlativo.prefijo}-${numberText}`;
 
-        await transaction
+        const createdCommand =
+          await transaction
           .comanda
           .create({
             data: {
@@ -2940,7 +2945,35 @@ export async function sendOrder(
                   ),
               },
             },
+            select: {
+              id: true,
+            },
           });
+
+        await createNewCommandNotifications(
+          transaction,
+          {
+            commandId:
+              createdCommand.id,
+            commandCode,
+            orderCode:
+              order.codigo,
+            branchId:
+              order.sucursalId,
+            destination:
+              group.destino,
+          },
+        );
+      }
+
+      if (
+        nextOrderStatus ===
+        "LISTO"
+      ) {
+        await createOrderReadyNotifications(
+          transaction,
+          order.id,
+        );
       }
     },
   );

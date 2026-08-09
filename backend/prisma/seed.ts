@@ -96,6 +96,7 @@ const permisos = [
   ["AUDITORIA_VER", "Consultar auditoría", "AUDITORIA"],
   ["RESPALDO_GESTIONAR", "Gestionar respaldos", "RESPALDOS"],
   ["RECLAMO_GESTIONAR", "Gestionar el Libro de Reclamaciones", "RECLAMOS"],
+  ["RESENA_GESTIONAR", "Gestionar reseñas verificadas", "RESEÑAS"],
 
   ["CLIENTE_HISTORIAL_VER", "Consultar historial personal", "CLIENTES"],
   ["CLIENTE_PREMIOS_VER", "Consultar premios personales", "CLIENTES"],

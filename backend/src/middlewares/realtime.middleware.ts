@@ -29,7 +29,6 @@ const RESOURCE_DEPENDENCIES: Record<
     "ORDERS",
     "INVENTORY",
     "REPORTS",
-    "NOTIFICATIONS",
   ],
   orders: [
     "ORDERS",
@@ -37,18 +36,15 @@ const RESOURCE_DEPENDENCIES: Record<
     "DELIVERIES",
     "CASH",
     "REPORTS",
-    "NOTIFICATIONS",
   ],
   commands: [
     "COMMANDS",
     "ORDERS",
     "DELIVERIES",
-    "NOTIFICATIONS",
   ],
   deliveries: [
     "DELIVERIES",
     "ORDERS",
-    "NOTIFICATIONS",
   ],
   cash: [
     "CASH",
@@ -63,7 +59,6 @@ const RESOURCE_DEPENDENCIES: Record<
     "INVENTORY",
     "REPORTS",
     "LOYALTY",
-    "NOTIFICATIONS",
   ],
   expenses: [
     "EXPENSES",
@@ -73,7 +68,6 @@ const RESOURCE_DEPENDENCIES: Record<
   inventory: [
     "INVENTORY",
     "CATALOG",
-    "NOTIFICATIONS",
   ],
   catalog: [
     "CATALOG",
@@ -82,15 +76,18 @@ const RESOURCE_DEPENDENCIES: Record<
   loyalty: [
     "LOYALTY",
     "ORDERS",
-    "NOTIFICATIONS",
   ],
   promotions: [
     "PROMOTIONS",
     "CATALOG",
     "ORDERS",
   ],
-  notifications: [
-    "NOTIFICATIONS",
+  notifications: [],
+  reviews: [
+    "REVIEWS",
+  ],
+  backups: [
+    "BACKUPS",
   ],
   users: [
     "USERS",
@@ -113,7 +110,6 @@ const RESOURCE_DEPENDENCIES: Record<
   ],
   "consumer-claims": [
     "CLAIMS",
-    "NOTIFICATIONS",
     "AUDIT",
   ],
 };

@@ -89,6 +89,14 @@
     align-items: center;
     width: 100%;
     margin-bottom: 50px;
+    border-radius: 12px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.login-sidebar-logo:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 6px;
 }
 
 /* Estilo para que el logo se vea estilizado y fino */
@@ -99,6 +107,18 @@
     /* El truco mágico: le da una sombra blanca/brillante muy suave detrás 
        para que resalte increíble sobre el fondo oscuro de la foto */
     filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.5)); 
+    transition: transform 160ms ease, filter 160ms ease;
+}
+
+.login-sidebar-logo:hover img {
+    transform: scale(1.04);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.58));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-sidebar-logo img {
+        transition: none;
+    }
 }
 
 .login-image-overlay h2 {

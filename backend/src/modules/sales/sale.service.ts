@@ -41,6 +41,9 @@ import {
 import {
   evaluateStockNotification,
 } from "../notifications/stock-notification.service.js";
+import {
+  createReviewAvailabilityNotification,
+} from "../reviews/review.service.js";
 
 type SaleAuth = {
   usuarioId: string;
@@ -2740,6 +2743,11 @@ export async function createSale(
          * de descuentos.
          */
         await applySaleLoyalty(
+          transaction,
+          sale.id,
+        );
+
+        await createReviewAvailabilityNotification(
           transaction,
           sale.id,
         );

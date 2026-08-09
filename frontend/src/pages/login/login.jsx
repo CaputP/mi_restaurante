@@ -355,12 +355,16 @@ function Login() {
                     {/* Panel izquierdo */}
                     <div className="login-image">
                         <div className="login-image-overlay">
-                            <div className="login-sidebar-logo">
+                            <Link
+                                to="/"
+                                className="login-sidebar-logo"
+                                aria-label="Volver a la página principal"
+                            >
                                 <img
                                     src={logo}
                                     alt="Logo El Vallecito de Chocco"
                                 />
-                            </div>
+                            </Link>
                             
 
                             <h2>Bienvenido de nuevo</h2>

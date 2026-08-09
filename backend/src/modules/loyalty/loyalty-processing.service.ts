@@ -10,6 +10,9 @@ import {
   getLoyaltyOperationalDay,
   resolveDailyVisitIncrement,
 } from "./loyalty-visit-policy.js";
+import {
+  createUserNotification,
+} from "../notifications/notification-generator.service.js";
 
 type LoyaltyProgramForProcessing = {
   id: string;
@@ -649,6 +652,56 @@ export async function applySaleLoyalty(
 
     processedPrograms +=
       1;
+  }
+
+  if (
+    generatedRewards >
+    0
+  ) {
+    const existingNotification =
+      await transaction
+        .notificacion
+        .findFirst({
+          where: {
+            usuarioId:
+              sale.clienteId,
+            tipo:
+              "PREMIO_DISPONIBLE",
+            entidad:
+              "Venta",
+            entidadId:
+              sale.id,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+    if (!existingNotification) {
+      await createUserNotification(
+        transaction,
+        {
+          usuarioId:
+            sale.clienteId,
+          sucursalId:
+            sale.sucursalId,
+          tipo:
+            "PREMIO_DISPONIBLE",
+          prioridad:
+            "NORMAL",
+          titulo:
+            generatedRewards === 1
+              ? "Tienes un nuevo premio"
+              : `Tienes ${generatedRewards} nuevos premios`,
+          mensaje:
+            "Tu compra completó un programa de fidelización. Revisa tus premios disponibles.",
+          entidad:
+            "Venta",
+          entidadId:
+            sale.id,
+        },
+      );
+    }
   }
 
   return {
