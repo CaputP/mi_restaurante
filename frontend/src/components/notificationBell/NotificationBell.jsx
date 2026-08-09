@@ -34,6 +34,9 @@ import {
     markAllNotificationsAsReadRequest,
     markNotificationAsReadRequest
 } from "../../services/notifications.service";
+import {
+    useRealtimeVersion
+} from "../../context/RealtimeContext";
 
 import "./NotificationBell.css";
 
@@ -341,6 +344,11 @@ function NotificationBell({
     const navigate =
         useNavigate();
 
+    const realtimeVersion =
+        useRealtimeVersion([
+            "NOTIFICATIONS"
+        ]);
+
     const containerRef =
         useRef(null);
 
@@ -494,20 +502,14 @@ function NotificationBell({
      */
     useEffect(() => {
         if (!token) {
-            setUnreadCount(
-                0
-            );
-
-            setNotifications(
-                []
-            );
-
             return;
         }
 
         const controller =
             new AbortController();
 
+        // Sincroniza el contador local con el servidor al cambiar la sesión.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         void loadUnreadCount(
             controller.signal
         );
@@ -520,8 +522,8 @@ function NotificationBell({
     ]);
 
     /*
-     * Actualización ligera cada 30 segundos.
-     * Todavía no necesitamos WebSocket.
+     * Sondeo de respaldo si el canal en tiempo real
+     * se desconecta temporalmente.
      */
     useEffect(() => {
         if (!token) {
@@ -533,7 +535,7 @@ function NotificationBell({
                 () => {
                     void loadUnreadCount();
                 },
-                30_000
+                60_000
             );
 
         return () =>
@@ -543,6 +545,29 @@ function NotificationBell({
     }, [
         token,
         loadUnreadCount
+    ]);
+
+    useEffect(() => {
+        if (
+            !token ||
+            realtimeVersion === 0
+        ) {
+            return;
+        }
+
+        // La llamada responde a un evento externo del servidor.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadUnreadCount();
+
+        if (isOpen) {
+            void loadNotifications();
+        }
+    }, [
+        token,
+        realtimeVersion,
+        isOpen,
+        loadUnreadCount,
+        loadNotifications
     ]);
 
     /*

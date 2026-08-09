@@ -24,6 +24,9 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
@@ -177,6 +180,11 @@ function AuditPanel() {
     const {
         token
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "AUDIT"
+        ]);
 
     const [
         options,
@@ -448,7 +456,8 @@ function AuditPanel() {
         isLoadingOptions,
         appliedFilters,
         page,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     function handleFilterChange(
@@ -593,12 +602,15 @@ function AuditPanel() {
             </header>
 
             {error && (
-                <div className="audit-feedback error">
+                <div
+                    className="audit-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <div className="audit-stat-grid">
+            <div className="audit-stat-grid admin-metric-grid">
                 <article>
                     <FaHistory />
 
@@ -667,7 +679,7 @@ function AuditPanel() {
 
             <section className="audit-list-card">
                 <form
-                    className="audit-filters"
+                    className="audit-filters admin-filter-bar"
                     onSubmit={
                         handleSearch
                     }
@@ -887,6 +899,7 @@ function AuditPanel() {
                     <div className="audit-filter-actions">
                         <button
                             type="button"
+                            aria-label="Cerrar detalle de auditoría"
                             className="secondary"
                             onClick={
                                 handleClearFilters
@@ -919,8 +932,8 @@ function AuditPanel() {
                         </strong>
                     </div>
                 ) : (
-                    <div className="audit-table-wrapper">
-                        <table className="audit-table">
+                    <div className="audit-table-wrapper admin-table-shell">
+                        <table className="audit-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
@@ -1053,7 +1066,7 @@ function AuditPanel() {
                     </div>
                 )}
 
-                <div className="audit-pagination">
+                <div className="audit-pagination admin-pagination">
                     <span>
                         Página{" "}
                         {pagination.page} de{" "}

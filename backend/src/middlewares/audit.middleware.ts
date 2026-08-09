@@ -5,6 +5,9 @@ import type {
 } from "express";
 
 import { prisma } from "../lib/prisma.js";
+import {
+  logger,
+} from "../lib/logger.js";
 
 import {
   createAuditDescription,
@@ -244,9 +247,11 @@ async function saveAudit(
       },
     });
   } catch (error: unknown) {
-    console.error(
-      "No se pudo registrar la auditoría:",
-      error,
+    logger.error(
+      {
+        error,
+      },
+      "No se pudo registrar la auditoría.",
     );
   }
 }

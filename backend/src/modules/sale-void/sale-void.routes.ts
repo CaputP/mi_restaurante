@@ -4,6 +4,7 @@ import {
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -27,5 +28,8 @@ saleVoidRouter.use(
 
 saleVoidRouter.patch(
   "/:id/void",
+  requirePermissions(
+    "VENTA_ANULAR",
+  ),
   voidSaleController,
 );

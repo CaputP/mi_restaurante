@@ -1,0 +1,88 @@
+.admin-metric-card {
+    min-width: 0;
+    min-height: 106px;
+    padding: 17px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-surface);
+    box-shadow: var(--admin-shadow-card);
+}
+
+.admin-metric-card__icon {
+    width: 44px;
+    height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+
+    border-radius: var(--admin-radius-lg);
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-primary);
+    font-size: var(--admin-font-xl);
+}
+
+.admin-metric-card--warning .admin-metric-card__icon {
+    background: var(--admin-color-warning-soft);
+    color: var(--admin-color-warning);
+}
+
+.admin-metric-card--attention .admin-metric-card__icon {
+    background: var(--admin-color-attention-soft);
+    color: var(--admin-color-attention);
+}
+
+.admin-metric-card--info .admin-metric-card__icon {
+    background: var(--admin-color-info-soft);
+    color: var(--admin-color-info);
+}
+
+.admin-metric-card--success .admin-metric-card__icon {
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-success);
+}
+
+.admin-metric-card__content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.admin-metric-card__label {
+    overflow: hidden;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-sm);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-metric-card__value {
+    overflow: hidden;
+    color: var(--admin-color-text-strong);
+    font-size: var(--admin-font-2xl);
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-metric-card__detail {
+    overflow: hidden;
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .admin-metric-card {
+        min-height: 92px;
+        padding: 15px;
+    }
+}

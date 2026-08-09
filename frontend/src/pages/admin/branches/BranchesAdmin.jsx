@@ -27,6 +27,9 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     useNavigate
@@ -197,6 +200,11 @@ function BranchesAdmin() {
     const {
         token
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "BRANCHES"
+        ]);
 
     const [
         branches,
@@ -429,7 +437,8 @@ function BranchesAdmin() {
         appliedSearch,
         statusFilter,
         page,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     function clearFeedback() {
@@ -1002,8 +1011,8 @@ function BranchesAdmin() {
     }
 
     return (
-        <section className="branches-admin">
-            <header className="branches-heading">
+        <section className="branches-admin admin-page">
+            <header className="branches-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         SUCURSALES
@@ -1032,18 +1041,24 @@ function BranchesAdmin() {
             </header>
 
             {message && (
-                <div className="branches-feedback success">
+                <div
+                    className="branches-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="branches-feedback error">
+                <div
+                    className="branches-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <div className="branch-stat-grid">
+            <div className="branch-stat-grid admin-metric-grid">
                 <article>
                     <FaStore />
 
@@ -1112,7 +1127,7 @@ function BranchesAdmin() {
 
             <section className="branches-list-card">
                 <form
-                    className="branches-filters"
+                    className="branches-filters admin-filter-bar"
                     onSubmit={
                         handleSearch
                     }
@@ -1188,8 +1203,8 @@ function BranchesAdmin() {
                         </strong>
                     </div>
                 ) : (
-                    <div className="branches-table-wrapper">
-                        <table className="branches-table">
+                    <div className="branches-table-wrapper admin-table-shell">
+                        <table className="branches-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Sucursal</th>
@@ -1261,7 +1276,7 @@ function BranchesAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`branch-status ${branch.estado.toLowerCase()}`}
+                                                    className={`admin-status-badge branch-status ${branch.estado.toLowerCase()}`}
                                                 >
                                                     {formatLabel(
                                                         branch.estado
@@ -1376,7 +1391,7 @@ function BranchesAdmin() {
                     </div>
                 )}
 
-                <div className="branches-pagination">
+                <div className="branches-pagination admin-pagination">
                     <span>
                         Página{" "}
                         {pagination.page} de{" "}
@@ -1449,6 +1464,7 @@ function BranchesAdmin() {
                         <button
                             type="button"
                             className="branch-close-button"
+                            aria-label="Cerrar formulario de sucursal"
                             onClick={
                                 closeBranchForm
                             }
@@ -1727,6 +1743,7 @@ function BranchesAdmin() {
                         <button
                             type="button"
                             className="branch-close-button"
+                            aria-label="Cerrar detalle de sucursal"
                             onClick={() =>
                                 setSelectedBranch(
                                     null
@@ -1914,6 +1931,7 @@ function BranchesAdmin() {
                                 <button
                                     type="button"
                                     className="branch-close-button"
+                                    aria-label="Cerrar formulario de zona"
                                     onClick={
                                         closeZoneForm
                                     }
@@ -2077,7 +2095,7 @@ function BranchesAdmin() {
                                                 </h4>
 
                                                 <span
-                                                    className={`branch-status ${zone.estado.toLowerCase()}`}
+                                                    className={`admin-status-badge branch-status ${zone.estado.toLowerCase()}`}
                                                 >
                                                     {formatLabel(
                                                         zone.estado

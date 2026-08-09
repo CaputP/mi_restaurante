@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 
 import { useAuth } from "../../../context/AuthContext";
+import { useRealtimeVersion } from "../../../context/RealtimeContext";
 import { ApiError } from "../../../services/api";
 
 import {
@@ -138,6 +139,10 @@ function getApiErrorMessage(error) {
 
 function InventoryAdmin() {
     const { token } = useAuth();
+    const realtimeVersion =
+        useRealtimeVersion([
+            "INVENTORY"
+        ]);
 
     const [
         activeTab,
@@ -321,7 +326,8 @@ function InventoryAdmin() {
         branchFilter,
         stockTypeFilter,
         onlyAlerts,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     useEffect(() => {
@@ -401,7 +407,8 @@ function InventoryAdmin() {
         appliedMovementSearch,
         branchFilter,
         movementTypeFilter,
-        movementReloadKey
+        movementReloadKey,
+        realtimeVersion
     ]);
 
     const pendingDailyStocks =
@@ -732,9 +739,9 @@ function InventoryAdmin() {
     }
 
     return (
-        <section className="inventory-admin">
+        <section className="inventory-admin admin-page">
             <div
-                className="inventory-tabs"
+                className="inventory-tabs admin-tabs"
                 role="tablist"
                 aria-label="Secciones de inventario"
             >
@@ -746,8 +753,8 @@ function InventoryAdmin() {
                     }
                     className={
                         activeTab === "STOCK"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab("STOCK")
@@ -769,8 +776,8 @@ function InventoryAdmin() {
                     className={
                         activeTab ===
                         "MOVIMIENTOS"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(
@@ -785,7 +792,7 @@ function InventoryAdmin() {
                 </button>
             </div>
 
-            <header className="inventory-heading">
+            <header className="inventory-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         INVENTARIO
@@ -818,7 +825,7 @@ function InventoryAdmin() {
 
             {message && (
                 <div
-                    className="inventory-feedback success"
+                    className="inventory-feedback admin-feedback success"
                     role="status"
                 >
                     {message}
@@ -827,14 +834,14 @@ function InventoryAdmin() {
 
             {error && (
                 <div
-                    className="inventory-feedback error"
+                    className="inventory-feedback admin-feedback error"
                     role="alert"
                 >
                     {error}
                 </div>
             )}
 
-            <div className="inventory-summary-grid">
+            <div className="inventory-summary-grid admin-metric-grid columns-3">
                 <article>
                     <div className="inventory-summary-icon">
                         <FaBoxes />
@@ -892,7 +899,7 @@ function InventoryAdmin() {
             {activeTab === "STOCK" ? (
                 <>
                     <form
-                        className="inventory-filters"
+                        className="inventory-filters admin-filter-bar"
                         onSubmit={
                             handleInventorySearch
                         }
@@ -1415,8 +1422,8 @@ function InventoryAdmin() {
                                 </p>
                             </div>
                         ) : (
-                            <div className="inventory-table-wrapper">
-                                <table className="inventory-table">
+                            <div className="inventory-table-wrapper admin-table-shell">
+                                <table className="inventory-table admin-data-table">
                                     <thead>
                                         <tr>
                                             <th>
@@ -1574,7 +1581,7 @@ function InventoryAdmin() {
 
                                                             <td>
                                                                 <span
-                                                                    className={`inventory-status ${status.className}`}
+                                                                    className={`admin-status-badge inventory-status ${status.className}`}
                                                                 >
                                                                     {
                                                                         status.text
@@ -1628,7 +1635,7 @@ function InventoryAdmin() {
             ) : (
                 <>
                     <form
-                        className="inventory-filters movement-filters"
+                        className="inventory-filters movement-filters admin-filter-bar"
                         onSubmit={
                             handleMovementSearch
                         }
@@ -1767,8 +1774,8 @@ function InventoryAdmin() {
                                 </p>
                             </div>
                         ) : (
-                            <div className="inventory-table-wrapper">
-                                <table className="inventory-table movement-table">
+                            <div className="inventory-table-wrapper admin-table-shell">
+                                <table className="inventory-table movement-table admin-data-table">
                                     <thead>
                                         <tr>
                                             <th>

@@ -1,4 +1,5 @@
 import {
+    apiDownload,
     apiRequest
 } from "./api";
 
@@ -101,4 +102,65 @@ export async function getReportSummaryRequest(
         );
 
     return response.data;
+}
+
+export async function getReportDetailsRequest(
+    token,
+    {
+        tipo,
+        filtro = "",
+        sucursalId = "",
+        fechaDesde = "",
+        fechaHasta = "",
+        page = 1,
+        limit = 25,
+        signal
+    }
+) {
+    const params =
+        new URLSearchParams();
+
+    addParameter(params, "tipo", tipo);
+    addParameter(params, "filtro", filtro);
+    addParameter(params, "sucursalId", sucursalId);
+    addParameter(params, "fechaDesde", fechaDesde);
+    addParameter(params, "fechaHasta", fechaHasta);
+    addParameter(params, "page", page);
+    addParameter(params, "limit", limit);
+
+    const response =
+        await apiRequest(
+            `/reports/details?${params.toString()}`,
+            {
+                token,
+                signal
+            }
+        );
+
+    return response.data;
+}
+
+export async function downloadReportRequest(
+    token,
+    format,
+    {
+        sucursalId = "",
+        fechaDesde = "",
+        fechaHasta = "",
+        signal
+    } = {}
+) {
+    const params = new URLSearchParams();
+
+    addParameter(params, "sucursalId", sucursalId);
+    addParameter(params, "fechaDesde", fechaDesde);
+    addParameter(params, "fechaHasta", fechaHasta);
+
+    return apiDownload(
+        `/reports/export.${format}?${params.toString()}`,
+        {
+            token,
+            signal
+        }
+    );
 }

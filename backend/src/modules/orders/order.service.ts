@@ -3,11 +3,19 @@ import {
 } from "../../generated/prisma/client.js";
 
 import { prisma } from "../../lib/prisma.js";
+import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import {
+  calculateAvailableStock,
+  hasSufficientStock,
+} from "../../shared/orders/order-stock-policy.js";
+import { findAvailableCustomerRewards } from "../loyalty/loyalty-reward-query.service.js";
+import { evaluateStockNotification } from "../notifications/stock-notification.service.js";
 
 import type {
   CreateOrderInput,
   ListOrdersQuery,
+  OrderCustomerRewardsQuery,
   OrderOptionsQuery,
   SendOrderInput,
   UpdateOrderInput,
@@ -74,6 +82,64 @@ function getOperationalDate(): Date {
   return new Date(
     `${year}-${month}-${day}T00:00:00.000Z`,
   );
+}
+
+async function assertDraftStockAvailable(
+  transaction: Prisma.TransactionClient,
+  details: Array<{
+    productoSucursalId: string;
+    cantidad: number;
+  }>,
+): Promise<void> {
+  const operationalDate = getOperationalDate();
+  const productIds = details.map((detail) => detail.productoSucursalId);
+  const products = await transaction.productoSucursal.findMany({
+    where: { id: { in: productIds } },
+    select: {
+      id: true,
+      producto: { select: { nombre: true, tipoStock: true } },
+      stockPermanente: { select: { cantidadActual: true, cantidadComprometida: true } },
+      stocksDiarios: {
+        where: { fecha: operationalDate },
+        take: 1,
+        select: { cantidadActual: true, cantidadComprometida: true },
+      },
+    },
+  });
+  const productMap = new Map(products.map((product) => [product.id, product]));
+
+  for (const detail of details) {
+    const product = productMap.get(detail.productoSucursalId);
+    if (!product || product.producto.tipoStock === "SIN_CONTROL") continue;
+
+    const stock = product.producto.tipoStock === "PERMANENTE"
+      ? product.stockPermanente
+      : product.stocksDiarios[0];
+
+    if (!stock) {
+      throw new AppError(
+        409,
+        product.producto.tipoStock === "DIARIO"
+          ? `El producto "${product.producto.nombre}" no tiene apertura de stock para hoy.`
+          : `El producto "${product.producto.nombre}" no tiene stock permanente configurado.`,
+        product.producto.tipoStock === "DIARIO"
+          ? "STOCK_DIARIO_NO_ABIERTO"
+          : "STOCK_NO_CONFIGURADO",
+      );
+    }
+
+    const available = calculateAvailableStock(
+      Number(stock.cantidadActual),
+      Number(stock.cantidadComprometida),
+    );
+    if (!hasSufficientStock(detail.cantidad, available)) {
+      throw new AppError(
+        409,
+        `No existe stock suficiente de "${product.producto.nombre}". Solicitado: ${detail.cantidad}; disponible: ${available}.`,
+        "STOCK_INSUFICIENTE",
+      );
+    }
+  }
 }
 
 function createLimaDateStart(
@@ -429,6 +495,24 @@ export async function getOrderOptions(
               precioVenta: true,
               stockMinimo: true,
 
+              stockPermanente: {
+                select: {
+                  cantidadActual: true,
+                  cantidadComprometida: true,
+                },
+              },
+
+              stocksDiarios: {
+                where: {
+                  fecha: operationalDate,
+                },
+                take: 1,
+                select: {
+                  cantidadActual: true,
+                  cantidadComprometida: true,
+                },
+              },
+
               producto: {
                 select: {
                   id: true,
@@ -625,7 +709,20 @@ export async function getOrderOptions(
 
     productos:
       products.map(
-        (productBranch) => ({
+        (productBranch) => {
+          const stockType = productBranch.producto.tipoStock;
+          const stock = stockType === "PERMANENTE"
+            ? productBranch.stockPermanente
+            : productBranch.stocksDiarios[0];
+          const stockControlled = stockType !== "SIN_CONTROL";
+          const availableStock = stockControlled && stock
+            ? calculateAvailableStock(
+              Number(stock.cantidadActual),
+              Number(stock.cantidadComprometida),
+            )
+            : null;
+
+          return {
           productoSucursalId:
             productBranch.id,
 
@@ -641,8 +738,20 @@ export async function getOrderOptions(
                 .stockMinimo,
             ),
 
+          stockControlado:
+            stockControlled,
+
+          stockConfigurado:
+            stockControlled
+              ? Boolean(stock)
+              : true,
+
+          stockDisponible:
+            availableStock,
+
           ...productBranch.producto,
-        }),
+          };
+        },
       ),
 
     vendedores: sellers,
@@ -668,6 +777,77 @@ export async function getOrderOptions(
           "Para llevar",
       },
     ],
+  };
+}
+
+export async function getOrderCustomerRewards(
+  auth: OrderAuth,
+  query: OrderCustomerRewardsQuery,
+) {
+  const branches = await getAuthorizedBranches(auth);
+  assertAuthorizedBranch(branches, query.sucursalId);
+
+  const customer = await prisma.usuario.findFirst({
+    where: {
+      id: query.clienteId,
+      estado: "ACTIVO",
+      deletedAt: null,
+      rol: {
+        codigo: "CLIENTE",
+        activo: true,
+      },
+    },
+    select: {
+      id: true,
+      nombres: true,
+      apellidos: true,
+    },
+  });
+
+  if (!customer) {
+    throw new AppError(
+      404,
+      "El cliente no existe o no se encuentra activo.",
+      "CLIENTE_NO_ENCONTRADO",
+    );
+  }
+
+  const rewards = await prisma.$transaction(
+    (transaction) =>
+      findAvailableCustomerRewards(
+        transaction,
+        customer.id,
+        query.sucursalId,
+      ),
+  );
+
+  return {
+    cliente: {
+      id: customer.id,
+      nombreCompleto: userFullName(customer),
+    },
+    premios: rewards.map((reward) => ({
+      id: reward.id,
+      descripcion: reward.descripcion,
+      tipoRecompensa:
+        reward.tipoRecompensaSnapshot ??
+        reward.programa.tipoRecompensa,
+      cantidadProducto:
+        reward.cantidadProducto !== null
+          ? Number(reward.cantidadProducto)
+          : null,
+      valorReferencia:
+        reward.valorReferencia !== null
+          ? Number(reward.valorReferencia)
+          : null,
+      fechaVencimiento:
+        reward.fechaVencimiento.toISOString(),
+      programa: {
+        id: reward.programa.id,
+        nombre: reward.programa.nombre,
+      },
+      productoPremio: reward.productoPremio,
+    })),
   };
 }
 
@@ -1724,8 +1904,13 @@ export async function createOrder(
     );
 
   const createdOrder =
-    await prisma.$transaction(
+    await withSerializableTransaction(
       async (transaction) => {
+        await assertDraftStockAvailable(
+          transaction,
+          input.detalles,
+        );
+
         const correlativo =
           await transaction
             .correlativo
@@ -1861,9 +2046,11 @@ async function getOrderForOperation(
         id: true,
         codigo: true,
         sucursalId: true,
+        reservaId: true,
         vendedorId: true,
         tipoPedido: true,
         estado: true,
+        updatedAt: true,
         observaciones: true,
 
         detalles: {
@@ -1881,6 +2068,7 @@ async function getOrderForOperation(
               true,
 
             cantidad: true,
+            cantidadComprometida: true,
 
             precioUnitario:
               true,
@@ -1898,12 +2086,38 @@ async function getOrderForOperation(
                   select: {
                     id: true,
                     nombre: true,
+                    tipoStock: true,
 
                     requierePreparacion:
                       true,
 
                     destinoPreparacion:
                       true,
+                  },
+                },
+              },
+            },
+          },
+        },
+
+        reserva: {
+          select: {
+            codigo: true,
+            fechaReserva: true,
+            detalles: {
+              select: {
+                id: true,
+                productoSucursalId: true,
+                nombreProducto: true,
+                cantidadComprometida: true,
+                estado: true,
+                productoSucursal: {
+                  select: {
+                    producto: {
+                      select: {
+                        tipoStock: true,
+                      },
+                    },
                   },
                 },
               },
@@ -1929,6 +2143,176 @@ async function getOrderForOperation(
   }
 
   return order;
+}
+
+async function commitStockForSentOrder(
+  transaction: Prisma.TransactionClient,
+  auth: OrderAuth,
+  order: Awaited<ReturnType<typeof getOrderForOperation>>,
+): Promise<void> {
+  const notifications = new Set<string>();
+  const orderProductIds = new Set(
+    order.detalles.map((detail) => detail.productoSucursalId),
+  );
+
+  /*
+   * Primero liberamos el compromiso de la reserva vinculada. Luego la
+   * cantidad pasa a pertenecer al pedido, evitando contabilizarla dos veces.
+   */
+  for (const reservedDetail of order.reserva?.detalles ?? []) {
+    const commitment = Number(reservedDetail.cantidadComprometida);
+    if (commitment <= 0) continue;
+
+    const stockType = reservedDetail.productoSucursal.producto.tipoStock;
+    const stock = stockType === "PERMANENTE"
+      ? await transaction.stockPermanente.findUnique({
+        where: { productoSucursalId: reservedDetail.productoSucursalId },
+      })
+      : stockType === "DIARIO"
+        ? await transaction.stockDiario.findUnique({
+          where: {
+            productoSucursalId_fecha: {
+              productoSucursalId: reservedDetail.productoSucursalId,
+              fecha: order.reserva?.fechaReserva ?? getOperationalDate(),
+            },
+          },
+        })
+        : null;
+
+    if (stockType !== "SIN_CONTROL" && !stock) {
+      throw new AppError(
+        409,
+        `No se pudo verificar el stock comprometido de "${reservedDetail.nombreProducto}".`,
+        "STOCK_COMPROMETIDO_NO_ENCONTRADO",
+      );
+    }
+
+    if (stock) {
+      const currentQuantity = Number(stock.cantidadActual);
+      const resultingCommitted = Math.max(
+        0,
+        Number(stock.cantidadComprometida) - commitment,
+      );
+
+      if (stockType === "PERMANENTE") {
+        await transaction.stockPermanente.update({
+          where: { id: stock.id },
+          data: { cantidadComprometida: resultingCommitted },
+        });
+      } else {
+        await transaction.stockDiario.update({
+          where: { id: stock.id },
+          data: { cantidadComprometida: resultingCommitted },
+        });
+      }
+
+      await transaction.movimientoInventario.create({
+        data: {
+          productoSucursalId: reservedDetail.productoSucursalId,
+          usuarioId: auth.usuarioId,
+          tipoMovimiento: "LIBERACION_RESERVA",
+          cantidad: commitment,
+          cantidadAnterior: currentQuantity,
+          cantidadResultante: currentQuantity,
+          motivo: `Transferencia de stock de la reserva ${order.reserva?.codigo ?? ""} al pedido ${order.codigo}.`,
+          referenciaTipo: "RESERVA",
+          referenciaId: order.reservaId,
+        },
+      });
+      notifications.add(reservedDetail.productoSucursalId);
+    }
+
+    await transaction.detalleReserva.update({
+      where: { id: reservedDetail.id },
+      data: {
+        cantidadComprometida: 0,
+        estado: orderProductIds.has(reservedDetail.productoSucursalId)
+          ? "APROBADO"
+          : "LIBERADO",
+      },
+    });
+  }
+
+  const operationalDate = getOperationalDate();
+
+  for (const detail of order.detalles) {
+    const stockType = detail.productoSucursal.producto.tipoStock;
+    if (stockType === "SIN_CONTROL") continue;
+
+    const stock = stockType === "PERMANENTE"
+      ? await transaction.stockPermanente.findUnique({
+        where: { productoSucursalId: detail.productoSucursalId },
+      })
+      : await transaction.stockDiario.findUnique({
+        where: {
+          productoSucursalId_fecha: {
+            productoSucursalId: detail.productoSucursalId,
+            fecha: operationalDate,
+          },
+        },
+      });
+
+    if (!stock) {
+      throw new AppError(
+        409,
+        stockType === "DIARIO"
+          ? `El producto "${detail.nombreProducto}" no tiene apertura de stock para hoy.`
+          : `El producto "${detail.nombreProducto}" no tiene stock permanente configurado.`,
+        stockType === "DIARIO"
+          ? "STOCK_DIARIO_NO_ABIERTO"
+          : "STOCK_NO_CONFIGURADO",
+      );
+    }
+
+    const quantity = Number(detail.cantidad);
+    const currentQuantity = Number(stock.cantidadActual);
+    const committedQuantity = Number(stock.cantidadComprometida);
+    const available = calculateAvailableStock(currentQuantity, committedQuantity);
+
+    if (!hasSufficientStock(quantity, available)) {
+      throw new AppError(
+        409,
+        `No existe stock suficiente de "${detail.nombreProducto}". Solicitado: ${quantity}; disponible: ${available}. El pedido no fue enviado.`,
+        "STOCK_INSUFICIENTE",
+      );
+    }
+
+    if (stockType === "PERMANENTE") {
+      await transaction.stockPermanente.update({
+        where: { id: stock.id },
+        data: { cantidadComprometida: { increment: quantity } },
+      });
+    } else {
+      await transaction.stockDiario.update({
+        where: { id: stock.id },
+        data: { cantidadComprometida: { increment: quantity } },
+      });
+    }
+
+    await transaction.detallePedido.update({
+      where: { id: detail.id },
+      data: { cantidadComprometida: quantity },
+    });
+
+    await transaction.movimientoInventario.create({
+      data: {
+        productoSucursalId: detail.productoSucursalId,
+        usuarioId: auth.usuarioId,
+        tipoMovimiento: "COMPROMISO_PEDIDO",
+        cantidad: quantity,
+        cantidadAnterior: currentQuantity,
+        cantidadResultante: currentQuantity,
+        motivo: `Stock comprometido al enviar el pedido ${order.codigo}.`,
+        referenciaTipo: "PEDIDO",
+        referenciaId: order.id,
+      },
+    });
+    notifications.add(detail.productoSucursalId);
+  }
+
+  for (const productBranchId of notifications) {
+    await evaluateStockNotification(transaction, productBranchId);
+  }
 }
 
 async function buildOrderDetails(
@@ -2160,8 +2544,13 @@ export async function updateOrder(
       input.detalles,
     );
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
+      await assertDraftStockAvailable(
+        transaction,
+        input.detalles,
+      );
+
       const updateResult =
         await transaction
           .pedido
@@ -2169,6 +2558,7 @@ export async function updateOrder(
             where: {
               id: order.id,
               estado: "ABIERTO",
+              updatedAt: order.updatedAt,
             },
 
             data: {
@@ -2349,7 +2739,7 @@ export async function sendOrder(
       ? "ENVIADO"
       : "LISTO";
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
       /*
        * Este update condicional evita que dos solicitudes
@@ -2362,6 +2752,7 @@ export async function sendOrder(
             where: {
               id: order.id,
               estado: "ABIERTO",
+              updatedAt: order.updatedAt,
             },
 
             data: {
@@ -2382,6 +2773,16 @@ export async function sendOrder(
           "PEDIDO_YA_ENVIADO",
         );
       }
+
+      /*
+       * La reserva de stock forma parte de la misma transacción. Si no hay
+       * existencias, el cambio de estado anterior se revierte por completo.
+       */
+      await commitStockForSentOrder(
+        transaction,
+        auth,
+        order,
+      );
 
       const preparedDetailIds = [
         ...kitchenDetails,

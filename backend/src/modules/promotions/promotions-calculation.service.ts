@@ -9,6 +9,9 @@ import {
 import {
   AppError,
 } from "../../shared/errors/app-error.js";
+import {
+  isOrderPayable,
+} from "../../shared/orders/order-payment-policy.js";
 
 type PromotionCalculationAuth = {
   usuarioId: string;
@@ -764,13 +767,14 @@ export async function calculateAutomaticPromotions(
   }
 
   if (
-    order.estado !==
-    "ENTREGADO"
+    !isOrderPayable(
+      order.estado,
+    )
   ) {
     throw new AppError(
       409,
-      "Solo se pueden calcular promociones para pedidos entregados.",
-      "PEDIDO_NO_ENTREGADO",
+      "Solo se pueden calcular promociones para pedidos enviados y pendientes de cobro.",
+      "PEDIDO_NO_COBRABLE",
     );
   }
 

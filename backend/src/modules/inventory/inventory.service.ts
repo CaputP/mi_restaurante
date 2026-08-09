@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma.js";
+import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
 
 import {
@@ -556,7 +557,7 @@ export async function createDailyStock(
   }
 
   const result =
-    await prisma.$transaction(
+    await withSerializableTransaction(
       async (transaction) => {
         const stock =
           await transaction
@@ -695,7 +696,7 @@ export async function createInventoryMovement(
     entry ? 1 : -1;
 
   const result =
-    await prisma.$transaction(
+    await withSerializableTransaction(
       async (transaction) => {
         let previousQuantity = 0;
         let committedQuantity = 0;

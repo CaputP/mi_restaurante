@@ -233,6 +233,12 @@ export const orderOptionsQuerySchema =
       ),
   });
 
+export const orderCustomerRewardsQuerySchema =
+  z.object({
+    sucursalId: uuidSchema,
+    clienteId: uuidSchema,
+  });
+
 export const listOrdersQuerySchema =
   z
     .object({
@@ -472,6 +478,11 @@ export const orderIdSchema =
 export type OrderOptionsQuery =
   z.infer<
     typeof orderOptionsQuerySchema
+  >;
+
+export type OrderCustomerRewardsQuery =
+  z.infer<
+    typeof orderCustomerRewardsQuerySchema
   >;
 
 export type ListOrdersQuery =

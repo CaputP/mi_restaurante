@@ -1,8 +1,8 @@
-import cumpleaños from "../assets/images/events/cumpleaños.png";
-import boda from "../assets/images/events/boda.png";
-import quinceaños from "../assets/images/events/quinceaños.png";
-import yunsada from "../assets/images/events/yunsada.png";
-import empresa from "../assets/images/events/empresa.png";
+import cumpleaños from "../assets/images/events/cumpleaños.webp";
+import boda from "../assets/images/events/boda.webp";
+import quinceaños from "../assets/images/events/quinceaños.webp";
+import yunsada from "../assets/images/events/yunsada.webp";
+import empresa from "../assets/images/events/empresa.webp";
 
 const events = [
     {

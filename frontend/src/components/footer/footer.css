@@ -46,15 +46,17 @@
 }
 
 /* Columna de Enlaces */
-.links-column h3, 
-.contact-column h3 {
+.links-column h3,
+.contact-column h3,
+.legal-column h3 {
     color: #ffffff;
     font-size: 1.2rem;
     margin: 0 0 5px 0;
     position: relative;
 }
 
-.links-column a {
+.links-column a,
+.legal-column a {
     color: #cbd5e1;
     text-decoration: none;
     transition: all 0.3s ease;
@@ -62,7 +64,8 @@
     width: fit-content;
 }
 
-.links-column a:hover {
+.links-column a:hover,
+.legal-column a:hover {
     color: #ffd700;
     transform: translateX(5px); /* Desplazamiento sutil interactivo */
 }
@@ -72,6 +75,41 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
+    color: inherit;
+    text-decoration: none;
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.legal-column .complaint-book-link {
+    margin-top: .35rem;
+    padding: .65rem .8rem;
+    border: 1px solid rgba(255, 215, 0, .55);
+    border-radius: 8px;
+    color: #ffd700;
+    font-weight: 800;
+}
+
+.footer-cookie-settings {
+    border: 0;
+    background: transparent;
+    color: #ffd700;
+    cursor: pointer;
+    font: inherit;
+    font-size: .85rem;
+    text-decoration: underline;
+}
+
+a.contact-item:hover {
+    color: #ffd700;
+    transform: translateX(3px);
+}
+
+a.contact-item:focus-visible,
+.brand-column > a:focus-visible {
+    outline: 2px solid #ffd700;
+    outline-offset: 4px;
 }
 
 .contact-item strong {

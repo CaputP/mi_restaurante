@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -50,4 +51,10 @@ branchAvailabilityRouter.patch(
 branchAvailabilityRouter.patch(
   "/:id/blocks/:blockId/status",
   updateAvailabilityBlockStatusController,
+);
+
+branchAvailabilityRouter.use(
+  requirePermissions(
+    "SUCURSAL_GESTIONAR",
+  ),
 );

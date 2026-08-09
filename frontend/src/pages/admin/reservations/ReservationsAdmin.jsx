@@ -17,8 +17,8 @@ import {
     FaChevronLeft,
     FaChevronRight,
     FaClipboardCheck,
-    FaClock,
     FaEye,
+    FaList,
     FaMoneyBillWave,
     FaPlus,
     FaSave,
@@ -30,6 +30,12 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
+
+import AdminMetricCard from "../../../components/adminMetricCard/AdminMetricCard";
+import ReservationCalendar from "./ReservationCalendar";
 
 import {
     ApiError
@@ -48,8 +54,13 @@ import {
     rejectReservationRequest,
     reviewReservationRequest
 } from "../../../services/reservation.service";
+import {
+    getRemainingRequiredAdvance,
+    hasOutstandingRequiredAdvance,
+    RESERVATION_PAYMENT_EPSILON
+} from "../../../utils/reservationPayments";
 
-import "./reservationsAdmin.css";
+import "./ReservationsAdmin.css";
 
 const EMPTY_OPTIONS = {
     sucursales: [],
@@ -225,6 +236,11 @@ function ReservationsAdmin() {
         token
     } = useAuth();
 
+    const realtimeVersion =
+        useRealtimeVersion([
+            "RESERVATIONS"
+        ]);
+
     const [
         options,
         setOptions
@@ -246,6 +262,11 @@ function ReservationsAdmin() {
         page,
         setPage
     ] = useState(1);
+
+    const [
+        viewMode,
+        setViewMode
+    ] = useState("LIST");
 
     const [
         search,
@@ -346,6 +367,47 @@ function ReservationsAdmin() {
         reloadKey,
         setReloadKey
     ] = useState(0);
+
+    const reservationMetrics =
+        useMemo(
+            () =>
+                reservations.reduce(
+                    (metrics, reservation) => {
+                        if (
+                            [
+                                "SOLICITADA",
+                                "EN_REVISION"
+                            ].includes(
+                                reservation.estado
+                            )
+                        ) {
+                            metrics.toReview += 1;
+                        }
+
+                        if (
+                            reservation.estado ===
+                            "ESPERANDO_ADELANTO"
+                        ) {
+                            metrics.waitingPayment += 1;
+                        }
+
+                        if (
+                            reservation.estado ===
+                            "CONFIRMADA"
+                        ) {
+                            metrics.confirmed += 1;
+                        }
+
+                        return metrics;
+                    },
+                    {
+                        toReview: 0,
+                        waitingPayment: 0,
+                        confirmed: 0
+                    }
+                ),
+            [reservations]
+        );
 
     const productTotal =
         useMemo(
@@ -664,7 +726,53 @@ function ReservationsAdmin() {
         appliedSearch,
         filters,
         page,
-        reloadKey
+        reloadKey,
+        realtimeVersion
+    ]);
+
+    useEffect(() => {
+        if (
+            realtimeVersion === 0 ||
+            !selectedReservation?.id
+        ) {
+            return undefined;
+        }
+
+        const controller =
+            new AbortController();
+
+        async function synchronizeSelectedReservation() {
+            try {
+                const result =
+                    await getReservationByIdRequest(
+                        token,
+                        selectedReservation.id,
+                        controller.signal
+                    );
+
+                setSelectedReservation(result);
+            } catch (requestError) {
+                if (
+                    !isAbortError(
+                        requestError
+                    )
+                ) {
+                    console.error(
+                        "No se pudo sincronizar la reserva seleccionada:",
+                        requestError
+                    );
+                }
+            }
+        }
+
+        void synchronizeSelectedReservation();
+
+        return () =>
+            controller.abort();
+    }, [
+        realtimeVersion,
+        selectedReservation?.id,
+        token
     ]);
 
     function clearFeedback() {
@@ -1570,6 +1678,20 @@ function ReservationsAdmin() {
         }
 
         if (
+            amount >
+            selectedAdvanceRemaining +
+                RESERVATION_PAYMENT_EPSILON
+        ) {
+            setError(
+                `El pago no puede superar el adelanto pendiente de ${formatMoney(
+                    selectedAdvanceRemaining
+                )}.`
+            );
+
+            return;
+        }
+
+        if (
             paymentForm
                 .metodoPago !==
             "EFECTIVO" &&
@@ -1805,6 +1927,13 @@ function ReservationsAdmin() {
     const canReject =
         canApprove;
 
+    const selectedAdvanceRemaining =
+        selectedReservation
+            ? getRemainingRequiredAdvance(
+                selectedReservation
+            )
+            : 0;
+
     const canReceivePayment =
         [
             "ESPERANDO_ADELANTO",
@@ -1812,6 +1941,9 @@ function ReservationsAdmin() {
         ].includes(
             selectedReservation
                 ?.estado
+        ) &&
+        hasOutstandingRequiredAdvance(
+            selectedReservation
         );
 
     const canCancel =
@@ -1826,8 +1958,8 @@ function ReservationsAdmin() {
         );
 
     return (
-        <section className="reservations-admin">
-            <header className="reservations-heading">
+        <section className="reservations-admin admin-page">
+            <header className="reservations-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         RESERVAS
@@ -1862,16 +1994,62 @@ function ReservationsAdmin() {
             </header>
 
             {message && (
-                <div className="reservation-feedback success">
+                <div
+                    className="reservation-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="reservation-feedback error">
+                <div
+                    className="reservation-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
+
+            <div
+                className="admin-metric-grid"
+                aria-label="Resumen de reservas"
+            >
+                <AdminMetricCard
+                    icon={FaCalendarAlt}
+                    label="Resultados"
+                    value={pagination.total}
+                    detail="Con los filtros actuales"
+                    isLoading={isLoadingList}
+                />
+
+                <AdminMetricCard
+                    icon={FaClipboardCheck}
+                    label="Por revisar"
+                    value={reservationMetrics.toReview}
+                    detail="En esta página"
+                    tone="info"
+                    isLoading={isLoadingList}
+                />
+
+                <AdminMetricCard
+                    icon={FaMoneyBillWave}
+                    label="Esperando adelanto"
+                    value={reservationMetrics.waitingPayment}
+                    detail="En esta página"
+                    tone="attention"
+                    isLoading={isLoadingList}
+                />
+
+                <AdminMetricCard
+                    icon={FaCheck}
+                    label="Confirmadas"
+                    value={reservationMetrics.confirmed}
+                    detail="En esta página"
+                    tone="success"
+                    isLoading={isLoadingList}
+                />
+            </div>
 
             {formVisible && (
                 <form
@@ -1894,6 +2072,7 @@ function ReservationsAdmin() {
                         <button
                             type="button"
                             className="reservation-close-button"
+                            aria-label="Cerrar formulario de reserva"
                             onClick={() =>
                                 setFormVisible(
                                     false
@@ -2587,7 +2766,7 @@ function ReservationsAdmin() {
             )}
 
             <form
-                className="reservation-filters"
+                className="reservation-filters admin-filter-bar"
                 onSubmit={handleSearch}
             >
                 <div className="reservation-search">
@@ -2778,6 +2957,33 @@ function ReservationsAdmin() {
                 </button>
             </form>
 
+            <div
+                className="reservation-view-switch"
+                role="group"
+                aria-label="Vista de reservas"
+            >
+                <button
+                    type="button"
+                    className={viewMode === "LIST" ? "active" : ""}
+                    onClick={() => setViewMode("LIST")}
+                >
+                    <FaList /> Lista
+                </button>
+                <button
+                    type="button"
+                    className={viewMode === "CALENDAR" ? "active" : ""}
+                    onClick={() => setViewMode("CALENDAR")}
+                >
+                    <FaCalendarAlt /> Calendario
+                </button>
+            </div>
+
+            {viewMode === "CALENDAR" ? (
+                <ReservationCalendar
+                    branchId={filters.sucursalId}
+                    onOpenReservation={openReservationDetail}
+                />
+            ) : (
             <article className="reservation-table-card">
                 <div className="reservation-section-heading">
                     <div>
@@ -2806,8 +3012,8 @@ function ReservationsAdmin() {
                         </strong>
                     </div>
                 ) : (
-                    <div className="reservation-table-wrapper">
-                        <table className="reservation-table">
+                    <div className="reservation-table-wrapper admin-table-shell responsive-cards">
+                        <table className="reservation-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Código</th>
@@ -2831,7 +3037,7 @@ function ReservationsAdmin() {
                                                 reservation.id
                                             }
                                         >
-                                            <td>
+                                            <td data-label="Código">
                                                 <strong>
                                                     {
                                                         reservation.codigo
@@ -2839,7 +3045,7 @@ function ReservationsAdmin() {
                                                 </strong>
                                             </td>
 
-                                            <td>
+                                            <td data-label="Cliente">
                                                 <div className="reservation-client-cell">
                                                     <strong>
                                                         {
@@ -2859,7 +3065,7 @@ function ReservationsAdmin() {
                                                 </div>
                                             </td>
 
-                                            <td>
+                                            <td data-label="Fecha">
                                                 <div className="reservation-date-cell">
                                                     <span>
                                                         {formatDate(
@@ -2883,7 +3089,7 @@ function ReservationsAdmin() {
                                                 </div>
                                             </td>
 
-                                            <td>
+                                            <td data-label="Zona">
                                                 {
                                                     reservation
                                                         .zona
@@ -2891,23 +3097,23 @@ function ReservationsAdmin() {
                                                 }
                                             </td>
 
-                                            <td>
+                                            <td data-label="Tipo">
                                                 {formatLabel(
                                                     reservation
                                                         .tipoReserva
                                                 )}
                                             </td>
 
-                                            <td>
+                                            <td data-label="Total">
                                                 {formatMoney(
                                                     reservation
                                                         .totalEstimado
                                                 )}
                                             </td>
 
-                                            <td>
+                                            <td data-label="Estado">
                                                 <span
-                                                    className={`reservation-status ${reservation.estado.toLowerCase()}`}
+                                                    className={`admin-status-badge reservation-status ${reservation.estado.toLowerCase()}`}
                                                 >
                                                     {formatLabel(
                                                         reservation
@@ -2916,10 +3122,11 @@ function ReservationsAdmin() {
                                                 </span>
                                             </td>
 
-                                            <td>
+                                            <td data-label="Acciones">
                                                 <button
                                                     type="button"
                                                     className="reservation-icon-button"
+                                                    aria-label={`Ver reserva ${reservation.codigo}`}
                                                     disabled={
                                                         isLoadingDetail
                                                     }
@@ -2940,7 +3147,7 @@ function ReservationsAdmin() {
                     </div>
                 )}
 
-                <div className="reservation-pagination">
+                <div className="reservation-pagination admin-pagination">
                     <span>
                         Página {pagination.page} de{" "}
                         {pagination.totalPages}
@@ -2991,6 +3198,7 @@ function ReservationsAdmin() {
                     </div>
                 </div>
             </article>
+            )}
 
             {selectedReservation && (
                 <article
@@ -3022,6 +3230,7 @@ function ReservationsAdmin() {
                         <button
                             type="button"
                             className="reservation-close-button"
+                            aria-label="Cerrar detalle de reserva"
                             onClick={() =>
                                 setSelectedReservation(
                                     null
@@ -3204,7 +3413,7 @@ function ReservationsAdmin() {
 
                                     <dd>
                                         <span
-                                            className={`reservation-status ${selectedReservation.estado.toLowerCase()}`}
+                                            className={`admin-status-badge reservation-status ${selectedReservation.estado.toLowerCase()}`}
                                         >
                                             {formatLabel(
                                                 selectedReservation
@@ -3584,10 +3793,9 @@ function ReservationsAdmin() {
                                     </h3>
 
                                     <p>
-                                        Saldo pendiente:{" "}
+                                        Adelanto pendiente:{" "}
                                         {formatMoney(
-                                            selectedReservation
-                                                .saldoEstimado
+                                            selectedAdvanceRemaining
                                         )}
                                     </p>
                                 </div>
@@ -3652,6 +3860,9 @@ function ReservationsAdmin() {
                                     <input
                                         type="number"
                                         min="0.01"
+                                        max={
+                                            selectedAdvanceRemaining
+                                        }
                                         step="0.01"
                                         value={
                                             paymentForm
@@ -3804,7 +4015,7 @@ function ReservationsAdmin() {
                                             </div>
 
                                             <span
-                                                className={`reservation-status ${payment.estado.toLowerCase()}`}
+                                                className={`admin-status-badge reservation-status ${payment.estado.toLowerCase()}`}
                                             >
                                                 {formatLabel(
                                                     payment.estado

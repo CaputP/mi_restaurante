@@ -151,3 +151,22 @@
         height: 500px; /* RESTAURADO: Tu alto de 500px original para el mapa */
     }
 }
+
+.info-link {
+    color: inherit;
+    text-decoration: none;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.info-link:hover {
+    border-color: #355E3B;
+    transform: translateY(-2px);
+}
+
+.info-link:focus-visible {
+    outline: 3px solid rgba(53, 94, 59, 0.3);
+    outline-offset: 3px;
+}

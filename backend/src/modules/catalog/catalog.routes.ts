@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -79,4 +80,10 @@ catalogRouter.patch(
 catalogRouter.patch(
   "/products/:id/status",
   updateProductStatusController,
+);
+
+catalogRouter.use(
+  requirePermissions(
+    "PRODUCTO_GESTIONAR",
+  ),
 );

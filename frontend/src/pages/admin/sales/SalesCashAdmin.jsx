@@ -10,7 +10,6 @@ import {
     FaChevronLeft,
     FaChevronRight,
     FaCoins,
-    FaCreditCard,
     FaEye,
     FaMoneyBillWave,
     FaPlus,
@@ -30,14 +29,14 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
+    useLocation,
     useNavigate
 } from "react-router-dom";
-
-import {
-    ApiError
-} from "../../../services/api";
 
 import {
     closeCashRegisterRequest,
@@ -45,7 +44,8 @@ import {
     getCashRegisterByIdRequest,
     getCurrentCashRequest,
     listCashRegistersRequest,
-    openCashRegisterRequest
+    openCashRegisterRequest,
+    reopenCashRegisterRequest
 } from "../../../services/cash.service";
 
 import {
@@ -73,172 +73,32 @@ import {
     previewLoyaltyRedemptionRequest
 } from "../../../services/loyalty.service";
 
+import {
+    EMPTY_CASH_OPTIONS,
+    EMPTY_EXPENSE_OPTIONS,
+    EMPTY_PAGINATION,
+    EMPTY_SALE_OPTIONS,
+    createPaymentRow,
+    formatDate,
+    formatDateTime,
+    formatLabel,
+    formatMoney,
+    getErrorMessage,
+    getPromotionalDiscount,
+    getTodayInputValue,
+    isAbortError,
+    numberValue,
+    roundMoney
+} from "./salesCash.utils";
+
+import OrderChargeSummary from "./OrderChargeSummary";
+
+import {
+    getSaleTicketPath,
+    getSaleVoidPath
+} from "../../../utils/roleRoutes";
+
 import "./salesCashAdmin.css";
-
-const EMPTY_CASH_OPTIONS = {
-    sucursales: [],
-    vendedores: [],
-    estados: [],
-    sucursalSeleccionadaId: null,
-    vendedorActualId: null
-};
-
-const EMPTY_SALE_OPTIONS = {
-    sucursales: [],
-    cajas: [],
-    pedidos: [],
-    metodosPago: []
-};
-
-const EMPTY_PAGINATION = {
-    page: 1,
-    limit: 20,
-    total: 0,
-    totalPages: 1
-};
-
-const EMPTY_EXPENSE_OPTIONS = {
-    sucursales: [],
-    categorias: [],
-    cajas: [],
-    metodosPago: [],
-    sucursalSeleccionadaId: null
-};
-
-function getTodayInputValue() {
-    return new Date().toLocaleDateString(
-        "en-CA",
-        {
-            timeZone: "America/Lima"
-        }
-    );
-}
-
-function createPaymentRow(
-    amount = 0
-) {
-    return {
-        id:
-            `${Date.now()}-${Math.random()}`,
-
-        metodoPago:
-            "EFECTIVO",
-
-        monto:
-            amount > 0
-                ? amount.toFixed(2)
-                : "",
-
-        numeroOperacion: "",
-
-        montoRecibido:
-            amount > 0
-                ? amount.toFixed(2)
-                : ""
-    };
-}
-
-
-function isAbortError(error) {
-    return (
-        error?.name ===
-        "AbortError"
-    );
-}
-
-
-function getErrorMessage(error) {
-    if (!(error instanceof ApiError)) {
-        return null;
-    }
-
-    const validationMessage =
-        error.errors?.[0]?.mensaje;
-
-    return validationMessage
-        ? `${error.message} ${validationMessage}`
-        : error.message;
-}
-
-function numberValue(value) {
-    const number =
-        Number(value);
-
-    return Number.isFinite(number)
-        ? number
-        : 0;
-}
-
-function roundMoney(value) {
-    return Number(
-        value.toFixed(2)
-    );
-}
-
-function getPromotionalDiscount(
-    sale
-) {
-    if (!sale) {
-        return 0;
-    }
-
-    return roundMoney(
-        (
-            sale.promocionesAplicadas ??
-            []
-        ).reduce(
-            (
-                total,
-                promotion
-            ) =>
-                total +
-                numberValue(
-                    promotion
-                        .montoDescuento
-                ),
-            0
-        )
-    );
-}
-
-function formatMoney(value) {
-    return new Intl.NumberFormat(
-        "es-PE",
-        {
-            style: "currency",
-            currency: "PEN"
-        }
-    ).format(
-        numberValue(value)
-    );
-}
-
-function formatDateTime(value) {
-    if (!value) {
-        return "-";
-    }
-
-    return new Date(
-        value
-    ).toLocaleString(
-        "es-PE",
-        {
-            dateStyle: "short",
-            timeStyle: "short"
-        }
-    );
-}
-
-function formatLabel(value) {
-    return String(value ?? "")
-        .toLowerCase()
-        .replaceAll("_", " ")
-        .replace(
-            /(^|\s)\S/g,
-            (letter) =>
-                letter.toUpperCase()
-        );
-}
 
 function SalesCashAdmin() {
     const {
@@ -246,8 +106,25 @@ function SalesCashAdmin() {
         usuario
     } = useAuth();
 
+    const realtimeVersion =
+        useRealtimeVersion([
+            "CASH",
+            "SALES",
+            "EXPENSES",
+            "ORDERS"
+        ]);
+
     const navigate =
         useNavigate();
+    const location =
+        useLocation();
+
+    const canVoidSale =
+        usuario?.permisos?.some(
+            (permission) =>
+                permission.codigo ===
+                "VENTA_ANULAR"
+        ) ?? false;
 
     const [
         activeTab,
@@ -392,6 +269,11 @@ function SalesCashAdmin() {
     ] = useState(true);
 
     const [
+        shouldAutoPrintReceipt,
+        setShouldAutoPrintReceipt
+    ] = useState(true);
+
+    const [
         selectedSale,
         setSelectedSale
     ] = useState(null);
@@ -410,6 +292,14 @@ function SalesCashAdmin() {
     ] = useState({
         efectivoContado: "",
         observaciones: ""
+    });
+
+    const [
+        reopenCashForm,
+        setReopenCashForm
+    ] = useState({
+        motivo: "",
+        password: ""
     });
 
     const [
@@ -735,6 +625,8 @@ function SalesCashAdmin() {
             return;
         }
 
+        // Sincroniza el borrador con vistas previas calculadas de forma asíncrona.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSaleForm(
             (previous) => {
                 if (
@@ -1154,7 +1046,8 @@ function SalesCashAdmin() {
         saleState,
         salePage,
         appliedSaleSearch,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     useEffect(() => {
@@ -1162,6 +1055,8 @@ function SalesCashAdmin() {
             !selectedBranchId ||
             !selectedSellerId
         ) {
+            // Limpia datos pertenecientes a la selección anterior.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCurrentCash(null);
             return undefined;
         }
@@ -1240,11 +1135,14 @@ function SalesCashAdmin() {
         token,
         selectedBranchId,
         selectedSellerId,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     useEffect(() => {
         if (!selectedBranchId) {
+            // Limpia datos pertenecientes a la sucursal anterior.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setExpenseOptions(
                 EMPTY_EXPENSE_OPTIONS
             );
@@ -1384,12 +1282,82 @@ function SalesCashAdmin() {
         expensePage,
         appliedExpenseSearch,
         expenseFilters,
-        reloadKey
+        reloadKey,
+        realtimeVersion
+    ]);
+
+    useEffect(() => {
+        if (
+            realtimeVersion === 0 ||
+            !selectedCashDetail?.id
+        ) {
+            return undefined;
+        }
+
+        const controller =
+            new AbortController();
+
+        void getCashRegisterByIdRequest(
+            token,
+            selectedCashDetail.id,
+            controller.signal
+        )
+            .then(setSelectedCashDetail)
+            .catch((requestError) => {
+                if (!isAbortError(requestError)) {
+                    console.error(
+                        "No se pudo sincronizar el detalle de caja:",
+                        requestError
+                    );
+                }
+            });
+
+        return () =>
+            controller.abort();
+    }, [
+        realtimeVersion,
+        selectedCashDetail?.id,
+        token
     ]);
 
     function clearFeedback() {
         setMessage("");
         setError("");
+    }
+
+    function openSaleReceipt(
+        saleId,
+        {
+            autoPrint = false,
+            fromSaleCreation = false
+        } = {}
+    ) {
+        const navigationState =
+            autoPrint ||
+                fromSaleCreation
+                ? {
+                    autoPrint,
+                    fromSaleCreation,
+                    printRequestId:
+                        autoPrint
+                            ? crypto.randomUUID()
+                            : null
+                }
+                : null;
+
+        navigate(
+            getSaleTicketPath(
+                usuario?.rol?.codigo,
+                location.pathname,
+                saleId
+            ),
+            navigationState
+                ? {
+                    state:
+                        navigationState
+                }
+                : undefined
+        );
     }
 
     function refreshData() {
@@ -1607,6 +1575,62 @@ function SalesCashAdmin() {
                     requestError
                 ) ??
                 "No se pudo cerrar la caja."
+            );
+        } finally {
+            setIsSaving(false);
+        }
+    }
+
+    async function handleReopenCash(event) {
+        event.preventDefault();
+        clearFeedback();
+
+        if (!selectedCashDetail) {
+            return;
+        }
+
+        if (
+            reopenCashForm.motivo.trim().length < 10
+        ) {
+            setError(
+                "Explica el motivo de la reapertura con al menos 10 caracteres."
+            );
+            return;
+        }
+
+        setIsSaving(true);
+
+        try {
+            const response =
+                await reopenCashRegisterRequest(
+                    token,
+                    selectedCashDetail.id,
+                    {
+                        motivo:
+                            reopenCashForm.motivo.trim(),
+                        password:
+                            reopenCashForm.password
+                    }
+                );
+
+            setSelectedCashDetail(
+                response.data.caja
+            );
+            setCurrentCash(
+                response.data.caja
+            );
+            setReopenCashForm({
+                motivo: "",
+                password: ""
+            });
+            setMessage(response.message);
+            setReloadKey(
+                (value) => value + 1
+            );
+        } catch (requestError) {
+            setError(
+                getErrorMessage(requestError) ??
+                    "No se pudo reabrir la caja."
             );
         } finally {
             setIsSaving(false);
@@ -2222,8 +2246,11 @@ function SalesCashAdmin() {
                     }
                 );
 
+            const createdSale =
+                response.data.venta;
+
             setSelectedSale(
-                response.data.venta
+                createdSale
             );
 
             setSelectedOrderId("");
@@ -2270,6 +2297,18 @@ function SalesCashAdmin() {
                 (value) =>
                     value + 1
             );
+
+            if (
+                shouldAutoPrintReceipt
+            ) {
+                openSaleReceipt(
+                    createdSale.id,
+                    {
+                        autoPrint: true,
+                        fromSaleCreation: true
+                    }
+                );
+            }
         } catch (requestError) {
             setError(
                 getErrorMessage(
@@ -2769,8 +2808,8 @@ function SalesCashAdmin() {
     }
 
     return (
-        <section className="sales-cash-admin">
-            <header className="sales-cash-heading">
+        <section className="sales-cash-admin admin-page">
+            <header className="sales-cash-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         VENTAS Y CAJA
@@ -2835,25 +2874,40 @@ function SalesCashAdmin() {
             </header>
 
             {message && (
-                <div className="sales-feedback success">
+                <div
+                    className="sales-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="sales-feedback error">
+                <div
+                    className="sales-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <nav className="sales-tabs">
+            <nav
+                className="sales-tabs admin-tabs"
+                role="tablist"
+                aria-label="Secciones de ventas y caja"
+            >
                 <button
                     type="button"
+                    role="tab"
+                    aria-selected={
+                        activeTab ===
+                        "COBROS"
+                    }
                     className={
                         activeTab ===
                             "COBROS"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(
@@ -2867,11 +2921,16 @@ function SalesCashAdmin() {
 
                 <button
                     type="button"
+                    role="tab"
+                    aria-selected={
+                        activeTab ===
+                        "CAJA"
+                    }
                     className={
                         activeTab ===
                             "CAJA"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(
@@ -2885,11 +2944,16 @@ function SalesCashAdmin() {
 
                 <button
                     type="button"
+                    role="tab"
+                    aria-selected={
+                        activeTab ===
+                        "VENTAS"
+                    }
                     className={
                         activeTab ===
                             "VENTAS"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(
@@ -2902,11 +2966,16 @@ function SalesCashAdmin() {
                 </button>
                 <button
                     type="button"
+                    role="tab"
+                    aria-selected={
+                        activeTab ===
+                        "GASTOS"
+                    }
                     className={
                         activeTab ===
                             "GASTOS"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(
@@ -2921,7 +2990,7 @@ function SalesCashAdmin() {
 
             {activeTab === "COBROS" && (
                 <>
-                    <div className="sales-stat-grid">
+                    <div className="sales-stat-grid admin-metric-grid">
                         <article>
                             <FaReceipt />
 
@@ -2995,12 +3064,13 @@ function SalesCashAdmin() {
                         <div className="sales-section-heading">
                             <div>
                                 <h3>
-                                    Pedidos entregados
+                                    Pedidos por cobrar
                                 </h3>
 
                                 <p>
-                                    Selecciona el pedido
-                                    que será cobrado.
+                                    Los pedidos aparecen al
+                                    enviarse, aunque sigan en
+                                    preparación.
                                 </p>
                             </div>
                         </div>
@@ -3081,6 +3151,18 @@ function SalesCashAdmin() {
 
                                                 <div>
                                                     <dt>
+                                                        Estado
+                                                    </dt>
+
+                                                    <dd>
+                                                        {formatLabel(
+                                                            order.estado
+                                                        )}
+                                                    </dd>
+                                                </div>
+
+                                                <div>
+                                                    <dt>
                                                         Productos
                                                     </dt>
 
@@ -3151,6 +3233,7 @@ function SalesCashAdmin() {
                                 <button
                                     type="button"
                                     className="sales-close-button"
+                                    aria-label="Cerrar formulario de cobro"
                                     onClick={
                                         closeChargeForm
                                     }
@@ -3158,6 +3241,12 @@ function SalesCashAdmin() {
                                     <FaTimes />
                                 </button>
                             </div>
+
+                            <OrderChargeSummary
+                                order={
+                                    selectedOrder
+                                }
+                            />
 
                             <div className="charge-form-grid">
                                 <label>
@@ -3909,6 +3998,7 @@ function SalesCashAdmin() {
                                                 <button
                                                     type="button"
                                                     className="remove-payment"
+                                                    aria-label="Eliminar método de pago"
                                                     onClick={() =>
                                                         removePayment(
                                                             payment.id
@@ -3922,6 +4012,34 @@ function SalesCashAdmin() {
                                     }
                                 )}
                             </div>
+
+                            <label className="receipt-print-preference">
+                                <input
+                                    type="checkbox"
+                                    checked={
+                                        shouldAutoPrintReceipt
+                                    }
+                                    onChange={(
+                                        event
+                                    ) =>
+                                        setShouldAutoPrintReceipt(
+                                            event.target.checked
+                                        )
+                                    }
+                                />
+
+                                <FaPrint />
+
+                                <span>
+                                    <strong>
+                                        Imprimir comprobante al finalizar
+                                    </strong>
+
+                                    <small>
+                                        Al registrar la venta se abrirá el comprobante y el diálogo de impresión.
+                                    </small>
+                                </span>
+                            </label>
 
                             <div className="sales-form-actions">
                                 <button
@@ -4366,8 +4484,8 @@ function SalesCashAdmin() {
                             </select>
                         </div>
 
-                        <div className="sales-table-wrapper">
-                            <table className="sales-table">
+                        <div className="sales-table-wrapper admin-table-shell">
+                            <table className="sales-table admin-data-table">
                                 <thead>
                                     <tr>
                                         <th>Caja</th>
@@ -4439,7 +4557,7 @@ function SalesCashAdmin() {
 
                                                 <td>
                                                     <span
-                                                        className={`sales-status ${cash.estado.toLowerCase()}`}
+                                                        className={`admin-status-badge sales-status ${cash.estado.toLowerCase()}`}
                                                     >
                                                         {formatLabel(
                                                             cash.estado
@@ -4451,6 +4569,7 @@ function SalesCashAdmin() {
                                                     <button
                                                         type="button"
                                                         className="sales-icon-button"
+                                                        aria-label={`Ver caja ${cash.codigo}`}
                                                         disabled={
                                                             isLoadingDetail
                                                         }
@@ -4470,7 +4589,7 @@ function SalesCashAdmin() {
                             </table>
                         </div>
 
-                        <div className="sales-pagination">
+                        <div className="sales-pagination admin-pagination">
                             <span>
                                 Página{" "}
                                 {
@@ -4549,7 +4668,7 @@ function SalesCashAdmin() {
                     </div>
 
                     <form
-                        className="sales-filters"
+                        className="sales-filters admin-filter-bar"
                         onSubmit={
                             handleSaleSearch
                         }
@@ -4607,8 +4726,8 @@ function SalesCashAdmin() {
                         </button>
                     </form>
 
-                    <div className="sales-table-wrapper">
-                        <table className="sales-table">
+                    <div className="sales-table-wrapper admin-table-shell">
+                        <table className="sales-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Ticket</th>
@@ -4681,7 +4800,7 @@ function SalesCashAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`sales-status ${sale.estado.toLowerCase()}`}
+                                                    className={`admin-status-badge sales-status ${sale.estado.toLowerCase()}`}
                                                 >
                                                     {formatLabel(
                                                         sale.estado
@@ -4700,6 +4819,7 @@ function SalesCashAdmin() {
                                                     <button
                                                         type="button"
                                                         className="sales-icon-button"
+                                                        aria-label={`Ver venta ${sale.codigo}`}
                                                         disabled={isLoadingDetail}
                                                         title="Ver detalle"
                                                         onClick={() =>
@@ -4714,25 +4834,32 @@ function SalesCashAdmin() {
                                                     <button
                                                         type="button"
                                                         className="sales-icon-button"
+                                                        aria-label={`Imprimir venta ${sale.codigo}`}
                                                         title="Imprimir ticket"
                                                         onClick={() =>
-                                                            navigate(
-                                                                `/admin/ventas/ticket/${sale.id}`
+                                                            openSaleReceipt(
+                                                                sale.id
                                                             )
                                                         }
                                                     >
                                                         <FaPrint />
                                                     </button>
 
-                                                    {sale.estado ===
+                                                    {canVoidSale &&
+                                                        sale.estado ===
                                                         "CONFIRMADA" && (
                                                             <button
                                                                 type="button"
                                                                 className="sales-icon-button"
+                                                                aria-label={`Anular venta ${sale.codigo}`}
                                                                 title="Anular venta"
                                                                 onClick={() =>
                                                                     navigate(
-                                                                        `/admin/ventas/anular/${sale.id}`
+                                                                        getSaleVoidPath(
+                                                                            usuario?.rol?.codigo,
+                                                                            location.pathname,
+                                                                            sale.id
+                                                                        )
                                                                     )
                                                                 }
                                                             >
@@ -4750,7 +4877,7 @@ function SalesCashAdmin() {
                         </table>
                     </div>
 
-                    <div className="sales-pagination">
+                    <div className="sales-pagination admin-pagination">
                         <span>
                             Página{" "}
                             {salePagination.page}{" "}
@@ -4809,7 +4936,7 @@ function SalesCashAdmin() {
 
             {activeTab === "GASTOS" && (
                 <>
-                    <div className="expense-stat-grid">
+                    <div className="expense-stat-grid admin-metric-grid">
                         <article>
                             <FaFileInvoiceDollar />
 
@@ -5276,7 +5403,7 @@ function SalesCashAdmin() {
                         </div>
 
                         <form
-                            className="expense-filters"
+                            className="expense-filters admin-filter-bar"
                             onSubmit={
                                 handleExpenseSearch
                             }
@@ -5476,8 +5603,8 @@ function SalesCashAdmin() {
                                 </strong>
                             </div>
                         ) : (
-                            <div className="sales-table-wrapper">
-                                <table className="sales-table expense-table">
+                            <div className="sales-table-wrapper admin-table-shell">
+                                <table className="sales-table expense-table admin-data-table">
                                     <thead>
                                         <tr>
                                             <th>Fecha</th>
@@ -5545,7 +5672,7 @@ function SalesCashAdmin() {
 
                                                     <td>
                                                         <span
-                                                            className={`sales-status ${expense.estado.toLowerCase()}`}
+                                                            className={`admin-status-badge sales-status ${expense.estado.toLowerCase()}`}
                                                         >
                                                             {formatLabel(
                                                                 expense.estado
@@ -5557,6 +5684,7 @@ function SalesCashAdmin() {
                                                         <button
                                                             type="button"
                                                             className="sales-icon-button"
+                                                            aria-label={`Ver gasto ${expense.codigo}`}
                                                             disabled={
                                                                 isLoadingDetail
                                                             }
@@ -5577,7 +5705,7 @@ function SalesCashAdmin() {
                             </div>
                         )}
 
-                        <div className="sales-pagination">
+                        <div className="sales-pagination admin-pagination">
                             <span>
                                 Página{" "}
                                 {
@@ -5657,17 +5785,36 @@ function SalesCashAdmin() {
                             </p>
                         </div>
 
-                        <button
-                            type="button"
-                            className="sales-close-button"
-                            onClick={() =>
-                                setSelectedSale(
-                                    null
-                                )
-                            }
-                        >
-                            <FaTimes />
-                        </button>
+                        <div className="sale-detail-heading-actions">
+                            <button
+                                type="button"
+                                className="sale-receipt-button"
+                                onClick={() =>
+                                    openSaleReceipt(
+                                        selectedSale.id,
+                                        {
+                                            fromSaleCreation: true
+                                        }
+                                    )
+                                }
+                            >
+                                <FaPrint />
+                                Imprimir comprobante
+                            </button>
+
+                            <button
+                                type="button"
+                                className="sales-close-button"
+                                aria-label="Cerrar detalle de venta"
+                                onClick={() =>
+                                    setSelectedSale(
+                                        null
+                                    )
+                                }
+                            >
+                                <FaTimes />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="sale-detail-summary">
@@ -6095,6 +6242,7 @@ function SalesCashAdmin() {
                         <button
                             type="button"
                             className="sales-close-button"
+                            aria-label="Cerrar detalle de gasto"
                             onClick={() =>
                                 setSelectedExpense(
                                     null
@@ -6274,6 +6422,7 @@ function SalesCashAdmin() {
                         <button
                             type="button"
                             className="sales-close-button"
+                            aria-label="Cerrar detalle de caja"
                             onClick={() =>
                                 setSelectedCashDetail(
                                     null
@@ -6371,6 +6520,72 @@ function SalesCashAdmin() {
                             </strong>
                         </article>
                     </div>
+
+                    {selectedCashDetail.estado === "CERRADA" &&
+                        [
+                            "ADMINISTRADOR_GENERAL",
+                            "ADMINISTRADOR_SUCURSAL"
+                        ].includes(usuario.rol.codigo) && (
+                        <form
+                            className="cash-reopen-form"
+                            onSubmit={handleReopenCash}
+                        >
+                            <div>
+                                <strong>
+                                    Corrección controlada
+                                </strong>
+                                <p>
+                                    Sólo es posible reabrir la última caja del vendedor. La acción requiere contraseña y queda auditada.
+                                </p>
+                            </div>
+                            <label>
+                                Motivo de reapertura
+                                <textarea
+                                    rows="3"
+                                    minLength="10"
+                                    maxLength="1000"
+                                    value={reopenCashForm.motivo}
+                                    onChange={(event) =>
+                                        setReopenCashForm(
+                                            (current) => ({
+                                                ...current,
+                                                motivo: event.target.value
+                                            })
+                                        )
+                                    }
+                                    required
+                                />
+                            </label>
+                            <label>
+                                Contraseña actual
+                                <input
+                                    type="password"
+                                    autoComplete="current-password"
+                                    minLength="8"
+                                    maxLength="200"
+                                    value={reopenCashForm.password}
+                                    onChange={(event) =>
+                                        setReopenCashForm(
+                                            (current) => ({
+                                                ...current,
+                                                password: event.target.value
+                                            })
+                                        )
+                                    }
+                                    required
+                                />
+                            </label>
+                            <button
+                                type="submit"
+                                disabled={isSaving}
+                            >
+                                <FaSyncAlt />
+                                {isSaving
+                                    ? "Reabriendo..."
+                                    : "Reabrir caja"}
+                            </button>
+                        </form>
+                    )}
                 </article>
             )}
         </section>

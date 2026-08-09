@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -63,4 +64,10 @@ deliveryRouter.patch(
 deliveryRouter.get(
   "/:id",
   getDeliveryByIdController,
+);
+
+deliveryRouter.use(
+  requirePermissions(
+    "ENTREGA_REGISTRAR",
+  ),
 );

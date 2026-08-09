@@ -1,0 +1,653 @@
+.admin-layout,
+.operational-layout {
+    --admin-color-canvas: #f3f6f3;
+    --admin-color-surface: #ffffff;
+    --admin-color-surface-subtle: #fafbfa;
+    --admin-color-surface-muted: #edf2ee;
+    --admin-color-white: #ffffff;
+    --admin-color-ink: #111111;
+
+    --admin-color-primary: #355e3b;
+    --admin-color-primary-strong: #294b30;
+    --admin-color-primary-soft: #eef4ef;
+    --admin-color-accent: #90711d;
+    --admin-color-accent-strong: #d9b54a;
+    --admin-color-sidebar: #203d27;
+    --admin-color-sidebar-text: rgba(255, 255, 255, 0.82);
+    --admin-color-sidebar-muted: rgba(255, 255, 255, 0.65);
+    --admin-color-sidebar-hover: rgba(255, 255, 255, 0.08);
+    --admin-color-sidebar-border: rgba(255, 255, 255, 0.12);
+    --admin-color-sidebar-control: rgba(255, 255, 255, 0.1);
+    --admin-color-sidebar-surface: rgba(255, 255, 255, 0.07);
+    --admin-color-sidebar-border-strong: rgba(255, 255, 255, 0.18);
+    --admin-color-overlay: rgba(0, 0, 0, 0.48);
+    --admin-color-dialog-backdrop: rgba(17, 17, 17, 0.52);
+
+    --admin-color-text: #536057;
+    --admin-color-text-strong: #263d2a;
+    --admin-color-text-muted: #748078;
+    --admin-color-text-subtle: #929a94;
+
+    --admin-color-border: #dce4dd;
+    --admin-color-border-subtle: #e4ebe5;
+    --admin-color-control-border: #cbd5cc;
+
+    --admin-color-success: #2e7d32;
+    --admin-color-success-text: #1b5e20;
+    --admin-color-success-soft: #e8f5e9;
+    --admin-color-success-border: #a5d6a7;
+
+    --admin-color-warning: #8a6700;
+    --admin-color-warning-soft: #fff8e1;
+    --admin-color-attention: #b35a00;
+    --admin-color-attention-soft: #fff3e0;
+
+    --admin-color-danger: #c62828;
+    --admin-color-danger-text: #9b111e;
+    --admin-color-danger-soft: #ffebee;
+    --admin-color-danger-border: #ef9a9a;
+
+    --admin-color-info: #1565c0;
+    --admin-color-info-soft: #e3f2fd;
+
+    --admin-color-event: #6a1b9a;
+    --admin-color-event-soft: #f3e5f5;
+    --admin-color-teal: #00695c;
+    --admin-color-teal-soft: #e0f2f1;
+
+    --admin-content-max-width: 1500px;
+    --admin-control-height: 42px;
+    --admin-sidebar-width: 270px;
+    --admin-content-padding: 28px;
+
+    --admin-font-2xs: 0.62rem;
+    --admin-font-xs: 0.68rem;
+    --admin-font-sm: 0.74rem;
+    --admin-font-md: 0.82rem;
+    --admin-font-lg: 0.94rem;
+    --admin-font-xl: 1.1rem;
+    --admin-font-2xl: 1.35rem;
+    --admin-font-3xl: 1.55rem;
+    --admin-font-4xl: 1.8rem;
+    --admin-font-icon-lg: 2rem;
+
+    --admin-space-1: 4px;
+    --admin-space-2: 8px;
+    --admin-space-3: 12px;
+    --admin-space-4: 16px;
+    --admin-space-5: 20px;
+    --admin-space-6: 24px;
+
+    --admin-radius-xs: 6px;
+    --admin-radius-sm: 7px;
+    --admin-radius-control: 8px;
+    --admin-radius-feedback: 9px;
+    --admin-radius-md: 10px;
+    --admin-radius-lg: 11px;
+    --admin-radius-panel: 12px;
+    --admin-radius-card: 14px;
+    --admin-radius-card-lg: 15px;
+    --admin-radius-pill: 999px;
+
+    --admin-shadow-card: 0 4px 14px rgba(35, 57, 39, 0.04);
+    --admin-shadow-sidebar: 4px 0 18px rgba(0, 0, 0, 0.16);
+    --admin-shadow-overlay: 0 22px 55px rgba(24, 43, 29, 0.2);
+    --admin-shadow-focus: 0 0 0 3px rgba(53, 94, 59, 0.12);
+    --admin-shadow-focus-compact: 0 0 0 2px rgba(53, 94, 59, 0.12);
+    --admin-shadow-card-hover: 0 8px 22px rgba(41, 75, 48, 0.1);
+    --admin-shadow-ticket: 0 8px 25px rgba(0, 0, 0, 0.08);
+
+    color: var(--admin-color-text);
+}
+
+:is(.admin-layout, .operational-layout) .admin-page {
+    width: 100%;
+    max-width: var(--admin-content-max-width);
+    min-width: 0;
+    margin: 0 auto;
+}
+
+:is(.admin-layout, .operational-layout) .admin-page-header {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: var(--admin-space-5);
+    padding: var(--admin-space-6) 26px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--admin-space-6);
+
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-surface);
+}
+
+:is(.admin-layout, .operational-layout) .admin-page-header h2 {
+    margin: 7px 0 6px;
+    color: var(--admin-color-text-strong);
+    font-size: 1.55rem;
+    line-height: 1.2;
+}
+
+:is(.admin-layout, .operational-layout) .admin-page-header p {
+    max-width: 760px;
+    margin: 0;
+    color: var(--admin-color-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+:is(.admin-layout, .operational-layout) .admin-page-header button,
+:is(.admin-layout, .operational-layout) .admin-page-header a.admin-button {
+    min-height: var(--admin-control-height);
+    padding: 9px 15px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border-radius: var(--admin-radius-control);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 650;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.admin-eyebrow {
+    color: var(--admin-color-accent, #90711d);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+:is(.admin-layout, .operational-layout) .admin-surface {
+    min-width: 0;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-surface);
+}
+
+:is(.admin-layout, .operational-layout) .admin-metric-grid {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: var(--admin-space-5);
+
+    display: grid;
+    grid-template-columns:
+        repeat(var(--admin-metric-columns, 4), minmax(0, 1fr));
+    gap: 14px;
+}
+
+:is(.admin-layout, .operational-layout) .admin-metric-grid.columns-3 {
+    --admin-metric-columns: 3;
+}
+
+:is(.admin-layout, .operational-layout) .admin-metric-grid > article {
+    min-width: 0;
+    min-height: 106px;
+    padding: 17px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-surface);
+    box-shadow: var(--admin-shadow-card);
+}
+
+:is(.admin-layout, .operational-layout) .admin-metric-grid > article > svg {
+    width: 44px;
+    height: 44px;
+    padding: 11px;
+    flex: 0 0 44px;
+
+    border-radius: 11px;
+    background: var(--admin-color-primary-soft);
+    color: var(--admin-color-primary);
+}
+
+:is(.admin-layout, .operational-layout) .admin-metric-grid > article > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+:is(.admin-layout, .operational-layout) .admin-metric-grid > article span {
+    color: var(--admin-color-text-muted);
+    font-size: 0.72rem;
+}
+
+:is(.admin-layout, .operational-layout) .admin-metric-grid > article strong {
+    color: var(--admin-color-text-strong);
+    font-size: 1.35rem;
+    line-height: 1.15;
+}
+
+:is(.admin-layout, .operational-layout) .admin-feedback {
+    margin-bottom: 17px;
+    padding: 12px 15px;
+    border-radius: 9px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+:is(.admin-layout, .operational-layout) .admin-feedback.success {
+    border: 1px solid var(--admin-color-success-border);
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-success-text);
+}
+
+:is(.admin-layout, .operational-layout) .admin-feedback.error {
+    border: 1px solid var(--admin-color-danger-border);
+    background: var(--admin-color-danger-soft);
+    color: var(--admin-color-danger-text);
+}
+
+:is(.admin-layout, .operational-layout) .admin-filter-bar {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: var(--admin-space-5);
+    padding: 14px;
+
+    border: 1px solid var(--admin-color-border);
+    border-radius: 12px;
+    background: var(--admin-color-surface);
+}
+
+:is(.admin-layout, .operational-layout) .admin-filter-bar > :is(input, select),
+:is(.admin-layout, .operational-layout) .admin-filter-bar [class$="-search"] {
+    min-width: 0;
+    min-height: var(--admin-control-height);
+    border-color: var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+}
+
+:is(.admin-layout, .operational-layout) .admin-filter-bar > button {
+    min-height: var(--admin-control-height);
+    border-radius: var(--admin-radius-control);
+}
+
+:is(.admin-layout, .operational-layout) .admin-tabs {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 18px;
+    padding: 6px;
+
+    display: grid;
+    grid-template-columns:
+        repeat(var(--admin-tabs-count, 2), minmax(0, 1fr));
+    gap: 6px;
+
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-surface);
+}
+
+:is(.admin-layout, .operational-layout) .admin-tab {
+    min-width: 0;
+    min-height: var(--admin-control-height);
+    padding: 8px 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: 1px solid transparent;
+    border-radius: var(--admin-radius-control);
+    background: transparent;
+    color: #637067;
+
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 650;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+:is(.admin-layout, .operational-layout) .admin-tab:hover {
+    border-color: var(--admin-color-border);
+    background: var(--admin-color-primary-soft);
+    color: var(--admin-color-primary-strong);
+}
+
+:is(.admin-layout, .operational-layout) .admin-tab.active,
+:is(.admin-layout, .operational-layout) .admin-tab[aria-selected="true"] {
+    border-color: var(--admin-color-primary);
+    background: var(--admin-color-primary);
+    color: #ffffff;
+}
+
+:is(.admin-layout, .operational-layout) .admin-button {
+    min-height: var(--admin-control-height);
+    padding: 9px 15px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border-radius: var(--admin-radius-control);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+:is(.admin-layout, .operational-layout) .admin-button.primary {
+    border: 1px solid var(--admin-color-primary);
+    background: var(--admin-color-primary);
+    color: #ffffff;
+}
+
+:is(.admin-layout, .operational-layout) .admin-button.secondary {
+    border: 1px solid var(--admin-color-control-border);
+    background: var(--admin-color-surface);
+    color: var(--admin-color-primary-strong);
+}
+
+:is(.admin-layout, .operational-layout) .admin-button.danger {
+    border: 1px solid var(--admin-color-danger-border);
+    background: var(--admin-color-danger-soft);
+    color: var(--admin-color-danger-text);
+}
+
+:is(.admin-layout, .operational-layout) .admin-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+:is(.admin-layout, .operational-layout) :is(
+    [class$="-heading-actions"],
+    [class$="-form-actions"],
+    [class$="-detail-actions"]
+) button {
+    min-height: var(--admin-control-height);
+    padding: 9px 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border-radius: var(--admin-radius-control);
+    font: inherit;
+    font-size: var(--admin-font-md);
+    font-weight: 650;
+    cursor: pointer;
+}
+
+:is(.admin-layout, .operational-layout) [class$="-field"] {
+    min-width: 0;
+}
+
+:is(.admin-layout, .operational-layout) [class$="-field"] label {
+    color: var(--admin-color-text-strong);
+    font-size: var(--admin-font-sm);
+    font-weight: 650;
+}
+
+:is(.admin-layout, .operational-layout) [class$="-field"] :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+) {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--admin-control-height);
+    padding: 9px 11px;
+
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+    background: var(--admin-color-surface);
+    color: var(--admin-color-text-strong);
+    font: inherit;
+}
+
+:is(.admin-layout, .operational-layout) :is(
+    [class$="-icon-button"],
+    [class$="-close-button"]
+) {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--admin-radius-control);
+}
+
+:is(.admin-layout, .operational-layout) :is(button, a, input, select, textarea):focus-visible {
+    outline: 3px solid rgba(53, 94, 59, 0.22);
+    outline-offset: 2px;
+}
+
+:is(.admin-layout, .operational-layout) .admin-empty-state,
+:is(.admin-layout, .operational-layout) :is(
+    [class*="-empty-state"],
+    [class$="-empty"]
+):not(.compact):not([class*="-small"]) {
+    min-height: 240px;
+    padding: var(--admin-space-6);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--admin-space-2);
+
+    color: var(--admin-color-text-muted);
+    text-align: center;
+}
+
+:is(.admin-layout, .operational-layout) .admin-empty-state > svg,
+:is(.admin-layout, .operational-layout) :is(
+    [class*="-empty-state"],
+    [class$="-empty"]
+):not(.compact):not([class*="-small"]) > svg {
+    color: #9eada0;
+    font-size: 2rem;
+}
+
+:is(.admin-layout, .operational-layout) .admin-empty-state strong,
+:is(.admin-layout, .operational-layout) :is(
+    [class*="-empty-state"],
+    [class$="-empty"]
+):not(.compact):not([class*="-small"]) strong {
+    color: var(--admin-color-text);
+}
+
+:is(.admin-layout, .operational-layout) .admin-pagination {
+    padding-top: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+:is(.admin-layout, .operational-layout) .admin-pagination > span {
+    color: var(--admin-color-text-muted);
+    font-size: 0.74rem;
+}
+
+:is(.admin-layout, .operational-layout) .admin-pagination > div {
+    display: flex;
+    gap: 8px;
+}
+
+:is(.admin-layout, .operational-layout) .admin-pagination button {
+    min-height: 36px;
+    padding: 7px 11px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    border: 1px solid var(--admin-color-border);
+    border-radius: 7px;
+    background: var(--admin-color-surface);
+    color: var(--admin-color-text);
+
+    font: inherit;
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+:is(.admin-layout, .operational-layout) .admin-pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+:is(.admin-layout, .operational-layout) .admin-status-badge {
+    padding: 5px 8px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--admin-radius-pill);
+    font-size: 0.63rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+:is(.admin-layout, .operational-layout) .admin-table-shell {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-color: var(--admin-color-control-border) transparent;
+}
+
+:is(.admin-layout, .operational-layout) .admin-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+:is(.admin-layout, .operational-layout) .admin-data-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--admin-color-surface);
+    color: var(--admin-color-text-muted);
+}
+
+:is(.admin-layout, .operational-layout) .admin-data-table th,
+:is(.admin-layout, .operational-layout) .admin-data-table td {
+    border-bottom-color: var(--admin-color-border-subtle);
+}
+
+@media (max-width: 1200px) {
+    :is(.admin-layout, .operational-layout) .admin-metric-grid {
+        --admin-metric-columns: 2;
+    }
+}
+
+@media (max-width: 850px) {
+    :is(.admin-layout, .operational-layout) .admin-page-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards {
+        overflow: visible;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards .admin-data-table {
+        min-width: 0;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards thead {
+        display: none;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards tbody {
+        display: grid;
+        gap: 12px;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards tr {
+        padding: 14px;
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 12px 18px;
+
+        border: 1px solid var(--admin-color-border);
+        border-radius: 11px;
+        background: var(--admin-color-surface-subtle);
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards td {
+        min-width: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        border: none;
+        overflow-wrap: anywhere;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards td::before {
+        content: attr(data-label);
+        color: var(--admin-color-text-muted);
+        font-size: 0.62rem;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards td[data-label="Acciones"] {
+        grid-column: 1 / -1;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards td[data-label="Acciones"] button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    :is(.admin-layout, .operational-layout) .admin-tabs {
+        grid-template-columns: 1fr;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-metric-grid {
+        --admin-metric-columns: 1;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-pagination {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-pagination > div {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    :is(.admin-layout, .operational-layout) .admin-table-shell.responsive-cards tr {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :is(.admin-layout, .operational-layout) *,
+    :is(.admin-layout, .operational-layout) *::before,
+    :is(.admin-layout, .operational-layout) *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}

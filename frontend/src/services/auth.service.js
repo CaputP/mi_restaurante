@@ -21,9 +21,11 @@ export async function registerRequest(data) {
     return response.data;
 }
 
-export async function getCurrentUserRequest(token) {
+export async function getCurrentUserRequest(
+    signal
+) {
     const response = await apiRequest("/auth/me", {
-        token
+        signal
     });
 
     return response.data.usuario;
@@ -93,17 +95,40 @@ export async function resendVerificationEmailRequest(
 }
 
 export async function googleLoginRequest(
-    credential
+    data
 ) {
     const response = await apiRequest(
         "/auth/google",
         {
             method: "POST",
-            body: {
-                credential
-            }
+            body: data
         }
     );
 
     return response.data;
+}
+
+export async function logoutRequest() {
+    await apiRequest("/auth/logout", {
+        method: "POST"
+    });
+}
+
+export async function renewSessionRequest() {
+    const response = await apiRequest(
+        "/auth/session/renew",
+        {
+            method: "POST"
+        }
+    );
+
+    return response.data;
+}
+
+export async function acceptLegalPoliciesRequest(data) {
+    const response = await apiRequest(
+        "/auth/legal-acceptance",
+        { method: "POST", body: data }
+    );
+    return response.data.usuario;
 }

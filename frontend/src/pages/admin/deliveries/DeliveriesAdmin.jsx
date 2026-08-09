@@ -23,6 +23,9 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
@@ -124,6 +127,12 @@ function DeliveriesAdmin() {
         token,
         usuario
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "DELIVERIES",
+            "ORDERS"
+        ]);
 
     const [
         options,
@@ -469,7 +478,8 @@ function DeliveriesAdmin() {
         token,
         appliedReadySearch,
         filters.sucursalId,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     useEffect(() => {
@@ -544,7 +554,42 @@ function DeliveriesAdmin() {
         appliedDeliverySearch,
         filters,
         page,
-        reloadKey
+        reloadKey,
+        realtimeVersion
+    ]);
+
+    useEffect(() => {
+        if (
+            realtimeVersion === 0 ||
+            !selectedDelivery?.id
+        ) {
+            return undefined;
+        }
+
+        const controller =
+            new AbortController();
+
+        void getDeliveryByIdRequest(
+            token,
+            selectedDelivery.id,
+            controller.signal
+        )
+            .then(setSelectedDelivery)
+            .catch((requestError) => {
+                if (!isAbortError(requestError)) {
+                    console.error(
+                        "No se pudo sincronizar la entrega seleccionada:",
+                        requestError
+                    );
+                }
+            });
+
+        return () =>
+            controller.abort();
+    }, [
+        realtimeVersion,
+        selectedDelivery?.id,
+        token
     ]);
 
     useEffect(() => {
@@ -1085,8 +1130,8 @@ function DeliveriesAdmin() {
         "RETIRADA";
 
     return (
-        <section className="deliveries-admin">
-            <header className="deliveries-heading">
+        <section className="deliveries-admin admin-page">
+            <header className="deliveries-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         ENTREGAS
@@ -1120,18 +1165,24 @@ function DeliveriesAdmin() {
             </header>
 
             {message && (
-                <div className="delivery-feedback success">
+                <div
+                    className="delivery-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="delivery-feedback error">
+                <div
+                    className="delivery-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <div className="delivery-stat-grid">
+            <div className="delivery-stat-grid admin-metric-grid">
                 <article>
                     <FaBoxOpen />
 
@@ -1209,7 +1260,7 @@ function DeliveriesAdmin() {
                 </div>
 
                 <form
-                    className="ready-order-filters"
+                    className="ready-order-filters admin-filter-bar"
                     onSubmit={
                         handleReadySearch
                     }
@@ -1319,7 +1370,7 @@ function DeliveriesAdmin() {
                                         </div>
 
                                         <span
-                                            className={`delivery-status ${order.estado.toLowerCase()}`}
+                                            className={`admin-status-badge delivery-status ${order.estado.toLowerCase()}`}
                                         >
                                             {formatLabel(
                                                 order.estado
@@ -1474,6 +1525,7 @@ function DeliveriesAdmin() {
                         <button
                             type="button"
                             className="delivery-close-button"
+                            aria-label="Cerrar asignación de entrega"
                             onClick={() => {
                                 setSelectedOrder(
                                     null
@@ -1720,7 +1772,7 @@ function DeliveriesAdmin() {
                 </div>
 
                 <form
-                    className="delivery-filters"
+                    className="delivery-filters admin-filter-bar"
                     onSubmit={
                         handleDeliverySearch
                     }
@@ -1815,8 +1867,8 @@ function DeliveriesAdmin() {
                         </strong>
                     </div>
                 ) : (
-                    <div className="delivery-table-wrapper">
-                        <table className="delivery-table">
+                    <div className="delivery-table-wrapper admin-table-shell">
+                        <table className="delivery-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Pedido</th>
@@ -1890,7 +1942,7 @@ function DeliveriesAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`delivery-status ${delivery.estado.toLowerCase()}`}
+                                                    className={`admin-status-badge delivery-status ${delivery.estado.toLowerCase()}`}
                                                 >
                                                     {formatLabel(
                                                         delivery
@@ -1910,6 +1962,7 @@ function DeliveriesAdmin() {
                                                 <button
                                                     type="button"
                                                     className="delivery-icon-button"
+                                                    aria-label={`Ver entrega ${delivery.codigo}`}
                                                     disabled={
                                                         isLoadingDetail
                                                     }
@@ -1930,7 +1983,7 @@ function DeliveriesAdmin() {
                     </div>
                 )}
 
-                <div className="delivery-pagination">
+                <div className="delivery-pagination admin-pagination">
                     <span>
                         Página {pagination.page} de{" "}
                         {pagination.totalPages}
@@ -2016,6 +2069,7 @@ function DeliveriesAdmin() {
                         <button
                             type="button"
                             className="delivery-close-button"
+                            aria-label="Cerrar detalle de entrega"
                             onClick={() =>
                                 setSelectedDelivery(
                                     null

@@ -13,6 +13,7 @@ import {
   currentCashQuerySchema,
   listCashRegistersQuerySchema,
   openCashRegisterSchema,
+  reopenCashRegisterSchema,
 } from "./cash.schema.js";
 
 import {
@@ -22,6 +23,7 @@ import {
   getCurrentCashRegister,
   listCashRegisters,
   openCashRegister,
+  reopenCashRegister,
 } from "./cash.service.js";
 
 function getRequestAuth(
@@ -229,6 +231,40 @@ export async function closeCashRegisterController(
       data: {
         caja:
           cashRegister,
+      },
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
+export async function reopenCashRegisterController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { id } =
+      cashRegisterIdSchema.parse(
+        request.params,
+      );
+    const input =
+      reopenCashRegisterSchema.parse(
+        request.body,
+      );
+    const cashRegister =
+      await reopenCashRegister(
+        getRequestAuth(request),
+        id,
+        input,
+      );
+
+    response.status(200).json({
+      success: true,
+      message:
+        "Caja reabierta correctamente. La corrección quedó registrada en auditoría.",
+      data: {
+        caja: cashRegister,
       },
     });
   } catch (error: unknown) {

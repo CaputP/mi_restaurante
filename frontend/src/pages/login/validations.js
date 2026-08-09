@@ -9,14 +9,18 @@ export function validateAuthForm({
     correo,
     telefono,
     password,
-    confirmPassword
+    confirmPassword,
+    aceptaTerminos,
+    aceptaPrivacidad
 }) {
     const newErrors = {
         nombre: "",
         correo: "",
         telefono: "",
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
+        aceptaTerminos: "",
+        aceptaPrivacidad: ""
     };
 
     const nombreLimpio = nombre.trim();
@@ -63,6 +67,16 @@ export function validateAuthForm({
         } else if (password !== confirmPassword) {
             newErrors.confirmPassword =
                 "Las contraseñas no coinciden.";
+        }
+
+        if (!aceptaTerminos) {
+            newErrors.aceptaTerminos =
+                "Debes aceptar los Términos y Condiciones.";
+        }
+
+        if (!aceptaPrivacidad) {
+            newErrors.aceptaPrivacidad =
+                "Debes aceptar la Política de Privacidad.";
         }
     }
 

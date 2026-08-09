@@ -21,7 +21,7 @@ import {
     getRoleDisplayName
 } from "../../utils/roleRoutes";
 
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 
 import "./operationalSidebar.css";
 
@@ -33,6 +33,9 @@ const ROLE_MENU_ITEMS = {
 
             label:
                 "Comandas",
+
+            permission:
+                "COMANDA_VER",
 
             icon:
                 FaUtensils
@@ -47,6 +50,9 @@ const ROLE_MENU_ITEMS = {
             label:
                 "Entregas",
 
+            permission:
+                "ENTREGA_REGISTRAR",
+
             icon:
                 FaConciergeBell
         }
@@ -60,6 +66,9 @@ const ROLE_MENU_ITEMS = {
             label:
                 "Pedidos",
 
+            permission:
+                "PEDIDO_VER",
+
             icon:
                 FaClipboardList
         },
@@ -69,6 +78,9 @@ const ROLE_MENU_ITEMS = {
 
             label:
                 "Ventas y caja",
+
+            permission:
+                "VENTA_CREAR",
 
             icon:
                 FaCashRegister
@@ -83,6 +95,9 @@ const ROLE_MENU_ITEMS = {
             label:
                 "Pedidos",
 
+            permission:
+                "PEDIDO_VER",
+
             icon:
                 FaClipboardList
         },
@@ -92,6 +107,9 @@ const ROLE_MENU_ITEMS = {
 
             label:
                 "Comandas",
+
+            permission:
+                "COMANDA_VER",
 
             icon:
                 FaUtensils
@@ -103,6 +121,9 @@ const ROLE_MENU_ITEMS = {
             label:
                 "Entregas",
 
+            permission:
+                "ENTREGA_REGISTRAR",
+
             icon:
                 FaConciergeBell
         },
@@ -112,6 +133,9 @@ const ROLE_MENU_ITEMS = {
 
             label:
                 "Ventas y caja",
+
+            permission:
+                "VENTA_CREAR",
 
             icon:
                 FaCashRegister
@@ -126,6 +150,9 @@ const ROLE_MENU_ITEMS = {
             label:
                 "Pedidos",
 
+            permission:
+                "PEDIDO_VER",
+
             icon:
                 FaClipboardList
         },
@@ -135,6 +162,9 @@ const ROLE_MENU_ITEMS = {
 
             label:
                 "Comandas",
+
+            permission:
+                "COMANDA_VER",
 
             icon:
                 FaUtensils
@@ -146,6 +176,9 @@ const ROLE_MENU_ITEMS = {
             label:
                 "Entregas",
 
+            permission:
+                "ENTREGA_REGISTRAR",
+
             icon:
                 FaConciergeBell
         },
@@ -155,6 +188,9 @@ const ROLE_MENU_ITEMS = {
 
             label:
                 "Ventas y caja",
+
+            permission:
+                "VENTA_CREAR",
 
             icon:
                 FaCashRegister
@@ -177,10 +213,21 @@ function OperationalSidebar({
     const roleCode =
         usuario?.rol?.codigo ?? "";
 
+    const grantedPermissions = new Set(
+        usuario?.permisos?.map(
+            (permission) => permission.codigo
+        ) ?? []
+    );
+
     const menuItems =
         ROLE_MENU_ITEMS[
             roleCode
-        ] ?? [];
+        ]?.filter(
+            (item) =>
+                grantedPermissions.has(
+                    item.permission
+                )
+        ) ?? [];
 
     const isAdministrator =
         [

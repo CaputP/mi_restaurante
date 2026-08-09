@@ -1,6 +1,6 @@
 .branch-availability-admin {
     width: 100%;
-    max-width: 1500px;
+    max-width: var(--admin-content-max-width);
     min-width: 0;
     margin: 0 auto;
 }
@@ -11,9 +11,9 @@
     width: 100%;
     min-width: 0;
 
-    border: 1px solid #dce4dd;
-    border-radius: 14px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-white);
 }
 
 .branch-availability-heading {
@@ -28,13 +28,13 @@
 
 .branch-availability-heading h2 {
     margin: 6px 0;
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .branch-availability-heading p {
     margin: 0;
-    color: #748078;
-    font-size: 0.76rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-sm);
 }
 
 .branch-back-button {
@@ -47,10 +47,10 @@
 
     border: none;
     background: transparent;
-    color: #45664b;
+    color: var(--admin-color-text);
 
     font: inherit;
-    font-size: 0.72rem;
+    font-size: var(--admin-font-sm);
     font-weight: 650;
     cursor: pointer;
 }
@@ -58,7 +58,7 @@
 .branch-refresh-button,
 .branch-section-heading > button,
 .branch-schedule-actions > button {
-    min-height: 42px;
+    min-height: var(--admin-control-height);
     padding: 9px 14px;
 
     display: inline-flex;
@@ -67,13 +67,13 @@
     gap: 8px;
 
     border: none;
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
-    background: #355e3b;
-    color: #ffffff;
+    background: var(--admin-color-primary);
+    color: var(--admin-color-white);
 
     font: inherit;
-    font-size: 0.73rem;
+    font-size: var(--admin-font-sm);
     font-weight: 650;
     cursor: pointer;
 }
@@ -88,20 +88,20 @@
     margin-bottom: 17px;
     padding: 12px 15px;
 
-    border-radius: 9px;
-    font-size: 0.8rem;
+    border-radius: var(--admin-radius-feedback);
+    font-size: var(--admin-font-md);
 }
 
 .branch-availability-feedback.success {
-    border: 1px solid #a5d6a7;
-    background: #e8f5e9;
-    color: #1b5e20;
+    border: 1px solid var(--admin-color-success-border);
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-success-text);
 }
 
 .branch-availability-feedback.error {
-    border: 1px solid #ef9a9a;
-    background: #ffebee;
-    color: #9b111e;
+    border: 1px solid var(--admin-color-danger-border);
+    background: var(--admin-color-danger-soft);
+    color: var(--admin-color-danger-text);
 }
 
 .branch-availability-stats {
@@ -121,9 +121,9 @@
     align-items: center;
     gap: 12px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 11px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-lg);
+    background: var(--admin-color-white);
 }
 
 .branch-availability-stats article > svg {
@@ -132,9 +132,9 @@
     height: 42px;
     padding: 11px;
 
-    border-radius: 10px;
-    background: #eef4ef;
-    color: #355e3b;
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-color-primary-soft);
+    color: var(--admin-color-primary);
 }
 
 .branch-availability-stats article > div {
@@ -146,12 +146,12 @@
 }
 
 .branch-availability-stats span {
-    color: #758078;
-    font-size: 0.66rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
 }
 
 .branch-availability-stats strong {
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .branch-schedules-card,
@@ -171,13 +171,13 @@
 
 .branch-section-heading h3 {
     margin: 5px 0;
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .branch-section-heading p {
     margin: 0;
-    color: #748078;
-    font-size: 0.73rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-sm);
 }
 
 .branch-schedule-list {
@@ -201,9 +201,9 @@
     align-items: end;
     gap: 10px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 10px;
-    background: #fafbfa;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-color-surface-subtle);
 }
 
 .branch-schedule-number {
@@ -215,10 +215,10 @@
     justify-content: center;
 
     border-radius: 50%;
-    background: #e7efe8;
-    color: #355e3b;
+    background: var(--admin-color-border-subtle);
+    color: var(--admin-color-primary);
 
-    font-size: 0.7rem;
+    font-size: var(--admin-font-xs);
     font-weight: 750;
 }
 
@@ -230,8 +230,8 @@
     flex-direction: column;
     gap: 6px;
 
-    color: #465249;
-    font-size: 0.69rem;
+    color: var(--admin-color-text);
+    font-size: var(--admin-font-xs);
     font-weight: 650;
 }
 
@@ -245,9 +245,9 @@
     min-height: 40px;
     padding: 8px 10px;
 
-    border: 1px solid #cbd5cc;
-    border-radius: 8px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+    background: var(--admin-color-white);
 
     font: inherit;
     outline: none;
@@ -267,7 +267,7 @@
 .branch-schedule-active input {
     width: 17px;
     height: 17px;
-    accent-color: #355e3b;
+    accent-color: var(--admin-color-primary);
 }
 
 .branch-remove-schedule {
@@ -278,11 +278,11 @@
     align-items: center;
     justify-content: center;
 
-    border: 1px solid #efc5c5;
-    border-radius: 8px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
 
-    background: #fff5f5;
-    color: #b71c1c;
+    background: var(--admin-color-surface-subtle);
+    color: var(--admin-color-danger);
     cursor: pointer;
 }
 
@@ -297,10 +297,10 @@
     margin-bottom: 20px;
     padding: 18px;
 
-    border: 1px solid #cddace;
-    border-left: 4px solid #355e3b;
-    border-radius: 11px;
-    background: #fafcfa;
+    border: 1px solid var(--admin-color-control-border);
+    border-left: 4px solid var(--admin-color-primary);
+    border-radius: var(--admin-radius-lg);
+    background: var(--admin-color-surface-subtle);
 }
 
 .branch-block-form-heading {
@@ -313,7 +313,7 @@
 
 .branch-block-form-heading h4 {
     margin: 4px 0;
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .branch-block-form-heading > button {
@@ -325,10 +325,10 @@
     justify-content: center;
 
     border: none;
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
-    background: #edf2ee;
-    color: #465248;
+    background: var(--admin-color-surface-muted);
+    color: var(--admin-color-text);
     cursor: pointer;
 }
 
@@ -360,24 +360,24 @@
     justify-content: center;
     gap: 7px;
 
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
     font: inherit;
-    font-size: 0.72rem;
+    font-size: var(--admin-font-sm);
     font-weight: 650;
     cursor: pointer;
 }
 
 .branch-block-form-actions .secondary {
-    border: 1px solid #cad6cc;
-    background: #ffffff;
-    color: #536057;
+    border: 1px solid var(--admin-color-control-border);
+    background: var(--admin-color-white);
+    color: var(--admin-color-text);
 }
 
 .branch-block-form-actions .primary {
     border: none;
-    background: #355e3b;
-    color: #ffffff;
+    background: var(--admin-color-primary);
+    color: var(--admin-color-white);
 }
 
 .branch-block-form-actions button:disabled {
@@ -401,21 +401,21 @@
 .branch-block-table td {
     padding: 12px 10px;
 
-    border-bottom: 1px solid #e4ebe5;
+    border-bottom: 1px solid var(--admin-color-border-subtle);
     text-align: left;
     vertical-align: middle;
 }
 
 .branch-block-table th {
-    color: #69766c;
-    font-size: 0.63rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-2xs);
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
 .branch-block-table td {
-    color: #536057;
-    font-size: 0.72rem;
+    color: var(--admin-color-text);
+    font-size: var(--admin-font-sm);
 }
 
 .branch-block-scope {
@@ -423,7 +423,7 @@
     align-items: center;
     gap: 7px;
 
-    color: #3e5543;
+    color: var(--admin-color-primary);
     font-weight: 650;
 }
 
@@ -437,25 +437,25 @@
 
     display: inline-flex;
 
-    border-radius: 20px;
+    border-radius: var(--admin-radius-pill);
 
-    font-size: 0.59rem;
+    font-size: var(--admin-font-2xs);
     font-weight: 750;
 }
 
 .branch-block-status.activo {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-success);
 }
 
 .branch-block-status.inactivo {
-    background: #fff8e1;
-    color: #936515;
+    background: var(--admin-color-warning-soft);
+    color: var(--admin-color-accent);
 }
 
 .branch-block-status.archivado {
-    background: #eceff1;
-    color: #546e7a;
+    background: var(--admin-color-surface-muted);
+    color: var(--admin-color-text-muted);
 }
 
 .branch-block-actions {
@@ -472,11 +472,11 @@
     align-items: center;
     justify-content: center;
 
-    border: 1px solid #d2dcd4;
-    border-radius: 7px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-sm);
 
-    background: #ffffff;
-    color: #355e3b;
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary);
     cursor: pointer;
 }
 
@@ -495,18 +495,18 @@
     flex-direction: column;
     gap: 8px;
 
-    color: #768078;
+    color: var(--admin-color-text-muted);
     text-align: center;
 }
 
 .branch-availability-empty svg,
 .branch-availability-loading svg {
-    color: #8ba08e;
-    font-size: 2rem;
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-icon-lg);
 }
 
 .branch-availability-empty span {
-    font-size: 0.72rem;
+    font-size: var(--admin-font-sm);
 }
 
 @media (max-width: 1200px) {
@@ -554,7 +554,7 @@
     }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 600px) {
     .branch-availability-stats {
         grid-template-columns: 1fr;
     }

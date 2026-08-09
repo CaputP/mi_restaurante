@@ -1,4 +1,26 @@
 import { z } from "zod";
+import {
+  PRIVACY_VERSION,
+  TERMS_VERSION,
+} from "../../shared/legal/legal-versions.js";
+
+const legalAcceptanceSchema = {
+  aceptaTerminos: z.literal(true, {
+    error: "Debes aceptar los Términos y Condiciones.",
+  }),
+  versionTerminos: z.literal(TERMS_VERSION, {
+    error: "La versión de los Términos y Condiciones no es válida.",
+  }),
+  aceptaPrivacidad: z.literal(true, {
+    error: "Debes aceptar la Política de Privacidad.",
+  }),
+  versionPrivacidad: z.literal(PRIVACY_VERSION, {
+    error: "La versión de la Política de Privacidad no es válida.",
+  }),
+};
+
+export const acceptLegalSchema = z.object(legalAcceptanceSchema);
+export type AcceptLegalInput = z.infer<typeof acceptLegalSchema>;
 
 export const loginSchema = z.object({
   correo: z
@@ -61,6 +83,8 @@ export const registerSchema = z
       ),
 
     confirmarPassword: z.string(),
+
+    ...legalAcceptanceSchema,
   })
   .refine(
     (data) => data.password === data.confirmarPassword,
@@ -143,6 +167,10 @@ export const googleLoginSchema = z.object({
     .trim()
     .min(100, "La credencial de Google no es válida.")
     .max(5000, "La credencial de Google no es válida."),
+  aceptaTerminos: z.boolean().optional(),
+  versionTerminos: z.string().max(30).optional(),
+  aceptaPrivacidad: z.boolean().optional(),
+  versionPrivacidad: z.string().max(30).optional(),
 });
 
 export type GoogleLoginInput = z.infer<

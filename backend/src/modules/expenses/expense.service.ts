@@ -3,6 +3,7 @@ import {
 } from "../../generated/prisma/client.js";
 
 import { prisma } from "../../lib/prisma.js";
+import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
 
 import type {
@@ -868,7 +869,7 @@ export async function createExpense(
   );
 
   const createdExpense =
-    await prisma.$transaction(
+    await withSerializableTransaction(
       async (transaction) => {
         const category =
           await transaction
@@ -1040,12 +1041,6 @@ export async function createExpense(
 
         return expense;
       },
-      {
-        isolationLevel:
-          Prisma
-            .TransactionIsolationLevel
-            .Serializable,
-      },
     );
 
   return getExpenseById(
@@ -1070,7 +1065,7 @@ export async function voidExpense(
         branch.id,
     );
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
       const expense =
         await transaction
@@ -1212,12 +1207,6 @@ export async function voidExpense(
           );
         }
       }
-    },
-    {
-      isolationLevel:
-        Prisma
-          .TransactionIsolationLevel
-          .Serializable,
     },
   );
 

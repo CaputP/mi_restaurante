@@ -1,7 +1,9 @@
 import {
+    useCallback,
     useMemo,
     useState,
-    useEffect
+    useEffect,
+    useRef
 } from "react";
 
 import {
@@ -14,7 +16,9 @@ import {
     FaChartLine,
     FaCoins,
     FaEquals,
+    FaFileExcel,
     FaFileInvoiceDollar,
+    FaFilePdf,
     FaMoneyBillWave,
     FaPercentage,
     FaReceipt,
@@ -27,16 +31,22 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
 } from "../../../services/api";
 
 import {
+    downloadReportRequest,
+    getReportDetailsRequest,
     getReportOptionsRequest,
     getReportSummaryRequest
 } from "../../../services/report.service";
 
+import ReportDetailsDialog from "./ReportDetailsDialog";
 import "./reportsAdmin.css";
 
 const EMPTY_OPTIONS = {
@@ -152,11 +162,19 @@ function ReportMetricCard({
     value,
     description,
     icon: Icon,
-    variation = "neutral"
+    variation = "neutral",
+    onClick
 }) {
+    const Card = onClick
+        ? "button"
+        : "article";
+
     return (
-        <article
-            className={`report-metric-card ${variation}`}
+        <Card
+            type={onClick ? "button" : undefined}
+            className={`report-metric-card ${variation}${onClick ? " clickable" : ""}`}
+            onClick={onClick}
+            aria-label={onClick ? `Ver detalle de ${title}` : undefined}
         >
             <div className="report-metric-icon">
                 <Icon />
@@ -177,7 +195,7 @@ function ReportMetricCard({
                     </small>
                 )}
             </div>
-        </article>
+        </Card>
     );
 }
 
@@ -586,6 +604,18 @@ function ReportsAdmin() {
         token
     } = useAuth();
 
+    const realtimeVersion =
+        useRealtimeVersion([
+            "REPORTS",
+            "SALES",
+            "EXPENSES",
+            "RESERVATIONS",
+            "CASH"
+        ]);
+
+    const handledRealtimeVersionRef =
+        useRef(0);
+
     const [
         options,
         setOptions
@@ -618,6 +648,11 @@ function ReportsAdmin() {
     ] = useState(false);
 
     const [
+        exportFormat,
+        setExportFormat
+    ] = useState("");
+
+    const [
         error,
         setError
     ] = useState("");
@@ -626,6 +661,26 @@ function ReportsAdmin() {
         lastUpdate,
         setLastUpdate
     ] = useState(null);
+
+    const [
+        detailConfig,
+        setDetailConfig
+    ] = useState(null);
+
+    const [
+        detailData,
+        setDetailData
+    ] = useState(null);
+
+    const [
+        detailError,
+        setDetailError
+    ] = useState("");
+
+    const [
+        isLoadingDetails,
+        setIsLoadingDetails
+    ] = useState(false);
 
     const totalOrders =
         useMemo(
@@ -703,10 +758,10 @@ function ReportsAdmin() {
             ]
         );
 
-    async function loadReport(
+    const loadReport = useCallback(async (
         reportFilters,
         signal
-    ) {
+    ) => {
         setIsLoadingReport(true);
         setError("");
 
@@ -748,6 +803,54 @@ function ReportsAdmin() {
                 );
             }
         }
+    }, [token]);
+
+    const loadReportDetails = useCallback(async (
+        config,
+        page = 1
+    ) => {
+        if (!report?.filtros) {
+            return;
+        }
+
+        setDetailConfig(config);
+        setDetailError("");
+        setIsLoadingDetails(true);
+
+        try {
+            const result =
+                await getReportDetailsRequest(
+                    token,
+                    {
+                        ...report.filtros,
+                        tipo: config.tipo,
+                        filtro:
+                            config.filtro ??
+                            "",
+                        page,
+                        limit: 20
+                    }
+                );
+
+            setDetailData(result);
+        } catch (requestError) {
+            setDetailError(
+                getErrorMessage(
+                    requestError
+                ) ??
+                    "No se pudo cargar la trazabilidad del indicador."
+            );
+        } finally {
+            setIsLoadingDetails(false);
+        }
+    }, [report, token]);
+
+    function openReportDetails(config) {
+        setDetailData(null);
+        void loadReportDetails(
+            config,
+            1
+        );
     }
 
     useEffect(() => {
@@ -822,12 +925,59 @@ function ReportsAdmin() {
 
         return () =>
             controller.abort();
-    }, [token]);
+    }, [
+        token,
+        loadReport
+    ]);
+
+    useEffect(() => {
+        if (
+            realtimeVersion === 0 ||
+            handledRealtimeVersionRef.current ===
+                realtimeVersion ||
+            !report?.filtros
+        ) {
+            return undefined;
+        }
+
+        handledRealtimeVersionRef.current =
+            realtimeVersion;
+
+        const controller =
+            new AbortController();
+
+        void loadReport(
+            report.filtros,
+            controller.signal
+        );
+
+        if (detailConfig) {
+            // La llamada responde a un evento externo del servidor.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            void loadReportDetails(
+                detailConfig,
+                detailData
+                    ?.pagination
+                    ?.page ?? 1
+            );
+        }
+
+        return () =>
+            controller.abort();
+    }, [
+        realtimeVersion,
+        report?.filtros,
+        detailConfig,
+        detailData?.pagination?.page,
+        loadReport,
+        loadReportDetails
+    ]);
 
     async function handleGenerateReport(
         event
     ) {
         event.preventDefault();
+        setDetailConfig(null);
 
         if (
             !filters.fechaDesde ||
@@ -855,6 +1005,7 @@ function ReportsAdmin() {
     }
 
     function handleResetFilters() {
+        setDetailConfig(null);
         const initialFilters = {
             sucursalId:
                 options
@@ -875,6 +1026,41 @@ function ReportsAdmin() {
         void loadReport(
             initialFilters
         );
+    }
+
+    async function handleExport(format) {
+        setError("");
+        setExportFormat(format);
+
+        try {
+            const download =
+                await downloadReportRequest(
+                    token,
+                    format,
+                    report?.filtros ??
+                        filters
+                );
+            const url =
+                URL.createObjectURL(
+                    download.blob
+                );
+            const link =
+                document.createElement("a");
+
+            link.href = url;
+            link.download = download.filename;
+            document.body.append(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        } catch (requestError) {
+            setError(
+                getErrorMessage(requestError) ??
+                    "No se pudo exportar el reporte."
+            );
+        } finally {
+            setExportFormat("");
+        }
     }
 
     const summary =
@@ -917,8 +1103,8 @@ function ReportsAdmin() {
     }
 
     return (
-        <section className="reports-admin">
-            <header className="reports-heading">
+        <section className="reports-admin admin-page">
+            <header className="reports-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         REPORTES
@@ -935,31 +1121,62 @@ function ReportsAdmin() {
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    className="reports-refresh-button"
-                    disabled={
-                        isLoadingReport
-                    }
-                    onClick={() =>
-                        loadReport(
-                            filters
-                        )
-                    }
-                >
-                    <FaSyncAlt />
-                    Actualizar
-                </button>
+                <div className="reports-heading-actions">
+                    <button
+                        type="button"
+                        className="reports-export-button"
+                        disabled={Boolean(exportFormat) || !report}
+                        onClick={() =>
+                            void handleExport("xlsx")
+                        }
+                    >
+                        <FaFileExcel />
+                        {exportFormat === "xlsx"
+                            ? "Generando..."
+                            : "Excel"}
+                    </button>
+                    <button
+                        type="button"
+                        className="reports-export-button"
+                        disabled={Boolean(exportFormat) || !report}
+                        onClick={() =>
+                            void handleExport("pdf")
+                        }
+                    >
+                        <FaFilePdf />
+                        {exportFormat === "pdf"
+                            ? "Generando..."
+                            : "PDF"}
+                    </button>
+                    <button
+                        type="button"
+                        className="reports-refresh-button"
+                        disabled={
+                            isLoadingReport
+                        }
+                        onClick={() =>
+                            loadReport(
+                                filters
+                            )
+                        }
+                    >
+                        <FaSyncAlt />
+                        Actualizar
+                    </button>
+                </div>
             </header>
 
             {error && (
-                <div className="reports-feedback error">
+                <div
+                    className="reports-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
             <form
-                className="reports-filter-card"
+                className="reports-filter-card admin-filter-bar"
                 onSubmit={
                     handleGenerateReport
                 }
@@ -1147,7 +1364,7 @@ function ReportsAdmin() {
                         )}
                     </div>
 
-                    <div className="report-metric-grid main">
+                    <div className="report-metric-grid admin-metric-grid main">
                         <ReportMetricCard
                             title="Total vendido"
                             value={
@@ -1161,6 +1378,13 @@ function ReportsAdmin() {
                                 FaMoneyBillWave
                             }
                             variation="positive"
+                            onClick={() =>
+                                openReportDetails({
+                                    title:
+                                        "Ventas confirmadas",
+                                    tipo: "VENTAS"
+                                })
+                            }
                         />
 
                         <ReportMetricCard
@@ -1176,6 +1400,13 @@ function ReportsAdmin() {
                                 FaFileInvoiceDollar
                             }
                             variation="negative"
+                            onClick={() =>
+                                openReportDetails({
+                                    title:
+                                        "Gastos registrados",
+                                    tipo: "GASTOS"
+                                })
+                            }
                         />
 
                         <ReportMetricCard
@@ -1199,6 +1430,13 @@ function ReportsAdmin() {
                             variation={
                                 balanceVariation
                             }
+                            onClick={() =>
+                                openReportDetails({
+                                    title:
+                                        "Movimientos del balance operativo",
+                                    tipo: "BALANCE"
+                                })
+                            }
                         />
 
                         <ReportMetricCard
@@ -1213,10 +1451,17 @@ function ReportsAdmin() {
                             icon={
                                 FaTicketAlt
                             }
+                            onClick={() =>
+                                openReportDetails({
+                                    title:
+                                        "Ventas del ticket promedio",
+                                    tipo: "VENTAS"
+                                })
+                            }
                         />
                     </div>
 
-                    <div className="report-metric-grid secondary">
+                    <div className="report-metric-grid admin-metric-grid secondary">
                         <ReportMetricCard
                             title="Subtotal"
                             value={
@@ -1227,6 +1472,14 @@ function ReportsAdmin() {
                             description="Antes de descuentos y propinas"
                             icon={
                                 FaReceipt
+                            }
+                            onClick={() =>
+                                openReportDetails({
+                                    title:
+                                        "Composición del subtotal",
+                                    tipo: "VENTAS",
+                                    filtro: "SUBTOTAL"
+                                })
                             }
                         />
 
@@ -1242,6 +1495,15 @@ function ReportsAdmin() {
                             icon={
                                 FaPercentage
                             }
+                            onClick={() =>
+                                openReportDetails({
+                                    title:
+                                        "Ventas con descuentos",
+                                    tipo: "VENTAS",
+                                    filtro:
+                                        "CON_DESCUENTO"
+                                })
+                            }
                         />
 
                         <ReportMetricCard
@@ -1254,6 +1516,15 @@ function ReportsAdmin() {
                             description="Propinas registradas"
                             icon={
                                 FaCoins
+                            }
+                            onClick={() =>
+                                openReportDetails({
+                                    title:
+                                        "Propinas por venta",
+                                    tipo: "VENTAS",
+                                    filtro:
+                                        "CON_PROPINA"
+                                })
                             }
                         />
 
@@ -1268,6 +1539,36 @@ function ReportsAdmin() {
                             description="Pagos de reservas utilizados"
                             icon={
                                 FaWallet
+                            }
+                            onClick={() =>
+                                openReportDetails({
+                                    title:
+                                        "Adelantos aplicados a ventas",
+                                    tipo: "VENTAS",
+                                    filtro:
+                                        "CON_ADELANTO"
+                                })
+                            }
+                        />
+
+                        <ReportMetricCard
+                            title="Adelantos recibidos"
+                            value={
+                                formatMoney(
+                                    summary
+                                        .adelantosRecibidos
+                                )
+                            }
+                            description={`${summary.adelantosRegistrados} pago(s) de reserva confirmado(s)`}
+                            icon={FaWallet}
+                            variation="positive"
+                            onClick={() =>
+                                openReportDetails({
+                                    title:
+                                        "Adelantos de reservas recibidos",
+                                    tipo:
+                                        "ADELANTOS_RESERVA"
+                                })
                             }
                         />
                     </div>
@@ -1334,9 +1635,20 @@ function ReportsAdmin() {
                                             100;
 
                                         return (
-                                            <article
+                                            <button
+                                                type="button"
+                                                className="report-drilldown-trigger"
                                                 key={
                                                     payment.metodoPago
+                                                }
+                                                onClick={() =>
+                                                    openReportDetails({
+                                                        title:
+                                                            `Pagos por ${formatLabel(payment.metodoPago)}`,
+                                                        tipo: "PAGOS",
+                                                        filtro:
+                                                            payment.metodoPago
+                                                    })
                                                 }
                                             >
                                                 <div className="report-progress-heading">
@@ -1354,6 +1666,10 @@ function ReportsAdmin() {
                                                     </strong>
                                                 </div>
 
+                                                <small className="report-payment-breakdown">
+                                                    Ventas: {formatMoney(payment.ventas)} · Reservas: {formatMoney(payment.adelantos)}
+                                                </small>
+
                                                 <div className="report-progress-track">
                                                     <div
                                                         className={`report-progress-value payment-${payment.metodoPago.toLowerCase()}`}
@@ -1363,13 +1679,24 @@ function ReportsAdmin() {
                                                         }}
                                                     />
                                                 </div>
-                                            </article>
+                                            </button>
                                         );
                                     }
                                 )}
                             </div>
 
-                            <div className="report-payment-total">
+                            <button
+                                type="button"
+                                className="report-payment-total report-drilldown-trigger"
+                                onClick={() =>
+                                    openReportDetails({
+                                        title:
+                                            "Cobros de ventas confirmadas",
+                                        tipo: "VENTAS",
+                                        filtro: "SALDO_CAJA"
+                                    })
+                                }
+                            >
                                 <span>
                                     Cobrado en caja
                                 </span>
@@ -1380,7 +1707,7 @@ function ReportsAdmin() {
                                             .cobradoEnCaja
                                     )}
                                 </strong>
-                            </div>
+                            </button>
                         </section>
                     </div>
 
@@ -1426,9 +1753,20 @@ function ReportsAdmin() {
                                                 100;
 
                                             return (
-                                                <article
+                                                <button
+                                                    type="button"
+                                                    className="report-product-drilldown"
                                                     key={
                                                         product.productoSucursalId
+                                                    }
+                                                    onClick={() =>
+                                                        openReportDetails({
+                                                            title:
+                                                                `Ventas de ${product.nombreProducto}`,
+                                                            tipo: "PRODUCTOS",
+                                                            filtro:
+                                                                product.productoSucursalId
+                                                        })
                                                     }
                                                 >
                                                     <span className="report-product-position">
@@ -1469,7 +1807,7 @@ function ReportsAdmin() {
                                                             />
                                                         </div>
                                                     </div>
-                                                </article>
+                                                </button>
                                             );
                                         }
                                     )}
@@ -1499,18 +1837,39 @@ function ReportsAdmin() {
                                         Pedidos
                                     </h4>
 
-                                    <strong className="report-status-total">
+                                    <button
+                                        type="button"
+                                        className="report-status-total"
+                                        onClick={() =>
+                                            openReportDetails({
+                                                title:
+                                                    "Todos los pedidos",
+                                                tipo: "PEDIDOS"
+                                            })
+                                        }
+                                    >
                                         {totalOrders}
-                                    </strong>
+                                    </button>
 
                                     <div className="report-status-list">
                                         {report.estadosPedidos.map(
                                             (
                                                 item
                                             ) => (
-                                                <article
+                                                <button
+                                                    type="button"
+                                                    className="report-drilldown-trigger"
                                                     key={
                                                         item.estado
+                                                    }
+                                                    onClick={() =>
+                                                        openReportDetails({
+                                                            title:
+                                                                `Pedidos ${formatLabel(item.estado)}`,
+                                                            tipo: "PEDIDOS",
+                                                            filtro:
+                                                                item.estado
+                                                        })
                                                     }
                                                 >
                                                     <div className="report-progress-heading">
@@ -1529,7 +1888,7 @@ function ReportsAdmin() {
 
                                                     <div className="report-progress-track">
                                                         <div
-                                                            className={`report-progress-value status status-${item.estado.toLowerCase()}`}
+                                                            className={`admin-status-badge report-progress-value status status-${item.estado.toLowerCase()}`}
                                                             style={{
                                                                 width:
                                                                     `${getStatusPercentage(
@@ -1539,7 +1898,7 @@ function ReportsAdmin() {
                                                             }}
                                                         />
                                                     </div>
-                                                </article>
+                                                </button>
                                             )
                                         )}
                                     </div>
@@ -1550,20 +1909,41 @@ function ReportsAdmin() {
                                         Reservas
                                     </h4>
 
-                                    <strong className="report-status-total">
+                                    <button
+                                        type="button"
+                                        className="report-status-total"
+                                        onClick={() =>
+                                            openReportDetails({
+                                                title:
+                                                    "Todas las reservas",
+                                                tipo: "RESERVAS"
+                                            })
+                                        }
+                                    >
                                         {
                                             totalReservations
                                         }
-                                    </strong>
+                                    </button>
 
                                     <div className="report-status-list">
                                         {report.estadosReservas.map(
                                             (
                                                 item
                                             ) => (
-                                                <article
+                                                <button
+                                                    type="button"
+                                                    className="report-drilldown-trigger"
                                                     key={
                                                         item.estado
+                                                    }
+                                                    onClick={() =>
+                                                        openReportDetails({
+                                                            title:
+                                                                `Reservas ${formatLabel(item.estado)}`,
+                                                            tipo: "RESERVAS",
+                                                            filtro:
+                                                                item.estado
+                                                        })
                                                     }
                                                 >
                                                     <div className="report-progress-heading">
@@ -1582,7 +1962,7 @@ function ReportsAdmin() {
 
                                                     <div className="report-progress-track">
                                                         <div
-                                                            className={`report-progress-value status status-${item.estado.toLowerCase()}`}
+                                                            className={`admin-status-badge report-progress-value status status-${item.estado.toLowerCase()}`}
                                                             style={{
                                                                 width:
                                                                     `${getStatusPercentage(
@@ -1592,7 +1972,7 @@ function ReportsAdmin() {
                                                             }}
                                                         />
                                                     </div>
-                                                </article>
+                                                </button>
                                             )
                                         )}
                                     </div>
@@ -1635,6 +2015,14 @@ function ReportsAdmin() {
                                         ? "positive"
                                         : "neutral"
                                 }
+                                onClick={() =>
+                                    openReportDetails({
+                                        title:
+                                            "Cajas abiertas",
+                                        tipo: "CAJAS",
+                                        filtro: "ABIERTA"
+                                    })
+                                }
                             />
 
                             <ReportMetricCard
@@ -1646,6 +2034,14 @@ function ReportsAdmin() {
                                 description="Cerradas en el periodo"
                                 icon={
                                     FaReceipt
+                                }
+                                onClick={() =>
+                                    openReportDetails({
+                                        title:
+                                            "Cajas cerradas",
+                                        tipo: "CAJAS",
+                                        filtro: "CERRADA"
+                                    })
                                 }
                             />
 
@@ -1678,6 +2074,14 @@ function ReportsAdmin() {
                                 variation={
                                     cashDifferenceVariation
                                 }
+                                onClick={() =>
+                                    openReportDetails({
+                                        title:
+                                            "Diferencias de cajas cerradas",
+                                        tipo: "CAJAS",
+                                        filtro: "DIFERENCIA"
+                                    })
+                                }
                             />
 
                             <ReportMetricCard
@@ -1691,10 +2095,35 @@ function ReportsAdmin() {
                                     FaReceipt
                                 }
                                 variation="positive"
+                                onClick={() =>
+                                    openReportDetails({
+                                        title:
+                                            "Ventas confirmadas",
+                                        tipo: "VENTAS"
+                                    })
+                                }
                             />
                         </div>
                     </section>
                 </>
+            )}
+
+            {detailConfig && (
+                <ReportDetailsDialog
+                    config={detailConfig}
+                    data={detailData}
+                    error={detailError}
+                    isLoading={isLoadingDetails}
+                    onClose={() =>
+                        setDetailConfig(null)
+                    }
+                    onPageChange={(page) =>
+                        void loadReportDetails(
+                            detailConfig,
+                            page
+                        )
+                    }
+                />
             )}
         </section>
     );

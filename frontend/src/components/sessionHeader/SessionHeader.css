@@ -46,6 +46,8 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    color: inherit;
+    text-decoration: none;
 }
 
 .session-header-brand img {
@@ -75,6 +77,8 @@
     display: flex;
     align-items: center;
     gap: 9px;
+    color: inherit;
+    text-decoration: none;
 }
 
 .session-user > svg {
@@ -110,8 +114,19 @@
 }
 
 .session-home-link:hover,
+.session-header-brand:hover,
+.session-user:hover,
 .session-logout-button:hover {
     color: #ffd54f;
+}
+
+.session-header-brand:focus-visible,
+.session-user:focus-visible,
+.session-home-link:focus-visible,
+.session-logout-button:focus-visible {
+    outline: 3px solid rgba(255, 213, 79, 0.72);
+    outline-offset: 4px;
+    border-radius: 8px;
 }
 
 @media (max-width: 768px) {

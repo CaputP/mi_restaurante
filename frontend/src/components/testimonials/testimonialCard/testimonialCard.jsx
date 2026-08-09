@@ -4,7 +4,12 @@ function TestimonialCard ({testimonio}){
     return(
         <div className="testimonial-card">
             <div className="testimonial-image">
-                <img src={testimonio.foto} alt={testimonio.nombre} />
+                <img
+                    src={testimonio.foto}
+                    alt={testimonio.nombre}
+                    loading="lazy"
+                    decoding="async"
+                />
             </div>
             
             <div className="testimonial-content">

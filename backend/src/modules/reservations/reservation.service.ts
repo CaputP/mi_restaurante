@@ -2,8 +2,11 @@ import {
   Prisma,
 } from "../../generated/prisma/client.js";
 
+import { env } from "../../config/env.js";
 import { prisma } from "../../lib/prisma.js";
+import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { lockBranchAvailability } from "../../shared/availability/availability-lock.js";
 
 import {
   evaluateStockNotification,
@@ -19,17 +22,16 @@ import {
 import type {
   ApproveReservationInput,
   CancelReservationInput,
-  ConfirmReservationPaymentInput,
   CreateReservationInput,
   ListReservationsQuery,
-  RegisterReservationPaymentInput,
   RejectReservationInput,
   ReservationAvailabilityQuery,
   ReservationOptionsQuery,
+  RescheduleReservationInput,
   ReviewReservationInput,
 } from "./reservation.schema.js";
 
-type ReservationAuth = {
+export type ReservationAuth = {
   usuarioId: string;
   rol: string;
 };
@@ -50,6 +52,12 @@ const DAY_CODES = [
   "VIERNES",
   "SABADO",
 ] as const;
+
+function isClient(
+  auth: ReservationAuth,
+): boolean {
+  return auth.rol === "CLIENTE";
+}
 
 function parseDateOnly(
   dateText: string,
@@ -196,6 +204,27 @@ async function getAuthorizedBranches(
     });
   }
 
+  if (isClient(auth)) {
+    return prisma.sucursal.findMany({
+      where: {
+        estado: "ACTIVO",
+        deletedAt: null,
+      },
+
+      select: {
+        id: true,
+        codigo: true,
+        nombre: true,
+        direccion: true,
+        zonaHoraria: true,
+      },
+
+      orderBy: {
+        nombre: "asc",
+      },
+    });
+  }
+
   const assignments =
     await prisma
       .usuarioSucursal
@@ -308,6 +337,12 @@ export async function getReservationOptions(
   ] = await Promise.all([
     prisma.usuario.findMany({
       where: {
+        ...(isClient(auth)
+          ? {
+              id: auth.usuarioId,
+            }
+          : {}),
+
         estado: "ACTIVO",
         deletedAt: null,
 
@@ -534,7 +569,9 @@ export async function getReservationOptions(
 
 export async function checkReservationAvailability(
   auth: ReservationAuth,
-  input: ReservationAvailabilityQuery,
+  input: ReservationAvailabilityQuery & {
+    excludeReservationId?: string;
+  },
 ) {
   const branches =
     await getAuthorizedBranches(
@@ -636,6 +673,14 @@ export async function checkReservationAvailability(
 
     prisma.reserva.findMany({
       where: {
+        ...(input.excludeReservationId
+          ? {
+              id: {
+                not: input.excludeReservationId,
+              },
+            }
+          : {}),
+
         sucursalId:
           input.sucursalId,
 
@@ -911,6 +956,13 @@ export async function listReservations(
 
   const where:
     Prisma.ReservaWhereInput = {
+    ...(isClient(auth)
+      ? {
+          clienteId:
+            auth.usuarioId,
+        }
+      : {}),
+
     sucursalId: {
       in:
         selectedBranchIds,
@@ -1201,6 +1253,13 @@ export async function getReservationById(
     await prisma.reserva.findFirst({
       where: {
         id: reservationId,
+
+        ...(isClient(auth)
+          ? {
+              clienteId:
+                auth.usuarioId,
+            }
+          : {}),
 
         sucursalId: {
           in: branchIds,
@@ -1559,38 +1618,14 @@ export async function createReservation(
   auth: ReservationAuth,
   input: CreateReservationInput,
 ) {
-  const availability =
-    await checkReservationAvailability(
-      auth,
-      {
-        sucursalId:
-          input.sucursalId,
-
-        zonaId:
-          input.zonaId,
-
-        fechaReserva:
-          input.fechaReserva,
-
-        horaReserva:
-          input.horaReserva,
-
-        duracionMinutos:
-          input.duracionMinutos,
-
-        cantidadPersonas:
-          input.cantidadPersonas,
-      },
-    );
-
   if (
-    !availability.disponible
+    isClient(auth) &&
+    input.clienteId !== auth.usuarioId
   ) {
     throw new AppError(
-      409,
-      availability.motivos[0] ??
-      "El horario seleccionado no se encuentra disponible.",
-      "HORARIO_NO_DISPONIBLE",
+      403,
+      "No puedes registrar una reserva para otro cliente.",
+      "CLIENTE_RESERVA_INVALIDO",
     );
   }
 
@@ -1791,8 +1826,35 @@ export async function createReservation(
   }
 
   const createdReservation =
-    await prisma.$transaction(
+    await withSerializableTransaction(
       async (transaction) => {
+        await lockBranchAvailability(
+          transaction,
+          input.sucursalId,
+        );
+
+        const availability =
+          await checkReservationAvailability(
+            auth,
+            {
+              sucursalId: input.sucursalId,
+              zonaId: input.zonaId,
+              fechaReserva: input.fechaReserva,
+              horaReserva: input.horaReserva,
+              duracionMinutos: input.duracionMinutos,
+              cantidadPersonas: input.cantidadPersonas,
+            },
+          );
+
+        if (!availability.disponible) {
+          throw new AppError(
+            409,
+            availability.motivos[0] ??
+              "El horario seleccionado no se encuentra disponible.",
+            "HORARIO_NO_DISPONIBLE",
+          );
+        }
+
         const correlativo =
           await transaction
             .correlativo
@@ -1910,6 +1972,16 @@ export async function createReservation(
                 estado:
                   "SOLICITADA",
 
+                politicaReservaAceptadaAt:
+                  input.aceptaPoliticaReserva === true
+                    ? new Date()
+                    : null,
+
+                politicaReservaVersion:
+                  input.aceptaPoliticaReserva === true
+                    ? input.versionPoliticaReserva ?? null
+                    : null,
+
                 ...(detailData.length >
                   0
                   ? {
@@ -2009,7 +2081,7 @@ export async function createReservation(
   );
 }
 
-async function getReservationForOperation(
+export async function getReservationForOperation(
   auth: ReservationAuth,
   reservationId: string,
 ) {
@@ -2028,6 +2100,13 @@ async function getReservationForOperation(
       where: {
         id: reservationId,
 
+        ...(isClient(auth)
+          ? {
+              clienteId:
+                auth.usuarioId,
+            }
+          : {}),
+
         sucursalId: {
           in: branchIds,
         },
@@ -2038,6 +2117,7 @@ async function getReservationForOperation(
         codigo: true,
         sucursalId: true,
         fechaReserva: true,
+        horaReserva: true,
         estado: true,
 
         totalEstimado: true,
@@ -2100,6 +2180,60 @@ async function getReservationForOperation(
   return reservation;
 }
 
+async function lockReservationForTransition(
+  transaction: Prisma.TransactionClient,
+  reservationId: string,
+) {
+  const rows = await transaction.$queryRaw<Array<{ id: string }>>(
+    Prisma.sql`
+      SELECT "id"
+      FROM "reserva"
+      WHERE "id" = ${reservationId}::uuid
+      FOR UPDATE
+    `,
+  );
+
+  if (rows.length !== 1) {
+    throw new AppError(
+      404,
+      "La reserva no existe.",
+      "RESERVA_NO_ENCONTRADA",
+    );
+  }
+
+  const reservation = await transaction.reserva.findUnique({
+    where: { id: reservationId },
+    select: {
+      estado: true,
+      adelantoPagado: true,
+    },
+  });
+
+  if (!reservation) {
+    throw new AppError(
+      404,
+      "La reserva no existe.",
+      "RESERVA_NO_ENCONTRADA",
+    );
+  }
+
+  return reservation;
+}
+
+function assertReservationState(
+  state: string,
+  allowedStates: readonly string[],
+  message: string,
+): void {
+  if (!allowedStates.includes(state)) {
+    throw new AppError(
+      409,
+      message,
+      "ESTADO_RESERVA_INVALIDO",
+    );
+  }
+}
+
 export async function reviewReservation(
   auth: ReservationAuth,
   reservationId: string,
@@ -2122,8 +2256,20 @@ export async function reviewReservation(
     );
   }
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
+      const lockedReservation =
+        await lockReservationForTransition(
+          transaction,
+          reservation.id,
+        );
+
+      assertReservationState(
+        lockedReservation.estado,
+        ["SOLICITADA"],
+        "Solo una reserva solicitada puede pasar a revisión.",
+      );
+
       await transaction
         .reserva
         .update({
@@ -2148,7 +2294,7 @@ export async function reviewReservation(
               auth.usuarioId,
 
             estadoAnterior:
-              reservation.estado,
+              lockedReservation.estado,
 
             estadoNuevo:
               "EN_REVISION",
@@ -2198,8 +2344,20 @@ export async function rejectReservation(
     );
   }
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
+      const lockedReservation =
+        await lockReservationForTransition(
+          transaction,
+          reservation.id,
+        );
+
+      assertReservationState(
+        lockedReservation.estado,
+        ["SOLICITADA", "EN_REVISION"],
+        "La reserva ya no puede ser rechazada desde su estado actual.",
+      );
+
       await transaction
         .reserva
         .update({
@@ -2224,7 +2382,7 @@ export async function rejectReservation(
               auth.usuarioId,
 
             estadoAnterior:
-              reservation.estado,
+              lockedReservation.estado,
 
             estadoNuevo:
               "RECHAZADA",
@@ -2391,8 +2549,20 @@ export async function approveReservation(
       : "CONFIRMADA";
 
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
+
+      const lockedReservation =
+        await lockReservationForTransition(
+          transaction,
+          reservation.id,
+        );
+
+      assertReservationState(
+        lockedReservation.estado,
+        ["SOLICITADA", "EN_REVISION"],
+        "La reserva ya no puede aprobarse desde su estado actual.",
+      );
 
       const stockNotificationsToEvaluate =
         new Set<string>();
@@ -2793,7 +2963,7 @@ export async function approveReservation(
               auth.usuarioId,
 
             estadoAnterior:
-              reservation.estado,
+              lockedReservation.estado,
 
             estadoNuevo:
               nextStatus,
@@ -2834,326 +3004,6 @@ export async function approveReservation(
   );
 }
 
-export async function registerReservationPayment(
-  auth: ReservationAuth,
-  reservationId: string,
-  input: RegisterReservationPaymentInput,
-) {
-  const reservation =
-    await getReservationForOperation(
-      auth,
-      reservationId,
-    );
-
-  if (
-    ![
-      "ESPERANDO_ADELANTO",
-      "CONFIRMADA",
-    ].includes(
-      reservation.estado,
-    )
-  ) {
-    throw new AppError(
-      409,
-      "La reserva todavía no puede recibir pagos.",
-      "ESTADO_RESERVA_INVALIDO",
-    );
-  }
-
-  if (
-    input.metodoPago !==
-    "EFECTIVO" &&
-    !input.numeroOperacion
-  ) {
-    throw new AppError(
-      400,
-      "El número de operación es obligatorio para pagos electrónicos.",
-      "NUMERO_OPERACION_REQUERIDO",
-    );
-  }
-
-  const remainingBalance =
-    Number(
-      reservation.saldoEstimado,
-    );
-
-  if (
-    input.monto >
-    remainingBalance
-  ) {
-    throw new AppError(
-      400,
-      `El pago no puede superar el saldo pendiente de S/ ${remainingBalance.toFixed(2)}.`,
-      "PAGO_SUPERA_SALDO",
-    );
-  }
-
-  if (
-    input.numeroOperacion
-  ) {
-    const duplicatedPayment =
-      await prisma
-        .pagoReserva
-        .findFirst({
-          where: {
-            metodoPago:
-              input.metodoPago,
-
-            numeroOperacion:
-              input.numeroOperacion,
-
-            estado: {
-              not: "ANULADO",
-            },
-          },
-
-          select: {
-            id: true,
-          },
-        });
-
-    if (duplicatedPayment) {
-      throw new AppError(
-        409,
-        "Ya existe un pago registrado con ese número de operación.",
-        "OPERACION_PAGO_DUPLICADA",
-      );
-    }
-  }
-
-  await prisma.pagoReserva.create({
-    data: {
-      reservaId:
-        reservation.id,
-
-      registradoPorId:
-        auth.usuarioId,
-
-      metodoPago:
-        input.metodoPago,
-
-      monto:
-        input.monto,
-
-      numeroOperacion:
-        input.numeroOperacion,
-
-      observaciones:
-        input.observaciones,
-
-      estado:
-        "PENDIENTE",
-    },
-  });
-
-  return getReservationById(
-    auth,
-    reservation.id,
-  );
-}
-
-export async function confirmReservationPayment(
-  auth: ReservationAuth,
-  reservationId: string,
-  paymentId: string,
-  input: ConfirmReservationPaymentInput,
-) {
-  const reservation =
-    await getReservationForOperation(
-      auth,
-      reservationId,
-    );
-
-  if (
-    ![
-      "ESPERANDO_ADELANTO",
-      "CONFIRMADA",
-    ].includes(
-      reservation.estado,
-    )
-  ) {
-    throw new AppError(
-      409,
-      "No se pueden confirmar pagos para la reserva desde su estado actual.",
-      "ESTADO_RESERVA_INVALIDO",
-    );
-  }
-
-  const payment =
-    await prisma
-      .pagoReserva
-      .findFirst({
-        where: {
-          id: paymentId,
-
-          reservaId:
-            reservation.id,
-        },
-
-        select: {
-          id: true,
-          estado: true,
-          monto: true,
-        },
-      });
-
-  if (!payment) {
-    throw new AppError(
-      404,
-      "El pago no existe o no pertenece a la reserva.",
-      "PAGO_NO_ENCONTRADO",
-    );
-  }
-
-  if (
-    payment.estado !==
-    "PENDIENTE"
-  ) {
-    throw new AppError(
-      409,
-      "El pago ya fue procesado anteriormente.",
-      "PAGO_YA_PROCESADO",
-    );
-  }
-
-  await prisma.$transaction(
-    async (transaction) => {
-      await transaction
-        .pagoReserva
-        .update({
-          where: {
-            id: payment.id,
-          },
-
-          data: {
-            estado:
-              "CONFIRMADO",
-
-            confirmadoPorId:
-              auth.usuarioId,
-
-            fechaConfirmacion:
-              new Date(),
-
-            ...(input.observacion
-              ? {
-                observaciones:
-                  input.observacion,
-              }
-              : {}),
-          },
-        });
-
-      const paymentTotal =
-        await transaction
-          .pagoReserva
-          .aggregate({
-            where: {
-              reservaId:
-                reservation.id,
-
-              estado:
-                "CONFIRMADO",
-            },
-
-            _sum: {
-              monto: true,
-            },
-          });
-
-      const confirmedAmount =
-        Number(
-          paymentTotal._sum
-            .monto ?? 0,
-        );
-
-      const requiredAdvance =
-        Number(
-          reservation
-            .adelantoRequerido,
-        );
-
-      const estimatedTotal =
-        Number(
-          reservation
-            .totalEstimado,
-        );
-
-      const nextStatus =
-        reservation.estado ===
-          "ESPERANDO_ADELANTO" &&
-          confirmedAmount >=
-          requiredAdvance
-          ? "CONFIRMADA"
-          : reservation.estado;
-
-      await transaction
-        .reserva
-        .update({
-          where: {
-            id: reservation.id,
-          },
-
-          data: {
-            adelantoPagado:
-              confirmedAmount,
-
-            saldoEstimado:
-              Math.max(
-                0,
-                estimatedTotal -
-                confirmedAmount,
-              ),
-
-            estado:
-              nextStatus,
-          },
-        });
-
-      if (
-        nextStatus !==
-        reservation.estado
-      ) {
-        await transaction
-          .historialReserva
-          .create({
-            data: {
-              reservaId:
-                reservation.id,
-
-              usuarioId:
-                auth.usuarioId,
-
-              estadoAnterior:
-                reservation.estado,
-
-              estadoNuevo:
-                nextStatus,
-
-              observacion:
-                input.observacion ??
-                "Adelanto confirmado. La reserva quedó confirmada.",
-            },
-          });
-        if (
-          nextStatus ===
-          "CONFIRMADA"
-        ) {
-          await createReservationConfirmedNotification(
-            transaction,
-            reservation.id,
-          );
-        }
-      }
-    },
-  );
-
-  return getReservationById(
-    auth,
-    reservation.id,
-  );
-}
-
 export async function cancelReservation(
   auth: ReservationAuth,
   reservationId: string,
@@ -3182,35 +3032,82 @@ export async function cancelReservation(
     );
   }
 
-  const paidAmount =
-    Number(
-      reservation
-        .adelantoPagado,
-    );
+  if (isClient(auth)) {
+    const reservationStart =
+      createLimaDateTime(
+        formatDateOnly(
+          reservation.fechaReserva,
+        ),
+        formatTimeOnly(
+          reservation.horaReserva,
+        ),
+      );
 
-  if (
-    input.penalidadCancelacion >
-    paidAmount
-  ) {
-    throw new AppError(
-      400,
-      "La penalidad no puede superar el monto pagado.",
-      "PENALIDAD_INVALIDA",
-    );
+    const cancellationLimit =
+      reservationStart.getTime() -
+      env.RESERVATION_CLIENT_CANCELLATION_HOURS *
+        60 *
+        60 *
+        1000;
+
+    if (Date.now() >= cancellationLimit) {
+      throw new AppError(
+        409,
+        `La cancelación en línea debe realizarse con al menos ${env.RESERVATION_CLIENT_CANCELLATION_HOURS} horas de anticipación. Comunícate con el establecimiento para solicitar ayuda.`,
+        "PLAZO_CANCELACION_VENCIDO",
+      );
+    }
+
+    if (input.penalidadCancelacion !== 0) {
+      throw new AppError(
+        403,
+        "El cliente no puede definir penalidades de cancelación.",
+        "PENALIDAD_NO_AUTORIZADA",
+      );
+    }
   }
 
-  const refundAmount =
-    Number(
-      Math.max(
-        0,
-        paidAmount -
-        input
-          .penalidadCancelacion,
-      ).toFixed(2),
-    );
-
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
+
+      const lockedReservation =
+        await lockReservationForTransition(
+          transaction,
+          reservation.id,
+        );
+
+      assertReservationState(
+        lockedReservation.estado,
+        [
+          "SOLICITADA",
+          "EN_REVISION",
+          "ESPERANDO_ADELANTO",
+          "CONFIRMADA",
+        ],
+        "La reserva ya no puede cancelarse desde su estado actual.",
+      );
+
+      const paidAmount = Number(
+        lockedReservation.adelantoPagado,
+      );
+
+      if (
+        input.penalidadCancelacion >
+        paidAmount
+      ) {
+        throw new AppError(
+          400,
+          "La penalidad no puede superar el monto pagado.",
+          "PENALIDAD_INVALIDA",
+        );
+      }
+
+      const refundAmount = Number(
+        Math.max(
+          0,
+          paidAmount - input.penalidadCancelacion,
+        ).toFixed(2),
+      );
 
       const stockNotificationsToEvaluate =
         new Set<string>();
@@ -3547,7 +3444,7 @@ export async function cancelReservation(
               auth.usuarioId,
 
             estadoAnterior:
-              reservation.estado,
+              lockedReservation.estado,
 
             estadoNuevo:
               "CANCELADA",
@@ -3575,4 +3472,123 @@ export async function cancelReservation(
   );
 
 
+}
+
+export async function rescheduleReservation(
+  auth: ReservationAuth,
+  reservationId: string,
+  input: RescheduleReservationInput,
+) {
+  const reservation =
+    await getReservationForOperation(
+      auth,
+      reservationId,
+    );
+
+  if (
+    ![
+      "SOLICITADA",
+      "EN_REVISION",
+    ].includes(reservation.estado)
+  ) {
+    throw new AppError(
+      409,
+      "La reserva sólo puede reprogramarse antes de su aprobación.",
+      "ESTADO_RESERVA_INVALIDO",
+    );
+  }
+
+  if (
+    input.sucursalId !==
+    reservation.sucursalId
+  ) {
+    throw new AppError(
+      400,
+      "La reprogramación debe mantenerse en la misma sucursal. Para cambiarla, cancela y crea una nueva reserva.",
+      "SUCURSAL_REPROGRAMACION_INVALIDA",
+    );
+  }
+
+  await withSerializableTransaction(
+    async (transaction) => {
+      await lockBranchAvailability(
+        transaction,
+        input.sucursalId,
+      );
+
+      const lockedReservation =
+        await lockReservationForTransition(
+          transaction,
+          reservation.id,
+        );
+
+      assertReservationState(
+        lockedReservation.estado,
+        ["SOLICITADA", "EN_REVISION"],
+        "La reserva ya no puede reprogramarse.",
+      );
+
+      const availability =
+        await checkReservationAvailability(
+          auth,
+          {
+            ...input,
+            excludeReservationId:
+              reservation.id,
+          },
+        );
+
+      if (!availability.disponible) {
+        throw new AppError(
+          409,
+          availability.motivos[0] ??
+            "El nuevo horario no se encuentra disponible.",
+          "HORARIO_NO_DISPONIBLE",
+        );
+      }
+
+      await transaction.reserva.update({
+        where: {
+          id: reservation.id,
+        },
+
+        data: {
+          zonaId:
+            input.zonaId,
+          fechaReserva:
+            parseDateOnly(
+              input.fechaReserva,
+            ),
+          horaReserva:
+            parseTimeOnly(
+              input.horaReserva,
+            ),
+          duracionMinutos:
+            input.duracionMinutos,
+          cantidadPersonas:
+            input.cantidadPersonas,
+        },
+      });
+
+      await transaction.historialReserva.create({
+        data: {
+          reservaId:
+            reservation.id,
+          usuarioId:
+            auth.usuarioId,
+          estadoAnterior:
+            lockedReservation.estado,
+          estadoNuevo:
+            lockedReservation.estado,
+          observacion:
+            "Reserva reprogramada.",
+        },
+      });
+    },
+  );
+
+  return getReservationById(
+    auth,
+    reservation.id,
+  );
 }

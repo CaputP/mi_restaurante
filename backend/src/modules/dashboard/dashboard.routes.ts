@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 import {
@@ -16,6 +17,9 @@ dashboardRouter.get(
   requireRoles(
     "ADMINISTRADOR_GENERAL",
     "ADMINISTRADOR_SUCURSAL",
+  ),
+  requirePermissions(
+    "DASHBOARD_VER",
   ),
   getAdminDashboardController,
 );

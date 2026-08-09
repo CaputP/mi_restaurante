@@ -423,6 +423,218 @@ export async function createReservationPendingNotifications(
   };
 }
 
+export async function createReservationPaymentPendingNotifications(
+  transaction:
+    NotificationTransaction,
+  input: {
+    reservationId:
+      string;
+
+    reservationCode:
+      string;
+
+    branchId:
+      string;
+
+    paymentMethod:
+      string;
+
+    amount:
+      number;
+  },
+) {
+  const recipients =
+    await getReservationAdministrators(
+      transaction,
+      input.branchId,
+    );
+
+  if (
+    recipients.length ===
+    0
+  ) {
+    return {
+      creadas:
+        0,
+    };
+  }
+
+  const existing =
+    await transaction
+      .notificacion
+      .findMany({
+        where: {
+          tipo:
+            "RESERVA_PENDIENTE",
+
+          entidad:
+            "Reserva",
+
+          entidadId:
+            input.reservationId,
+
+          titulo: {
+            startsWith:
+              "Pago por validar",
+          },
+
+          usuarioId: {
+            in:
+              recipients.map(
+                (recipient) =>
+                  recipient.id,
+              ),
+          },
+
+          OR: [
+            {
+              expiraAt:
+                null,
+            },
+            {
+              expiraAt: {
+                gt:
+                  new Date(),
+              },
+            },
+          ],
+        },
+
+        select: {
+          usuarioId:
+            true,
+        },
+      });
+
+  const alreadyNotified =
+    new Set(
+      existing
+        .map(
+          (notification) =>
+            notification.usuarioId,
+        )
+        .filter(
+          (
+            userId,
+          ): userId is string =>
+            Boolean(userId),
+        ),
+    );
+
+  const missingRecipients =
+    recipients.filter(
+      (recipient) =>
+        !alreadyNotified.has(
+          recipient.id,
+        ),
+    );
+
+  if (
+    missingRecipients.length ===
+    0
+  ) {
+    return {
+      creadas:
+        0,
+    };
+  }
+
+  await transaction
+    .notificacion
+    .createMany({
+      data:
+        missingRecipients.map(
+          (recipient) => ({
+            usuarioId:
+              recipient.id,
+
+            rolId:
+              recipient.rolId,
+
+            sucursalId:
+              input.branchId,
+
+            tipo:
+              "RESERVA_PENDIENTE",
+
+            prioridad:
+              "ALTA",
+
+            titulo:
+              `Pago por validar · ${input.reservationCode}`,
+
+            mensaje:
+              `Se informó un pago ${input.paymentMethod.toLowerCase()} de S/ ${input.amount.toFixed(2)}. Verifica la operación antes de confirmarlo.`,
+
+            entidad:
+              "Reserva",
+
+            entidadId:
+              input.reservationId,
+
+            leida:
+              false,
+          }),
+        ),
+    });
+
+  return {
+    creadas:
+      missingRecipients.length,
+  };
+}
+
+export async function closeReservationPaymentPendingNotifications(
+  transaction:
+    NotificationTransaction,
+  reservationId:
+    string,
+) {
+  const result =
+    await transaction
+      .notificacion
+      .updateMany({
+        where: {
+          tipo:
+            "RESERVA_PENDIENTE",
+
+          entidad:
+            "Reserva",
+
+          entidadId:
+            reservationId,
+
+          titulo: {
+            startsWith:
+              "Pago por validar",
+          },
+
+          OR: [
+            {
+              expiraAt:
+                null,
+            },
+            {
+              expiraAt: {
+                gt:
+                  new Date(),
+              },
+            },
+          ],
+        },
+
+        data: {
+          expiraAt:
+            new Date(),
+        },
+      });
+
+  return {
+    cerradas:
+      result.count,
+  };
+}
+
 export async function closeReservationPendingNotifications(
   transaction:
     NotificationTransaction,

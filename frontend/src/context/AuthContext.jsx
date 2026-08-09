@@ -1,5 +1,6 @@
 import {
     createContext,
+    useCallback,
     useContext,
     useEffect,
     useMemo,
@@ -7,21 +8,18 @@ import {
 } from "react";
 
 import {
+    acceptLegalPoliciesRequest,
     getCurrentUserRequest,
     googleLoginRequest,
     loginRequest,
+    logoutRequest,
+    renewSessionRequest,
     registerRequest
 } from "../services/auth.service";
 
 const AuthContext = createContext(null);
 
-const TOKEN_STORAGE_KEY = "vallecito_access_token";
-
 export function AuthProvider({ children }) {
-    const [token, setToken] = useState(() =>
-        sessionStorage.getItem(TOKEN_STORAGE_KEY)
-    );
-
     const [usuario, setUsuario] = useState(null);
     const [isLoadingSession, setIsLoadingSession] =
         useState(true);
@@ -30,31 +28,35 @@ export function AuthProvider({ children }) {
         const controller = new AbortController();
 
         async function restoreSession() {
-            if (!token) {
-                setUsuario(null);
-                setIsLoadingSession(false);
-                return;
-            }
-
             try {
                 const currentUser =
-                    await getCurrentUserRequest(token);
+                    await getCurrentUserRequest(
+                        controller.signal
+                    );
 
                 setUsuario(currentUser);
             } catch (error) {
-                console.error(
-                    "No se pudo restaurar la sesión:",
-                    error
-                );
+                if (
+                    error?.name ===
+                    "AbortError"
+                ) {
+                    return;
+                }
 
-                sessionStorage.removeItem(
-                    TOKEN_STORAGE_KEY
-                );
+                if (error?.status !== 401) {
+                    console.error(
+                        "No se pudo restaurar la sesión:",
+                        error
+                    );
+                }
 
-                setToken(null);
                 setUsuario(null);
             } finally {
-                setIsLoadingSession(false);
+                if (
+                    !controller.signal.aborted
+                ) {
+                    setIsLoadingSession(false);
+                }
             }
         }
 
@@ -63,19 +65,92 @@ export function AuthProvider({ children }) {
         return () => {
             controller.abort();
         };
-    }, [token]);
+    }, []);
 
-    function saveSession(authResult) {
-        sessionStorage.setItem(
-            TOKEN_STORAGE_KEY,
-            authResult.token
+    useEffect(() => {
+        function clearExpiredSession() {
+            setUsuario(null);
+        }
+
+        globalThis.addEventListener(
+            "vallecito:session-expired",
+            clearExpiredSession
         );
 
-        setToken(authResult.token);
-        setUsuario(authResult.usuario);
-    }
+        return () => {
+            globalThis.removeEventListener(
+                "vallecito:session-expired",
+                clearExpiredSession
+            );
+        };
+    }, []);
 
-    async function login(correo, password) {
+    useEffect(() => {
+        if (!usuario) {
+            return undefined;
+        }
+
+        let lastRenewal = Date.now();
+        let renewing = false;
+
+        async function renewSession() {
+            if (renewing) {
+                return;
+            }
+
+            renewing = true;
+
+            try {
+                await renewSessionRequest();
+                lastRenewal = Date.now();
+            } catch (error) {
+                if (error?.status !== 401) {
+                    console.error(
+                        "No se pudo renovar la sesión:",
+                        error
+                    );
+                }
+            } finally {
+                renewing = false;
+            }
+        }
+
+        const timer = setInterval(
+            () => {
+                void renewSession();
+            },
+            30 * 60 * 1000
+        );
+
+        function handleVisibilityChange() {
+            if (
+                document.visibilityState === "visible" &&
+                Date.now() - lastRenewal >=
+                    30 * 60 * 1000
+            ) {
+                void renewSession();
+            }
+        }
+
+        document.addEventListener(
+            "visibilitychange",
+            handleVisibilityChange
+        );
+
+        return () => {
+            clearInterval(timer);
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+        };
+    }, [usuario]);
+
+    const saveSession = useCallback((authResult) => {
+        setUsuario(authResult.usuario);
+    }, []);
+
+    const login = useCallback(async (correo, password) => {
         const result = await loginRequest(
             correo,
             password
@@ -84,37 +159,70 @@ export function AuthProvider({ children }) {
         saveSession(result);
 
         return result.usuario;
-    }
+    }, [saveSession]);
 
-    async function register(data) {
+    const register = useCallback(async (data) => {
         const result = await registerRequest(data);
 
         saveSession(result);
 
         return result.usuario;
-    }
+    }, [saveSession]);
 
-    function logout() {
-        sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+    const loginWithGoogle = useCallback(async (data) => {
+        const result =
+            await googleLoginRequest(data);
 
-        setToken(null);
+        saveSession(result);
+
+        return result.usuario;
+    }, [saveSession]);
+
+    const logout = useCallback(async () => {
         setUsuario(null);
-    }
+
+        try {
+            await logoutRequest();
+        } catch (error) {
+            console.error(
+                "No se pudo cerrar la sesión en el servidor:",
+                error
+            );
+        }
+    }, []);
+
+    const acceptLegalPolicies = useCallback(async (data) => {
+        const updatedUser = await acceptLegalPoliciesRequest(data);
+        setUsuario(updatedUser);
+        return updatedUser;
+    }, []);
+
+    const token = usuario
+        ? "cookie-session"
+        : null;
 
     const value = useMemo(
         () => ({
             token,
             usuario,
-            isAuthenticated: Boolean(
-                token && usuario
-            ),
+            isAuthenticated: Boolean(usuario),
             isLoadingSession,
             login,
             loginWithGoogle,
             register,
+            acceptLegalPolicies,
             logout
         }),
-        [token, usuario, isLoadingSession]
+        [
+            token,
+            usuario,
+            isLoadingSession,
+            login,
+            loginWithGoogle,
+            register,
+            acceptLegalPolicies,
+            logout
+        ]
     );
 
     return (
@@ -123,16 +231,10 @@ export function AuthProvider({ children }) {
         </AuthContext.Provider>
     );
 
-    async function loginWithGoogle(credential) {
-    const result =
-        await googleLoginRequest(credential);
-
-    saveSession(result);
-
-    return result.usuario;
-}
 }
 
+// El hook comparte archivo con el proveedor de contexto de forma intencional.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
     const context = useContext(AuthContext);
 

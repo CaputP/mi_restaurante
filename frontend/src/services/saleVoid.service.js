@@ -5,16 +5,14 @@ import {
 export function voidSaleRequest(
     token,
     saleId,
-    motivo
+    data
 ) {
     return apiRequest(
         `/sales/${saleId}/void`,
         {
             method: "PATCH",
             token,
-            body: {
-                motivo
-            }
+            body: data
         }
     );
 }

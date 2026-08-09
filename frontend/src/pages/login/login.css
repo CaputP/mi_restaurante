@@ -60,7 +60,7 @@
     display: flex;
     position: relative;
     /* Corregido: Agregada la función url() */
-    background-image: url("../../assets/images/gallery/parque.png"); 
+    background-image: url("../../assets/images/gallery/parque.webp");
     background-size: cover;
     background-position: center;
 }
@@ -418,3 +418,34 @@
         margin-top: 12px;
     }
 }
+.login-legal-consents {
+    display: grid;
+    gap: .7rem;
+    margin: .25rem 0 1rem;
+    padding: .9rem;
+    border: 1px solid #d7e0d5;
+    border-radius: 12px;
+    background: #f8fbf8;
+}
+
+.login-legal-consents legend {
+    padding: 0 .35rem;
+    color: #304b36;
+    font-size: .85rem;
+    font-weight: 800;
+}
+
+.login-legal-consents label {
+    display: flex;
+    align-items: flex-start;
+    gap: .55rem;
+    color: #3f4e43;
+    font-size: .82rem;
+    line-height: 1.45;
+}
+
+.login-legal-consents input { margin-top: .2rem; accent-color: #2e623b; }
+.login-legal-consents a { color: #265c35; font-weight: 800; }
+.google-btn-container { display: grid; gap: .4rem; justify-items: center; }
+.google-consent-button { width: min(100%, 360px); min-height: 44px; border: 1px solid #aeb8b0; border-radius: 5px; background: #fff; color: #253229; cursor: pointer; font-weight: 750; }
+.google-btn-container small, .google-legal-hint { color: #667069; font-size: .78rem; text-align: center; }

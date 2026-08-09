@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 
 import {
+    useLocation,
     useNavigate,
     useParams
 } from "react-router-dom";
@@ -26,7 +27,14 @@ import {
     getSaleTicketRequest
 } from "../../../services/ticket.service";
 
+import {
+    getSalesWorkspacePath
+} from "../../../utils/roleRoutes";
+
 import "./saleTicketPage.css";
+
+const processedAutoPrintRequests =
+    new Set();
 
 function isAbortError(error) {
     return (
@@ -116,10 +124,19 @@ function SaleTicketPage() {
 
     const navigate =
         useNavigate();
+    const location =
+        useLocation();
 
     const {
-        token
+        token,
+        usuario
     } = useAuth();
+
+    const salesWorkspacePath =
+        getSalesWorkspacePath(
+            usuario?.rol?.codigo,
+            location.pathname
+        );
 
     const [
         ticket,
@@ -135,6 +152,20 @@ function SaleTicketPage() {
         error,
         setError
     ] = useState("");
+
+    const [paperWidth, setPaperWidth] =
+        useState("80");
+    const [isCopy, setIsCopy] =
+        useState(
+            !location.state
+                ?.fromSaleCreation
+        );
+
+    const autoPrintRequestId =
+        location.state?.autoPrint
+            ? location.state
+                ?.printRequestId
+            : null;
 
     useEffect(() => {
         const controller =
@@ -189,13 +220,34 @@ function SaleTicketPage() {
         saleId
     ]);
 
+    useEffect(() => {
+        if (
+            !ticket ||
+            !autoPrintRequestId ||
+            processedAutoPrintRequests.has(
+                autoPrintRequestId
+            )
+        ) {
+            return;
+        }
+
+        processedAutoPrintRequests.add(
+            autoPrintRequestId
+        );
+
+        window.print();
+    }, [
+        ticket,
+        autoPrintRequestId
+    ]);
+
     function handlePrint() {
         window.print();
     }
 
     if (isLoading) {
         return (
-            <div className="sale-ticket-loading">
+            <div className="sale-ticket-loading admin-empty-state">
                 <FaReceipt />
                 Cargando ticket...
             </div>
@@ -207,7 +259,7 @@ function SaleTicketPage() {
         !ticket
     ) {
         return (
-            <section className="sale-ticket-error">
+            <section className="sale-ticket-error admin-page admin-empty-state">
                 <FaReceipt />
 
                 <h2>
@@ -223,7 +275,7 @@ function SaleTicketPage() {
                     type="button"
                     onClick={() =>
                         navigate(
-                            "/admin/ventas"
+                            salesWorkspacePath
                         )
                     }
                 >
@@ -235,14 +287,14 @@ function SaleTicketPage() {
     }
 
     return (
-        <section className="sale-ticket-page">
+        <section className="sale-ticket-page admin-page">
             <div className="sale-ticket-toolbar">
                 <button
                     type="button"
-                    className="secondary"
+                    className="admin-button secondary"
                     onClick={() =>
                         navigate(
-                            "/admin/ventas"
+                            salesWorkspacePath
                         )
                     }
                 >
@@ -250,19 +302,41 @@ function SaleTicketPage() {
                     Volver
                 </button>
 
-                <button
-                    type="button"
-                    className="primary"
-                    onClick={
-                        handlePrint
-                    }
-                >
-                    <FaPrint />
-                    Imprimir ticket
-                </button>
+                <div className="sale-ticket-print-controls">
+                    <label>
+                        Papel
+                        <select
+                            value={paperWidth}
+                            onChange={(event) =>
+                                setPaperWidth(event.target.value)
+                            }
+                        >
+                            <option value="80">80 mm</option>
+                            <option value="58">58 mm</option>
+                        </select>
+                    </label>
+                    <label className="sale-ticket-copy-control">
+                        <input
+                            type="checkbox"
+                            checked={isCopy}
+                            onChange={(event) =>
+                                setIsCopy(event.target.checked)
+                            }
+                        />
+                        Reimpresión
+                    </label>
+                    <button
+                        type="button"
+                        className="admin-button primary"
+                        onClick={handlePrint}
+                    >
+                        <FaPrint />
+                        Imprimir
+                    </button>
+                </div>
             </div>
 
-            <article className="sale-ticket-paper">
+            <article className={`sale-ticket-paper paper-${paperWidth}`}>
                 <header className="sale-ticket-business">
                     <h1>
                         {ticket.negocio.nombre}
@@ -320,6 +394,12 @@ function SaleTicketPage() {
                         TICKET DE VENTA
                     </h2>
 
+                    {isCopy && (
+                        <span className="sale-ticket-copy-label">
+                            COPIA · REIMPRESIÓN
+                        </span>
+                    )}
+
                     <strong>
                         {
                             ticket.numeroTicket
@@ -327,7 +407,7 @@ function SaleTicketPage() {
                     </strong>
 
                     <span
-                        className={`sale-ticket-state ${ticket.estado.toLowerCase()}`}
+                        className={`admin-status-badge sale-ticket-state ${ticket.estado.toLowerCase()}`}
                     >
                         {formatLabel(
                             ticket.estado

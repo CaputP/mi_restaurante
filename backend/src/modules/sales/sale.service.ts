@@ -3,7 +3,20 @@ import {
 } from "../../generated/prisma/client.js";
 
 import { prisma } from "../../lib/prisma.js";
+import {
+  withSerializableTransaction,
+} from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import {
+  isOrderPayable,
+  PAYABLE_ORDER_STATES,
+  PRE_DELIVERY_PAYABLE_ORDER_STATES,
+} from "../../shared/orders/order-payment-policy.js";
+
+import {
+  assertPaymentOperationsAvailable,
+  normalizePaymentOperationNumber,
+} from "../../shared/payments/payment-operation.utils.js";
 
 import type {
   CreateSaleInput,
@@ -319,8 +332,11 @@ export async function getSaleOptions(
             sucursalId:
               selectedBranchId,
 
-            estado:
-              "ENTREGADO",
+            estado: {
+              in: [
+                ...PAYABLE_ORDER_STATES,
+              ],
+            },
 
             venta: {
               is: null,
@@ -1464,75 +1480,10 @@ async function ensureUniqueOperations(
           Boolean(value),
       );
 
-  if (
-    operationNumbers.length ===
-    0
-  ) {
-    return;
-  }
-
-  const [
-    salePayment,
-    reservationPayment,
-  ] = await Promise.all([
-    transaction
-      .pagoVenta
-      .findFirst({
-        where: {
-          numeroOperacion: {
-            in:
-              operationNumbers,
-          },
-
-          estado: {
-            not:
-              "ANULADO",
-          },
-        },
-
-        select: {
-          id: true,
-          numeroOperacion:
-            true,
-        },
-      }),
-
-    transaction
-      .pagoReserva
-      .findFirst({
-        where: {
-          numeroOperacion: {
-            in:
-              operationNumbers,
-          },
-
-          estado: {
-            not:
-              "ANULADO",
-          },
-        },
-
-        select: {
-          id: true,
-          numeroOperacion:
-            true,
-        },
-      }),
-  ]);
-
-  const duplicated =
-    salePayment
-      ?.numeroOperacion ??
-    reservationPayment
-      ?.numeroOperacion;
-
-  if (duplicated) {
-    throw new AppError(
-      409,
-      `El número de operación "${duplicated}" ya fue registrado.`,
-      "OPERACION_PAGO_DUPLICADA",
-    );
-  }
+  await assertPaymentOperationsAvailable(
+    transaction,
+    operationNumbers,
+  );
 }
 
 export async function createSale(
@@ -1551,7 +1502,7 @@ export async function createSale(
     );
 
   const createdSale =
-    await prisma.$transaction(
+    await withSerializableTransaction(
       async (transaction) => {
         const cash =
           await transaction
@@ -1644,6 +1595,8 @@ export async function createSale(
                     nombreProducto:
                       true,
                     cantidad: true,
+                    cantidadComprometida:
+                      true,
                     precioUnitario:
                       true,
                     subtotal: true,
@@ -1716,12 +1669,13 @@ export async function createSale(
         }
 
         if (
-          order.estado !==
-          "ENTREGADO"
+          !isOrderPayable(
+            order.estado,
+          )
         ) {
           throw new AppError(
             409,
-            "Solo un pedido entregado puede registrarse como venta.",
+            "El pedido debe estar enviado y pendiente de cobro.",
             "PEDIDO_NO_COBRABLE",
           );
         }
@@ -1933,13 +1887,26 @@ export async function createSale(
                 .productoSucursalId,
             );
 
+          const orderCommitment =
+            Number(
+              detail
+                .cantidadComprometida,
+            );
+
+          /*
+           * Los pedidos nuevos comprometen su propio stock al enviarse.
+           * El compromiso de reserva se conserva como compatibilidad para
+           * pedidos enviados antes de esta migración.
+           */
           const ownCommitment =
-            reservedDetail
-              ? Number(
-                reservedDetail
-                  .cantidadComprometida,
-              )
-              : 0;
+            orderCommitment > 0
+              ? orderCommitment
+              : reservedDetail
+                ? Number(
+                  reservedDetail
+                    .cantidadComprometida,
+                )
+                : 0;
 
           if (reservedDetail) {
             processedReservationIds.add(
@@ -2528,7 +2495,12 @@ export async function createSale(
 
                 numeroOperacion:
                   payment
-                    .numeroOperacion,
+                    .numeroOperacion
+                    ? normalizePaymentOperationNumber(
+                      payment
+                        .numeroOperacion,
+                    )
+                    : null,
 
                 montoRecibido:
                   received,
@@ -2559,7 +2531,17 @@ export async function createSale(
           ] += payment.monto;
         }
 
-        const orderUpdate =
+        const paidAt =
+          new Date();
+
+        /*
+         * Pago y preparación son procesos independientes.
+         * Si el pedido ya fue entregado, PAGADO es su
+         * estado terminal. Si aún se prepara o entrega,
+         * conservamos su estado operativo para no detener
+         * cocina y usamos pagadoAt/venta como marca de pago.
+         */
+        let orderUpdate =
           await transaction
             .pedido
             .updateMany({
@@ -2569,6 +2551,9 @@ export async function createSale(
 
                 estado:
                   "ENTREGADO",
+
+                pagadoAt:
+                  null,
               },
 
               data: {
@@ -2576,9 +2561,37 @@ export async function createSale(
                   "PAGADO",
 
                 pagadoAt:
-                  new Date(),
+                  paidAt,
               },
             });
+
+        if (
+          orderUpdate.count === 0
+        ) {
+          orderUpdate =
+            await transaction
+              .pedido
+              .updateMany({
+                where: {
+                  id:
+                    order.id,
+
+                  estado: {
+                    in: [
+                      ...PRE_DELIVERY_PAYABLE_ORDER_STATES,
+                    ],
+                  },
+
+                  pagadoAt:
+                    null,
+                },
+
+                data: {
+                  pagadoAt:
+                    paidAt,
+                },
+              });
+        }
 
         if (
           orderUpdate.count !== 1
@@ -2589,6 +2602,24 @@ export async function createSale(
             "PEDIDO_YA_PROCESADO",
           );
         }
+
+        await transaction
+          .detallePedido
+          .updateMany({
+            where: {
+              pedidoId:
+                order.id,
+
+              cantidadComprometida: {
+                gt: 0,
+              },
+            },
+
+            data: {
+              cantidadComprometida:
+                0,
+            },
+          });
 
         const sale =
           await transaction
@@ -2846,12 +2877,6 @@ export async function createSale(
         }
 
         return sale;
-      },
-      {
-        isolationLevel:
-          Prisma
-            .TransactionIsolationLevel
-            .Serializable,
       },
     );
 

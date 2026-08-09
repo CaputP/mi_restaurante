@@ -6,6 +6,11 @@ import {
   AppError,
 } from "../../shared/errors/app-error.js";
 
+import {
+  getLoyaltyOperationalDay,
+  resolveDailyVisitIncrement,
+} from "./loyalty-visit-policy.js";
+
 type LoyaltyProgramForProcessing = {
   id: string;
 
@@ -51,67 +56,6 @@ type LoyaltyProgramForProcessing = {
     nombre: string;
   } | null;
 };
-
-function getLimaDateOnly(
-  date: Date,
-): Date {
-  const parts =
-    new Intl.DateTimeFormat(
-      "en-US",
-      {
-        timeZone:
-          "America/Lima",
-
-        year:
-          "numeric",
-
-        month:
-          "2-digit",
-
-        day:
-          "2-digit",
-      },
-    ).formatToParts(
-      date,
-    );
-
-  const year =
-    parts.find(
-      (part) =>
-        part.type ===
-        "year",
-    )?.value;
-
-  const month =
-    parts.find(
-      (part) =>
-        part.type ===
-        "month",
-    )?.value;
-
-  const day =
-    parts.find(
-      (part) =>
-        part.type ===
-        "day",
-    )?.value;
-
-  if (
-    !year ||
-    !month ||
-    !day
-  ) {
-    throw new AppError(
-      500,
-      "No se pudo determinar la fecha operativa.",
-      "FECHA_OPERATIVA_INVALIDA",
-    );
-  }
-
-  return new Date(
-    `${year}-${month}-${day}T00:00:00.000Z`,
-  );
-}
 
 function addDays(
   date: Date,
@@ -331,10 +275,13 @@ export async function applySaleLoyalty(
     };
   }
 
-  const saleDate =
-    getLimaDateOnly(
+  const operationalDay =
+    getLoyaltyOperationalDay(
       sale.createdAt,
     );
+
+  const saleDate =
+    operationalDay.dateOnly;
 
   let consumedAmount =
     sale.subtotal.minus(
@@ -483,6 +430,20 @@ export async function applySaleLoyalty(
       continue;
     }
 
+    const visitIncrement =
+      await resolveDailyVisitIncrement(
+        transaction,
+        {
+          clientId:
+            sale.clienteId,
+
+          programId:
+            program.id,
+
+          operationalDay,
+        },
+      );
+
     const progress =
       await transaction
         .progresoFidelizacion
@@ -505,7 +466,7 @@ export async function applySaleLoyalty(
               program.id,
 
             visitasAcumuladas:
-              1,
+              visitIncrement,
 
             montoAcumulado:
               consumedAmount,
@@ -517,7 +478,7 @@ export async function applySaleLoyalty(
           update: {
             visitasAcumuladas: {
               increment:
-                1,
+                visitIncrement,
             },
 
             montoAcumulado: {
@@ -600,7 +561,7 @@ export async function applySaleLoyalty(
               progress.id,
 
             visitasAplicadas:
-              1,
+              visitIncrement,
 
             montoAplicado:
               consumedAmount,

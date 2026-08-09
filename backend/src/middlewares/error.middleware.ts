@@ -2,6 +2,9 @@ import type { ErrorRequestHandler } from "express";
 import { ZodError } from "zod";
 
 import { AppError } from "../shared/errors/app-error.js";
+import {
+  logger,
+} from "../lib/logger.js";
 
 export const errorMiddleware: ErrorRequestHandler = (
   error: unknown,
@@ -33,11 +36,24 @@ export const errorMiddleware: ErrorRequestHandler = (
     return;
   }
 
-  console.error("Error no controlado:", error);
+  const requestId =
+    response.getHeader(
+      "x-request-id",
+    );
+
+  logger.error(
+    {
+      error,
+      requestId,
+    },
+    "Error no controlado.",
+  );
 
   response.status(500).json({
     success: false,
     message: "Ocurrió un error interno en el servidor.",
     code: "INTERNAL_SERVER_ERROR",
+    requestId:
+      requestId ?? null,
   });
 };

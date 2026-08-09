@@ -55,7 +55,7 @@
     margin-bottom: 20px;
 }
 
-.about-content button {
+.about-action {
     background: #355e3b;
     color: white;
     border: none;
@@ -66,9 +66,13 @@
     transition: .3s;
     width: 100%; /* NUEVO: Botón ancho en móviles para presionar fácilmente */
     max-width: 280px; /* Evita que se estire demasiado */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
-.about-content button:hover {
+.about-action:hover {
     background: #2b4c31;
 }
 
@@ -109,7 +113,7 @@
         font-size: 1.1rem; /* RESTAURADO: Tu tamaño original */
     }
 
-    .about-content button {
+    .about-action {
         width: auto; /* Desactivamos el ancho de 100% del móvil */
     }
 }

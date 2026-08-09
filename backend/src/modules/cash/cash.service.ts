@@ -3,6 +3,8 @@ import {
 } from "../../generated/prisma/client.js";
 
 import { prisma } from "../../lib/prisma.js";
+import { withSerializableTransaction } from "../../lib/transaction.js";
+import { reauthenticateUser } from "../../shared/security/reauthentication.js";
 import { AppError } from "../../shared/errors/app-error.js";
 
 import type {
@@ -11,6 +13,7 @@ import type {
   CurrentCashQuery,
   ListCashRegistersQuery,
   OpenCashRegisterInput,
+  ReopenCashRegisterInput,
 } from "./cash.schema.js";
 
 type CashAuth = {
@@ -1356,8 +1359,9 @@ export async function openCashRegister(
       input.vendedorId,
     );
 
-  const createdCash =
-    await prisma.$transaction(
+  try {
+    const createdCash =
+      await withSerializableTransaction(
       async (transaction) => {
         const existingOpenCash =
           await transaction
@@ -1472,18 +1476,27 @@ export async function openCashRegister(
             },
           });
       },
-      {
-        isolationLevel:
-          Prisma
-            .TransactionIsolationLevel
-            .Serializable,
-      },
-    );
+      );
 
-  return getCashRegisterById(
-    auth,
-    createdCash.id,
-  );
+    return getCashRegisterById(
+      auth,
+      createdCash.id,
+    );
+  } catch (error: unknown) {
+    if (
+      error instanceof
+        Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new AppError(
+        409,
+        "El usuario ya tiene una caja abierta.",
+        "CAJA_YA_ABIERTA",
+      );
+    }
+
+    throw error;
+  }
 }
 
 async function getCashRegisterForOperation(
@@ -1520,7 +1533,11 @@ async function getCashRegisterForOperation(
       select: {
         id: true,
         codigo: true,
+        sucursalId: true,
+        vendedorId: true,
         estado: true,
+        fechaApertura: true,
+        fechaCierre: true,
         observaciones: true,
         montoInicial: true,
         totalEfectivo: true,
@@ -1561,79 +1578,88 @@ export async function closeCashRegister(
     );
   }
 
-  const expectedCash =
-    Number(
-      (
-        Number(
-          cash.montoInicial,
-        ) +
-        Number(
-          cash.totalEfectivo,
-        ) -
-        Number(
-          cash.totalGastosCaja,
-        )
-      ).toFixed(2),
-    );
-
-  const difference =
-    Number(
-      (
-        input.efectivoContado -
-        expectedCash
-      ).toFixed(2),
-    );
-
-  const finalObservations =
-    [
-      cash.observaciones,
-
-      input.observaciones
-        ? `Cierre: ${input.observaciones}`
-        : null,
-    ]
-      .filter(
-        (
-          value,
-        ): value is string =>
-          Boolean(value),
-      )
-      .join("\n");
-
   const updateResult =
-    await prisma.caja.updateMany({
-      where: {
-        id:
-          cash.id,
+    await withSerializableTransaction(
+      async (transaction) => {
+        await transaction.$queryRaw(
+          Prisma.sql`
+            SELECT "id"
+            FROM "caja"
+            WHERE "id" = ${cash.id}::uuid
+            FOR UPDATE
+          `,
+        );
 
-        estado:
-          "ABIERTA",
+        const currentCash =
+          await transaction.caja.findUnique({
+            where: { id: cash.id },
+            select: {
+              estado: true,
+              montoInicial: true,
+              totalEfectivo: true,
+              totalGastosCaja: true,
+              observaciones: true,
+            },
+          });
+
+        if (
+          !currentCash ||
+          currentCash.estado !== "ABIERTA"
+        ) {
+          throw new AppError(
+            409,
+            "La caja ya fue cerrada o cambió de estado.",
+            "CAJA_YA_CERRADA",
+          );
+        }
+
+        const lockedExpectedCash = Number(
+          (
+            Number(currentCash.montoInicial) +
+            Number(currentCash.totalEfectivo) -
+            Number(currentCash.totalGastosCaja)
+          ).toFixed(2),
+        );
+        const lockedDifference = Number(
+          (
+            input.efectivoContado -
+            lockedExpectedCash
+          ).toFixed(2),
+        );
+        const lockedObservations = [
+          currentCash.observaciones,
+          input.observaciones
+            ? `Cierre: ${input.observaciones}`
+            : null,
+        ]
+          .filter(
+            (value): value is string =>
+              Boolean(value),
+          )
+          .join("\n");
+
+        return transaction.caja.updateMany({
+          where: {
+            id: cash.id,
+            estado: "ABIERTA",
+          },
+          data: {
+            estado: "CERRADA",
+            efectivoEsperado:
+              lockedExpectedCash,
+            efectivoContado:
+              input.efectivoContado,
+            diferencia:
+              lockedDifference,
+            cerradaPorId:
+              auth.usuarioId,
+            fechaCierre: new Date(),
+            observaciones:
+              lockedObservations || null,
+          },
+        });
       },
-
-      data: {
-        estado:
-          "CERRADA",
-
-        efectivoEsperado:
-          expectedCash,
-
-        efectivoContado:
-          input.efectivoContado,
-
-        diferencia:
-        difference,
-
-        cerradaPorId:
-          auth.usuarioId,
-
-        fechaCierre:
-          new Date(),
-
-        observaciones:
-          finalObservations ||
-          null,
-      },
-    });
+    );
 
   if (
     updateResult.count !== 1
@@ -1643,6 +1669,140 @@ export async function closeCashRegister(
       "La caja ya fue cerrada o cambió de estado.",
       "CAJA_YA_CERRADA",
     );
+  }
+
+  return getCashRegisterById(
+    auth,
+    cash.id,
+  );
+}
+
+export async function reopenCashRegister(
+  auth: CashAuth,
+  cashRegisterId: string,
+  input: ReopenCashRegisterInput,
+) {
+  if (
+    ![
+      "ADMINISTRADOR_GENERAL",
+      "ADMINISTRADOR_SUCURSAL",
+    ].includes(auth.rol)
+  ) {
+    throw new AppError(
+      403,
+      "Sólo un administrador puede reabrir una caja.",
+      "ACCESO_DENEGADO",
+    );
+  }
+
+  await reauthenticateUser(
+    auth.usuarioId,
+    input.password,
+  );
+
+  const cash =
+    await getCashRegisterForOperation(
+      auth,
+      cashRegisterId,
+    );
+
+  if (cash.estado !== "CERRADA") {
+    throw new AppError(
+      409,
+      "Sólo una caja cerrada puede reabrirse.",
+      "CAJA_NO_REABRIBLE",
+    );
+  }
+
+  try {
+    await withSerializableTransaction(
+      async (transaction) => {
+        const rows =
+          await transaction.$queryRaw<
+            Array<{
+              id: string;
+              estado: string;
+            }>
+          >(
+            Prisma.sql`
+              SELECT "id", "estado"::text
+              FROM "caja"
+              WHERE "id" = ${cash.id}::uuid
+              FOR UPDATE
+            `,
+          );
+
+        if (
+          rows.length !== 1 ||
+          rows[0]?.estado !== "CERRADA"
+        ) {
+          throw new AppError(
+            409,
+            "La caja cambió de estado y ya no puede reabrirse.",
+            "CAJA_NO_REABRIBLE",
+          );
+        }
+
+        const laterCash =
+          await transaction.caja.findFirst({
+            where: {
+              vendedorId:
+                cash.vendedorId,
+              id: {
+                not: cash.id,
+              },
+              fechaApertura: {
+                gt: cash.fechaApertura,
+              },
+            },
+            select: {
+              codigo: true,
+            },
+          });
+
+        if (laterCash) {
+          throw new AppError(
+            409,
+            `No se puede reabrir porque existe una caja posterior (${laterCash.codigo}).`,
+            "CAJA_POSTERIOR_EXISTENTE",
+          );
+        }
+
+        const auditNote =
+          `[REAPERTURA ${new Date().toISOString()}] ${input.motivo}`;
+
+        await transaction.caja.update({
+          where: {
+            id: cash.id,
+          },
+          data: {
+            estado: "ABIERTA",
+            fechaCierre: null,
+            cerradaPorId: null,
+            efectivoContado: null,
+            diferencia: null,
+            observaciones:
+              cash.observaciones
+                ? `${cash.observaciones}\n${auditNote}`
+                : auditNote,
+          },
+        });
+      },
+    );
+  } catch (error: unknown) {
+    if (
+      error instanceof
+        Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new AppError(
+        409,
+        "El vendedor ya tiene otra caja abierta.",
+        "CAJA_YA_ABIERTA",
+      );
+    }
+
+    throw error;
   }
 
   return getCashRegisterById(

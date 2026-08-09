@@ -3,7 +3,7 @@
 //======================
 
 import "./about.css";
-import historiaImagen from "../../assets/images/about/about.jpg"
+import historiaImagen from "../../assets/images/about/about.webp"
 
 // =====================
 // COMPONENTE ABOUT
@@ -15,7 +15,9 @@ function About({titulo}){
             <div className="about-container">
                 <div className="about-image">   
                     <img src= {historiaImagen}
-                        alt="Nuestra Historia" 
+                        alt="Nuestra Historia"
+                        loading="lazy"
+                        decoding="async"
                     />
                 </div>
                 <div className="about-content">
@@ -37,9 +39,12 @@ function About({titulo}){
                         
                     </p>
 
-                    <button>
-                    Conoce mas
-                </button>
+                    <a
+                        className="about-action"
+                        href="#galeria"
+                    >
+                        Conoce más
+                    </a>
                 </div>
             </div>    
         </section>

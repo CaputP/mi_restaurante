@@ -1,6 +1,8 @@
 const API_URL =
     import.meta.env.VITE_API_URL ??
-    "http://localhost:3000/api";
+    "http://localhost:3000/api/v1";
+
+let csrfToken = null;
 
 export class ApiError extends Error {
     constructor(message, status, code, errors = []) {
@@ -18,7 +20,6 @@ export async function apiRequest(
     {
         method = "GET",
         body,
-        token,
         signal
     } = {}
 ) {
@@ -30,8 +31,11 @@ export async function apiRequest(
         headers["Content-Type"] = "application/json";
     }
 
-    if (token) {
-        headers.Authorization = `Bearer ${token}`;
+    if (
+        csrfToken &&
+        !["GET", "HEAD", "OPTIONS"].includes(method.toUpperCase())
+    ) {
+        headers["X-CSRF-Token"] = csrfToken;
     }
 
     let response;
@@ -44,6 +48,7 @@ export async function apiRequest(
                 body !== undefined
                     ? JSON.stringify(body)
                     : undefined,
+            credentials: "include",
             signal
         });
     } catch (error) {
@@ -116,6 +121,15 @@ try {
     }
 
     if (!response.ok) {
+        if (
+            response.status === 401 &&
+            typeof globalThis.dispatchEvent === "function"
+        ) {
+            globalThis.dispatchEvent(
+                new Event("vallecito:session-expired")
+            );
+        }
+
         throw new ApiError(
             result.message ?? "Ocurrió un error.",
             response.status,
@@ -124,5 +138,84 @@ try {
         );
     }
 
+    if (typeof result.data?.csrfToken === "string") {
+        csrfToken = result.data.csrfToken;
+    }
+
     return result;
+}
+
+export async function apiDownload(
+    endpoint,
+    {
+        signal
+    } = {}
+) {
+    let response;
+
+    try {
+        response = await fetch(
+            `${API_URL}${endpoint}`,
+            {
+                method: "GET",
+                credentials: "include",
+                signal
+            }
+        );
+    } catch (error) {
+        if (
+            error instanceof DOMException &&
+            error.name === "AbortError"
+        ) {
+            throw error;
+        }
+
+        throw new ApiError(
+            "No se pudo conectar con el servidor.",
+            0,
+            "NETWORK_ERROR"
+        );
+    }
+
+    if (!response.ok) {
+        let result;
+
+        try {
+            result = await response.json();
+        } catch {
+            result = {};
+        }
+
+        if (
+            response.status === 401 &&
+            typeof globalThis.dispatchEvent === "function"
+        ) {
+            globalThis.dispatchEvent(
+                new Event("vallecito:session-expired")
+            );
+        }
+
+        throw new ApiError(
+            result.message ?? "No se pudo descargar el archivo.",
+            response.status,
+            result.code ?? "DOWNLOAD_ERROR",
+            result.errors ?? []
+        );
+    }
+
+    const disposition =
+        response.headers.get(
+            "content-disposition"
+        ) ?? "";
+    const filenameMatch =
+        disposition.match(
+            /filename="?([^";]+)"?/i
+        );
+
+    return {
+        blob: await response.blob(),
+        filename:
+            filenameMatch?.[1] ??
+            "descarga"
+    };
 }

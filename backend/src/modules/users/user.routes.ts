@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -53,4 +54,10 @@ userRouter.patch(
 userRouter.patch(
   "/:id/password",
   resetUserPasswordController,
+);
+
+userRouter.use(
+  requirePermissions(
+    "USUARIO_GESTIONAR",
+  ),
 );

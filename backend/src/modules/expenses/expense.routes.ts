@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -56,4 +57,10 @@ expenseRouter.patch(
 expenseRouter.get(
   "/:id",
   getExpenseByIdController,
+);
+
+expenseRouter.use(
+  requirePermissions(
+    "GASTO_REGISTRAR",
+  ),
 );

@@ -1,22 +1,31 @@
 import { compare, hash } from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { Prisma } from "../../generated/prisma/client.js";
-import { env } from "../../config/env.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import type {
   LoginInput,
   RegisterInput,
+  AcceptLegalInput,
 } from "./auth.schema.js";
 
 import {
   sendEmailVerificationForUser,
 } from "./auth-security.service.js";
+import { createAuthSession } from "./auth-session.service.js";
+import {
+  PRIVACY_VERSION,
+  TERMS_VERSION,
+} from "../../shared/legal/legal-versions.js";
 
-interface JwtPayload {
-  rol: string;
-  correo: string;
-  sessionVersion: number;
+const DUMMY_PASSWORD_HASH =
+  "$2b$12$lFPF5F6PG2PTvqV/ZTRqoezFMv.5AXMhPLd6AlnITfyaJmFB9KQqC";
+
+function invalidCredentials(): AppError {
+  return new AppError(
+    401,
+    "Correo o contraseña incorrectos.",
+    "CREDENCIALES_INVALIDAS",
+  );
 }
 
 export async function login(input: LoginInput) {
@@ -29,39 +38,8 @@ export async function login(input: LoginInput) {
 
     select: {
       id: true,
-      nombres: true,
-      apellidos: true,
-      correo: true,
-      telefono: true,
       passwordHash: true,
-      proveedorAuth: true,
       estado: true,
-      correoVerificado: true,
-      sessionVersion: true,
-
-      rol: {
-        select: {
-          id: true,
-          codigo: true,
-          nombre: true,
-        },
-      },
-
-      sucursales: {
-        where: {
-          activo: true,
-        },
-
-        select: {
-          sucursal: {
-            select: {
-              id: true,
-              codigo: true,
-              nombre: true,
-            },
-          },
-        },
-      },
     },
   });
 
@@ -70,11 +48,11 @@ export async function login(input: LoginInput) {
    * es incorrecta, para no revelar qué cuentas están registradas.
    */
   if (!usuario?.passwordHash) {
-    throw new AppError(
-      401,
-      "Correo o contraseña incorrectos.",
-      "CREDENCIALES_INVALIDAS",
+    await compare(
+      input.password,
+      DUMMY_PASSWORD_HASH,
     );
+    throw invalidCredentials();
   }
 
   const passwordCorrecto = await compare(
@@ -83,11 +61,7 @@ export async function login(input: LoginInput) {
   );
 
   if (!passwordCorrecto) {
-    throw new AppError(
-      401,
-      "Correo o contraseña incorrectos.",
-      "CREDENCIALES_INVALIDAS",
-    );
+    throw invalidCredentials();
   }
 
   if (usuario.estado === "BLOQUEADO") {
@@ -106,49 +80,7 @@ export async function login(input: LoginInput) {
     );
   }
 
-  const payload: JwtPayload = {
-    rol: usuario.rol.codigo,
-    correo: usuario.correo,
-    sessionVersion: usuario.sessionVersion,
-  };
-
-  const token = jwt.sign(payload, env.JWT_SECRET, {
-    subject: usuario.id,
-    expiresIn: env.JWT_EXPIRES_IN_SECONDS,
-    issuer: "el-vallecito-api",
-    audience: "el-vallecito-web",
-  });
-
-  await prisma.usuario.update({
-    where: {
-      id: usuario.id,
-    },
-    data: {
-      ultimoAcceso: new Date(),
-    },
-  });
-
-  return {
-    token,
-    tokenType: "Bearer",
-    expiresInSeconds: env.JWT_EXPIRES_IN_SECONDS,
-
-    usuario: {
-      id: usuario.id,
-      nombres: usuario.nombres,
-      apellidos: usuario.apellidos,
-      nombreCompleto:
-        `${usuario.nombres} ${usuario.apellidos}`.trim(),
-      correo: usuario.correo,
-      telefono: usuario.telefono,
-      rol: usuario.rol,
-      correoVerificado: usuario.correoVerificado,
-
-      sucursales: usuario.sucursales.map(
-        ({ sucursal }) => sucursal,
-      ),
-    },
-  };
+  return createAuthSession(usuario.id);
 }
 
 export async function register(
@@ -210,6 +142,10 @@ export async function register(
         proveedorAuth: "LOCAL",
         estado: "ACTIVO",
         correoVerificado: false,
+        terminosAceptadosAt: new Date(),
+        terminosVersion: TERMS_VERSION,
+        privacidadAceptadaAt: new Date(),
+        privacidadVersion: PRIVACY_VERSION,
       },
     });
   } catch (error: unknown) {
@@ -261,6 +197,8 @@ export async function getCurrentUser(
       correoVerificado: true,
       ultimoAcceso: true,
       createdAt: true,
+      terminosVersion: true,
+      privacidadVersion: true,
 
       rol: {
         select: {
@@ -350,6 +288,9 @@ export async function getCurrentUser(
     correoVerificado: usuario.correoVerificado,
     ultimoAcceso: usuario.ultimoAcceso,
     fechaRegistro: usuario.createdAt,
+    requiereAceptacionLegal:
+      usuario.terminosVersion !== TERMS_VERSION ||
+      usuario.privacidadVersion !== PRIVACY_VERSION,
 
     rol: {
       id: usuario.rol.id,
@@ -363,4 +304,21 @@ export async function getCurrentUser(
       ({ sucursal }) => sucursal,
     ),
   };
+}
+
+export async function acceptCurrentLegalPolicies(
+  usuarioId: string,
+  _input: AcceptLegalInput,
+) {
+  await prisma.usuario.update({
+    where: { id: usuarioId },
+    data: {
+      terminosAceptadosAt: new Date(),
+      terminosVersion: TERMS_VERSION,
+      privacidadAceptadaAt: new Date(),
+      privacidadVersion: PRIVACY_VERSION,
+    },
+  });
+
+  return getCurrentUser(usuarioId);
 }

@@ -1,6 +1,6 @@
 .promotions-admin {
     width: 100%;
-    max-width: 1500px;
+    max-width: var(--admin-content-max-width);
     min-width: 0;
     margin: 0 auto;
 }
@@ -12,9 +12,9 @@
     width: 100%;
     min-width: 0;
 
-    border: 1px solid #dce4dd;
-    border-radius: 14px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-white);
 }
 
 .promotions-heading {
@@ -29,13 +29,13 @@
 
 .promotions-heading h2 {
     margin: 6px 0;
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .promotions-heading p {
     margin: 0;
-    color: #748078;
-    font-size: 0.75rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-sm);
 }
 
 .promotions-heading-actions {
@@ -55,10 +55,10 @@
     justify-content: center;
     gap: 7px;
 
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
     font: inherit;
-    font-size: 0.72rem;
+    font-size: var(--admin-font-sm);
     font-weight: 650;
     cursor: pointer;
 }
@@ -66,15 +66,15 @@
 .promotions-heading-actions .primary,
 .promotions-form-actions .primary {
     border: none;
-    background: #355e3b;
-    color: #ffffff;
+    background: var(--admin-color-primary);
+    color: var(--admin-color-white);
 }
 
 .promotions-heading-actions .secondary,
 .promotions-form-actions .secondary {
-    border: 1px solid #cad6cc;
-    background: #ffffff;
-    color: #536057;
+    border: 1px solid var(--admin-color-control-border);
+    background: var(--admin-color-white);
+    color: var(--admin-color-text);
 }
 
 .promotions-heading-actions button:disabled,
@@ -88,20 +88,20 @@
     margin-bottom: 17px;
     padding: 12px 15px;
 
-    border-radius: 9px;
-    font-size: 0.78rem;
+    border-radius: var(--admin-radius-feedback);
+    font-size: var(--admin-font-md);
 }
 
 .promotions-feedback.success {
-    border: 1px solid #a5d6a7;
-    background: #e8f5e9;
-    color: #1b5e20;
+    border: 1px solid var(--admin-color-success-border);
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-success-text);
 }
 
 .promotions-feedback.error {
-    border: 1px solid #ef9a9a;
-    background: #ffebee;
-    color: #9b111e;
+    border: 1px solid var(--admin-color-danger-border);
+    background: var(--admin-color-danger-soft);
+    color: var(--admin-color-danger-text);
 }
 
 .promotions-stats {
@@ -121,9 +121,9 @@
     align-items: center;
     gap: 12px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 11px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-lg);
+    background: var(--admin-color-white);
 }
 
 .promotions-stats article > svg {
@@ -132,9 +132,9 @@
     height: 42px;
     padding: 11px;
 
-    border-radius: 10px;
-    background: #eef4ef;
-    color: #355e3b;
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-color-primary-soft);
+    color: var(--admin-color-primary);
 }
 
 .promotions-stats article div {
@@ -144,12 +144,12 @@
 }
 
 .promotions-stats span {
-    color: #758078;
-    font-size: 0.66rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
 }
 
 .promotions-stats strong {
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .promotions-filters {
@@ -165,15 +165,15 @@
 
 .promotions-search {
     min-width: 0;
-    min-height: 42px;
+    min-height: var(--admin-control-height);
     padding: 0 11px;
 
     display: flex;
     align-items: center;
     gap: 8px;
 
-    border: 1px solid #cbd5cc;
-    border-radius: 8px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
 }
 
 .promotions-search input {
@@ -191,12 +191,12 @@
 .promotions-form-grid textarea {
     width: 100%;
     min-width: 0;
-    min-height: 42px;
+    min-height: var(--admin-control-height);
     padding: 8px 10px;
 
-    border: 1px solid #cbd5cc;
-    border-radius: 8px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+    background: var(--admin-color-white);
 
     font: inherit;
     outline: none;
@@ -206,7 +206,7 @@
     margin-bottom: 18px;
     padding: 21px;
 
-    border-left: 4px solid #355e3b;
+    border-left: 4px solid var(--admin-color-primary);
 }
 
 .promotions-form-heading {
@@ -219,7 +219,7 @@
 
 .promotions-form-heading h3 {
     margin: 5px 0;
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .promotions-form-heading > button {
@@ -231,10 +231,10 @@
     justify-content: center;
 
     border: none;
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
-    background: #edf2ee;
-    color: #465248;
+    background: var(--admin-color-surface-muted);
+    color: var(--admin-color-text);
     cursor: pointer;
 }
 
@@ -252,8 +252,8 @@
     flex-direction: column;
     gap: 6px;
 
-    color: #465249;
-    font-size: 0.69rem;
+    color: var(--admin-color-text);
+    font-size: var(--admin-font-xs);
     font-weight: 650;
 }
 
@@ -266,7 +266,7 @@
 }
 
 .promotions-checkbox-field {
-    min-height: 42px;
+    min-height: var(--admin-control-height);
 
     flex-direction: row !important;
     align-items: center;
@@ -277,16 +277,16 @@
     width: 18px;
     height: 18px;
     min-height: auto;
-    accent-color: #355e3b;
+    accent-color: var(--admin-color-primary);
 }
 
 .promotions-products-section {
     margin-top: 20px;
     padding: 17px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 11px;
-    background: #fafcfa;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-lg);
+    background: var(--admin-color-surface-subtle);
 }
 
 .promotions-products-heading {
@@ -299,18 +299,18 @@
 
 .promotions-products-heading h4 {
     margin: 0 0 4px;
-    color: #334638;
+    color: var(--admin-color-primary-strong);
 }
 
 .promotions-products-heading p {
     margin: 0;
-    color: #79837c;
-    font-size: 0.66rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
 }
 
 .promotions-products-heading > span {
-    color: #355e3b;
-    font-size: 0.7rem;
+    color: var(--admin-color-primary);
+    font-size: var(--admin-font-xs);
     font-weight: 700;
 }
 
@@ -333,9 +333,9 @@
     align-items: center;
     gap: 7px;
 
-    border: 1px solid #cbd5cc;
-    border-radius: 8px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+    background: var(--admin-color-white);
 }
 
 .promotions-product-tools input {
@@ -350,14 +350,14 @@
 .promotions-product-tools button {
     padding: 7px 11px;
 
-    border: 1px solid #cad6cc;
-    border-radius: 8px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
 
-    background: #ffffff;
-    color: #536057;
+    background: var(--admin-color-white);
+    color: var(--admin-color-text);
 
     font: inherit;
-    font-size: 0.67rem;
+    font-size: var(--admin-font-xs);
     cursor: pointer;
 }
 
@@ -377,13 +377,13 @@
     gap: 6px;
 
     border: none;
-    border-radius: 20px;
+    border-radius: var(--admin-radius-pill);
 
-    background: #e7f0e8;
-    color: #355e3b;
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-primary);
 
     font: inherit;
-    font-size: 0.63rem;
+    font-size: var(--admin-font-2xs);
     cursor: pointer;
 }
 
@@ -405,16 +405,16 @@
     align-items: center;
     gap: 9px;
 
-    border: 1px solid #d6dfd8;
-    border-radius: 9px;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-feedback);
 
-    background: #ffffff;
+    background: var(--admin-color-white);
     cursor: pointer;
 }
 
 .promotions-product-option.selected {
-    border-color: #6c9a72;
-    background: #edf5ee;
+    border-color: var(--admin-color-text-muted);
+    background: var(--admin-color-primary-soft);
 }
 
 .promotions-product-option input {
@@ -422,7 +422,7 @@
     height: 17px;
 
     flex: 0 0 17px;
-    accent-color: #355e3b;
+    accent-color: var(--admin-color-primary);
 }
 
 .promotions-product-option div {
@@ -435,16 +435,16 @@
 
 .promotions-product-option strong {
     overflow: hidden;
-    color: #334638;
-    font-size: 0.68rem;
+    color: var(--admin-color-primary-strong);
+    font-size: var(--admin-font-xs);
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .promotions-product-option span {
     overflow: hidden;
-    color: #7b857e;
-    font-size: 0.59rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-2xs);
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -453,9 +453,9 @@
     grid-column: 1 / -1;
     padding: 35px;
 
-    color: #7b857e;
+    color: var(--admin-color-text-muted);
     text-align: center;
-    font-size: 0.72rem;
+    font-size: var(--admin-font-sm);
 }
 
 .promotions-form-actions {
@@ -486,26 +486,26 @@
 .promotions-table td {
     padding: 12px 10px;
 
-    border-bottom: 1px solid #e4ebe5;
+    border-bottom: 1px solid var(--admin-color-border-subtle);
     text-align: left;
     vertical-align: middle;
 }
 
 .promotions-table th {
-    color: #69766c;
-    font-size: 0.62rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-2xs);
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
 .promotions-table td {
-    color: #536057;
-    font-size: 0.71rem;
+    color: var(--admin-color-text);
+    font-size: var(--admin-font-xs);
 }
 
 .promotions-table small {
-    color: #818b83;
-    font-size: 0.61rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-2xs);
 }
 
 .promotions-name {
@@ -517,12 +517,12 @@
 }
 
 .promotions-name strong {
-    color: #334638;
+    color: var(--admin-color-primary-strong);
 }
 
 .promotions-name span {
-    color: #818b83;
-    font-size: 0.62rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-2xs);
 }
 
 .promotions-product-count {
@@ -532,9 +532,9 @@
     display: inline-flex;
     justify-content: center;
 
-    border-radius: 20px;
-    background: #eef4ef;
-    color: #355e3b;
+    border-radius: var(--admin-radius-pill);
+    background: var(--admin-color-primary-soft);
+    color: var(--admin-color-primary);
 
     font-weight: 750;
 }
@@ -543,35 +543,35 @@
     padding: 5px 9px;
 
     display: inline-flex;
-    border-radius: 20px;
+    border-radius: var(--admin-radius-pill);
 
-    font-size: 0.58rem;
+    font-size: var(--admin-font-2xs);
     font-weight: 750;
 }
 
 .promotions-status.borrador {
-    background: #eceff1;
-    color: #546e7a;
+    background: var(--admin-color-surface-muted);
+    color: var(--admin-color-text-muted);
 }
 
 .promotions-status.activa {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-success);
 }
 
 .promotions-status.pausada {
-    background: #fff8e1;
-    color: #8a6500;
+    background: var(--admin-color-warning-soft);
+    color: var(--admin-color-warning);
 }
 
 .promotions-status.finalizada {
-    background: #e3f2fd;
-    color: #1565c0;
+    background: var(--admin-color-info-soft);
+    color: var(--admin-color-info);
 }
 
 .promotions-status.archivada {
-    background: #f5f5f5;
-    color: #757575;
+    background: var(--admin-color-canvas);
+    color: var(--admin-color-text-muted);
 }
 
 .promotions-row-actions {
@@ -588,11 +588,11 @@
     align-items: center;
     justify-content: center;
 
-    border: 1px solid #d2dcd4;
-    border-radius: 7px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-sm);
 
-    background: #ffffff;
-    color: #355e3b;
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary);
     cursor: pointer;
 }
 
@@ -611,8 +611,8 @@
 }
 
 .promotions-pagination > span {
-    color: #748078;
-    font-size: 0.68rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
 }
 
 .promotions-pagination > div {
@@ -623,9 +623,9 @@
 .promotions-pagination button {
     min-height: 36px;
 
-    border: 1px solid #cad6cc;
-    background: #ffffff;
-    color: #536057;
+    border: 1px solid var(--admin-color-control-border);
+    background: var(--admin-color-white);
+    color: var(--admin-color-text);
 }
 
 .promotions-empty {
@@ -637,20 +637,20 @@
     flex-direction: column;
     gap: 8px;
 
-    color: #768078;
+    color: var(--admin-color-text-muted);
     text-align: center;
 }
 
 .promotions-empty svg {
-    color: #8ba08e;
-    font-size: 2.2rem;
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-icon-lg);
 }
 
 .promotions-empty span {
-    font-size: 0.72rem;
+    font-size: var(--admin-font-sm);
 }
 
-@media (max-width: 1150px) {
+@media (max-width: 1200px) {
     .promotions-filters {
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
@@ -663,7 +663,7 @@
     }
 }
 
-@media (max-width: 750px) {
+@media (max-width: 850px) {
     .promotions-heading {
         align-items: stretch;
         flex-direction: column;

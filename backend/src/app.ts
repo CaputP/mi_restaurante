@@ -11,10 +11,18 @@ import {
 } from "./modules/dashboard/dashboard.routes.js";
 
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import express from "express";
 
 import { env } from "./config/env.js";
+import { Prisma } from "./generated/prisma/client.js";
+import { prisma } from "./lib/prisma.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
+import {
+  apiRateLimiter,
+  requestLogger,
+  securityHeaders,
+} from "./middlewares/security.middleware.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 
 import {
@@ -22,8 +30,10 @@ import {
 } from "./modules/inventory/inventory.routes.js";
 
 import {
+  clientReservationRouter,
   reservationRouter,
 } from "./modules/reservations/reservation.routes.js";
+import { backupRouter } from "./modules/backups/backup.routes.js";
 
 import {
   orderRouter,
@@ -40,6 +50,7 @@ import {
 import {
   userRouter,
 } from "./modules/users/user.routes.js";
+import { roleRouter } from "./modules/roles/role.routes.js";
 
 import {
   cashRouter,
@@ -74,6 +85,10 @@ import {
 } from "./modules/audit/audit.routes.js";
 
 import {
+  AppError,
+} from "./shared/errors/app-error.js";
+
+import {
   ticketRouter,
 } from "./modules/tickets/ticket.routes.js";
 
@@ -92,16 +107,93 @@ import {
 import {
   promotionRouter,
 } from "./modules/promotions/promotions.routes.js";
+import { requireCsrfProtection } from "./modules/auth/auth-session.js";
+import {
+  consumerClaimAdminRouter,
+  consumerClaimPublicRouter,
+} from "./modules/consumer-claims/consumer-claim.routes.js";
+import {
+  realtimeMutationMiddleware,
+} from "./middlewares/realtime.middleware.js";
+import {
+  realtimeRouter,
+} from "./modules/realtime/realtime.routes.js";
 
 export const app = express();
 
+const frontendOrigin =
+  new URL(
+    env.FRONTEND_URL,
+  ).origin;
+
 app.disable("x-powered-by");
+app.set(
+  "trust proxy",
+  env.TRUST_PROXY_HOPS,
+);
+app.set(
+  "query parser",
+  "simple",
+);
+
+app.use(requestLogger);
+app.use(securityHeaders);
 
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (
+      origin,
+      callback,
+    ) => {
+      if (
+        !origin ||
+        origin ===
+          frontendOrigin
+      ) {
+        callback(
+          null,
+          true,
+        );
+        return;
+      }
+
+      callback(
+        new AppError(
+          403,
+          "El origen de la solicitud no está permitido.",
+          "ORIGIN_NOT_ALLOWED",
+        ),
+      );
+    },
     credentials: true,
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+    allowedHeaders: [
+      "Authorization",
+      "Content-Type",
+      "X-CSRF-Token",
+      "X-Request-Id",
+    ],
+    exposedHeaders: [
+      "X-Request-Id",
+      "RateLimit",
+      "RateLimit-Policy",
+    ],
+    maxAge: 86_400,
   }),
+);
+
+app.use(cookieParser());
+
+app.use(
+  "/api",
+  apiRateLimiter,
 );
 
 app.use(
@@ -110,18 +202,48 @@ app.use(
   }),
 );
 
+app.use(requireCsrfProtection);
+
 app.use(
   auditMutationMiddleware,
+);
+
+app.use(
+  realtimeMutationMiddleware,
 );
 
 app.get("/api/health", (_request, response) => {
   response.status(200).json({
     success: true,
     message: "API de El Vallecito de Chocco funcionando.",
-    environment: env.NODE_ENV,
     timestamp: new Date().toISOString(),
   });
 });
+
+app.get(
+  "/api/ready",
+  async (
+    _request,
+    response,
+    next,
+  ) => {
+    try {
+      await prisma.$queryRaw(
+        Prisma.sql`SELECT 1`,
+      );
+
+      response.status(200).json({
+        success: true,
+        message:
+          "API y base de datos disponibles.",
+        timestamp:
+          new Date().toISOString(),
+      });
+    } catch (error: unknown) {
+      next(error);
+    }
+  },
+);
 
 app.use("/api/auth", authRouter);
 
@@ -146,8 +268,18 @@ app.use(
 );
 
 app.use(
+  "/api/admin/roles",
+  roleRouter,
+);
+
+app.use(
   "/api/admin/reservations",
   reservationRouter,
+);
+
+app.use(
+  "/api/reservations",
+  clientReservationRouter,
 );
 
 app.use(
@@ -177,11 +309,6 @@ app.use(
 
 app.use(
   "/api/sales",
-  saleRouter,
-);
-
-app.use(
-  "/api/sales",
   saleVoidRouter,
 );
 
@@ -197,17 +324,12 @@ app.use(
 
 app.use(
   "/api/branches",
-  branchRouter,
-);
-
-app.use(
-  "/api/branches",
-  branchRouter,
-);
-
-app.use(
-  "/api/branches",
   branchAvailabilityRouter,
+);
+
+app.use(
+  "/api/branches",
+  branchRouter,
 );
 
 app.use(
@@ -239,6 +361,117 @@ app.use(
   "/api/notifications",
   notificationRouter,
 );
+
+app.use(
+  "/api/realtime",
+  realtimeRouter,
+);
+
+app.use(
+  "/api/backups",
+  backupRouter,
+);
+app.use("/api/consumer-claims", consumerClaimPublicRouter);
+app.use("/api/admin/consumer-claims", consumerClaimAdminRouter);
+
+app.use(
+  "/api/v1",
+  (_request, response, next) => {
+    response.setHeader(
+      "x-api-version",
+      "1",
+    );
+    next();
+  },
+);
+
+app.get("/api/v1/health", (_request, response) => {
+  response.status(200).json({
+    success: true,
+    message: "API de El Vallecito de Chocco funcionando.",
+    version: "1",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get(
+  "/api/v1/ready",
+  async (_request, response, next) => {
+    try {
+      await prisma.$queryRaw(
+        Prisma.sql`SELECT 1`,
+      );
+      response.status(200).json({
+        success: true,
+        message:
+          "API y base de datos disponibles.",
+        version: "1",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error: unknown) {
+      next(error);
+    }
+  },
+);
+
+app.use("/api/v1/auth", authRouter);
+app.use(
+  "/api/v1/admin/dashboard",
+  dashboardRouter,
+);
+app.use(
+  "/api/v1/admin/catalog",
+  catalogRouter,
+);
+app.use(
+  "/api/v1/admin/inventory",
+  inventoryRouter,
+);
+app.use(
+  "/api/v1/admin/users",
+  userRouter,
+);
+app.use(
+  "/api/v1/admin/roles",
+  roleRouter,
+);
+app.use(
+  "/api/v1/admin/reservations",
+  reservationRouter,
+);
+app.use(
+  "/api/v1/reservations",
+  clientReservationRouter,
+);
+app.use("/api/v1/orders", orderRouter);
+app.use("/api/v1/commands", commandRouter);
+app.use("/api/v1/deliveries", deliveryRouter);
+app.use("/api/v1/cash", cashRouter);
+app.use("/api/v1/sales", saleRouter);
+app.use("/api/v1/sales", saleVoidRouter);
+app.use("/api/v1/expenses", expenseRouter);
+app.use("/api/v1/reports", reportRouter);
+app.use(
+  "/api/v1/branches",
+  branchAvailabilityRouter,
+);
+app.use("/api/v1/branches", branchRouter);
+app.use("/api/v1/settings", settingRouter);
+app.use("/api/v1/audit", auditRouter);
+app.use("/api/v1/tickets", ticketRouter);
+app.use("/api/v1/loyalty", loyaltyRouter);
+app.use("/api/v1/promotions", promotionRouter);
+app.use(
+  "/api/v1/notifications",
+  notificationRouter,
+);
+app.use(
+  "/api/v1/realtime",
+  realtimeRouter,
+);
+app.use("/api/v1/backups", backupRouter);
+app.use("/api/v1/consumer-claims", consumerClaimPublicRouter);
+app.use("/api/v1/admin/consumer-claims", consumerClaimAdminRouter);
 
 app.use((_request, response) => {
   response.status(404).json({

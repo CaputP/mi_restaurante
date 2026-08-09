@@ -312,6 +312,11 @@ export async function getAdminDashboard(
         sucursalId: {
           in: branchIds,
         },
+
+        createdAt: {
+          gte: startOfDay,
+          lt: endOfDay,
+        },
       },
 
       take: 5,
@@ -346,6 +351,11 @@ export async function getAdminDashboard(
         sucursalId: {
           in: branchIds,
         },
+
+        createdAt: {
+          gte: startOfDay,
+          lt: endOfDay,
+        },
       },
 
       take: 5,
@@ -379,6 +389,11 @@ export async function getAdminDashboard(
       where: {
         sucursalId: {
           in: branchIds,
+        },
+
+        createdAt: {
+          gte: startOfDay,
+          lt: endOfDay,
         },
       },
 

@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -38,4 +39,10 @@ auditRouter.get(
 auditRouter.get(
   "/:id",
   getAuditByIdController,
+);
+
+auditRouter.use(
+  requirePermissions(
+    "AUDITORIA_VER",
+  ),
 );

@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 
 import {
+    useLocation,
     useNavigate,
     useParams
 } from "react-router-dom";
@@ -32,6 +33,10 @@ import {
 import {
     getSaleTicketRequest
 } from "../../../services/ticket.service";
+
+import {
+    getSalesWorkspacePath
+} from "../../../utils/roleRoutes";
 
 import "./voidSalePage.css";
 
@@ -111,10 +116,19 @@ function VoidSalePage() {
 
     const navigate =
         useNavigate();
+    const location =
+        useLocation();
 
     const {
-        token
+        token,
+        usuario
     } = useAuth();
+
+    const salesWorkspacePath =
+        getSalesWorkspacePath(
+            usuario?.rol?.codigo,
+            location.pathname
+        );
 
     const [
         ticket,
@@ -124,6 +138,11 @@ function VoidSalePage() {
     const [
         reason,
         setReason
+    ] = useState("");
+
+    const [
+        password,
+        setPassword
     ] = useState("");
 
     const [
@@ -232,6 +251,13 @@ function VoidSalePage() {
             return;
         }
 
+        if (password.length < 8) {
+            setError(
+                "Ingresa tu contraseña para confirmar esta acción sensible."
+            );
+            return;
+        }
+
         const confirmed =
             window.confirm(
                 "¿Confirmas la anulación? La caja y el inventario serán revertidos y el pedido quedará cancelado."
@@ -248,7 +274,10 @@ function VoidSalePage() {
                 await voidSaleRequest(
                     token,
                     saleId,
-                    cleanReason
+                    {
+                        motivo: cleanReason,
+                        password
+                    }
                 );
 
             setMessage(
@@ -264,6 +293,7 @@ function VoidSalePage() {
             );
 
             setReason("");
+            setPassword("");
         } catch (requestError) {
             setError(
                 getErrorMessage(
@@ -278,7 +308,7 @@ function VoidSalePage() {
 
     if (isLoading) {
         return (
-            <div className="void-sale-loading">
+            <div className="void-sale-loading admin-empty-state">
                 <FaReceipt />
                 Cargando venta...
             </div>
@@ -286,15 +316,15 @@ function VoidSalePage() {
     }
 
     return (
-        <section className="void-sale-page">
-            <header className="void-sale-heading">
+        <section className="void-sale-page admin-page">
+            <header className="void-sale-heading admin-page-header">
                 <div>
                     <button
                         type="button"
                         className="void-sale-back"
                         onClick={() =>
                             navigate(
-                                "/admin/ventas"
+                                salesWorkspacePath
                             )
                         }
                     >
@@ -320,13 +350,19 @@ function VoidSalePage() {
             </header>
 
             {message && (
-                <div className="void-sale-feedback success">
+                <div
+                    className="void-sale-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="void-sale-feedback error">
+                <div
+                    className="void-sale-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
@@ -553,6 +589,25 @@ function VoidSalePage() {
                                 />
                             </label>
 
+                            <label>
+                                Contraseña de confirmación *
+
+                                <input
+                                    type="password"
+                                    autoComplete="current-password"
+                                    minLength="8"
+                                    maxLength="200"
+                                    placeholder="Confirma tu identidad"
+                                    value={password}
+                                    onChange={(event) =>
+                                        setPassword(
+                                            event.target.value
+                                        )
+                                    }
+                                    required
+                                />
+                            </label>
+
                             <div className="void-sale-effects">
                                 <strong>
                                     Al confirmar:
@@ -569,7 +624,7 @@ function VoidSalePage() {
                                     className="secondary"
                                     onClick={() =>
                                         navigate(
-                                            "/admin/ventas"
+                                            salesWorkspacePath
                                         )
                                     }
                                 >

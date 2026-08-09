@@ -3,7 +3,7 @@
 //======================
 
 import "./parallax.css";
-import parallax from "../../assets/images/parallax/parallax.jpg"
+import parallax from "../../assets/images/parallax/parallax.webp"
 // =====================
 // COMPONENTE PARALLAX
 //======================

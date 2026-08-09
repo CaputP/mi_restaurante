@@ -3,7 +3,8 @@
 // =========================
 
 import "./hero.css";
-import heroImage from "../../assets/images/hero/hero.jpg";
+import heroImage from "../../assets/images/hero/hero.webp";
+import { Link } from "react-router-dom";
 // =========================
 // COMPONENTE HERO
 // =========================
@@ -25,13 +26,19 @@ function Hero({titulo, subtitulo}) {
                     </p>
 
                     <div className="hero-buttons">
-                        <button className="btn-primary">
+                        <a
+                            className="btn-primary"
+                            href="#platos"
+                        >
                             Ver Carta
-                        </button>
+                        </a>
 
-                        <button className="btn-secondary">
-                            Rerservar
-                        </button>
+                        <Link
+                            className="btn-secondary"
+                            to="/reservations"
+                        >
+                            Reservar
+                        </Link>
                     </div>
                 </div>
             </div>

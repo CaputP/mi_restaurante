@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 
 import { useAuth } from "../../../context/AuthContext";
+import { useRealtimeVersion } from "../../../context/RealtimeContext";
 import { ApiError } from "../../../services/api";
 
 import {
@@ -172,6 +173,11 @@ function getRequestErrorMessage(error) {
 
 function ProductsAdmin() {
     const { token } = useAuth();
+    const realtimeVersion =
+        useRealtimeVersion([
+            "CATALOG",
+            "INVENTORY"
+        ]);
 
     const [options, setOptions] =
         useState(initialOptions);
@@ -363,7 +369,8 @@ function ProductsAdmin() {
         statusFilter,
         categoryFilter,
         branchFilter,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     function openCreateForm() {
@@ -754,7 +761,7 @@ function ProductsAdmin() {
 
     return (
         <section>
-            <header className="catalog-heading">
+            <header className="catalog-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         PRODUCTOS
@@ -784,7 +791,7 @@ function ProductsAdmin() {
 
             {message && (
                 <div
-                    className="catalog-feedback success"
+                    className="catalog-feedback admin-feedback success"
                     role="status"
                 >
                     {message}
@@ -793,7 +800,7 @@ function ProductsAdmin() {
 
             {error && (
                 <div
-                    className="catalog-feedback error"
+                    className="catalog-feedback admin-feedback error"
                     role="alert"
                 >
                     {error}
@@ -801,7 +808,7 @@ function ProductsAdmin() {
             )}
 
             <form
-                className="catalog-filters product-filters"
+                className="catalog-filters product-filters admin-filter-bar"
                 onSubmit={handleSearch}
             >
                 <div className="catalog-search">
@@ -1403,8 +1410,8 @@ function ProductsAdmin() {
                         </p>
                     </div>
                 ) : (
-                    <div className="catalog-table-wrapper">
-                        <table className="catalog-table product-table">
+                    <div className="catalog-table-wrapper admin-table-shell">
+                        <table className="catalog-table product-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Producto</th>
@@ -1505,7 +1512,7 @@ function ProductsAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`catalog-status ${product.estado.toLowerCase()}`}
+                                                    className={`admin-status-badge catalog-status ${product.estado.toLowerCase()}`}
                                                 >
                                                     {
                                                         product.estado

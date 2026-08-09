@@ -6,7 +6,7 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 import { ApiError } from "../../services/api";
 import {
     forgotPasswordRequest

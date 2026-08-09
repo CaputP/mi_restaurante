@@ -2,6 +2,10 @@ html{
     scroll-behavior: smooth;
 }
 
+.home-page section[id] {
+    scroll-margin-top: 80px;
+}
+
 /* Reseteo global para eliminar bordes y ajustar tamaños */
 * {
     margin: 0;

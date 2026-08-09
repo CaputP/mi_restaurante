@@ -1,0 +1,101 @@
+.loyalty-module-layout {
+    width: 100%;
+    max-width: var(--admin-content-max-width);
+    min-width: 0;
+    margin: 0 auto;
+}
+
+.loyalty-module-nav {
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 6px;
+
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 6px;
+
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-white);
+}
+
+.loyalty-module-link {
+    min-width: 0;
+    min-height: 58px;
+    padding: 9px 13px;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    border: 1px solid transparent;
+    border-radius: var(--admin-radius-md);
+    color: var(--admin-color-text);
+    text-decoration: none;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.loyalty-module-link:hover {
+    border-color: var(--admin-color-border);
+    background: var(--admin-color-canvas);
+    color: var(--admin-color-primary-strong);
+}
+
+.loyalty-module-link.active {
+    border-color: var(--admin-color-primary);
+    background: var(--admin-color-primary-soft);
+    color: var(--admin-color-primary-strong);
+}
+
+.loyalty-module-link-icon {
+    width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+
+    border-radius: var(--admin-radius-feedback);
+    background: var(--admin-color-surface-muted);
+    color: var(--admin-color-text);
+}
+
+.loyalty-module-link.active .loyalty-module-link-icon {
+    background: var(--admin-color-primary);
+    color: var(--admin-color-white);
+}
+
+.loyalty-module-link-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.loyalty-module-link-copy strong,
+.loyalty-module-link-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.loyalty-module-link-copy strong {
+    font-size: var(--admin-font-md);
+}
+
+.loyalty-module-link-copy small {
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-2xs);
+}
+
+@media (max-width: 600px) {
+    .loyalty-module-nav {
+        grid-template-columns: 1fr;
+    }
+}

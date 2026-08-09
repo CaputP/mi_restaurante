@@ -3,7 +3,7 @@
     inset: 0 auto 0 0;
     z-index: 1100;
 
-    width: 255px;
+    width: var(--admin-sidebar-width);
     height: 100vh;
     padding: 18px 14px;
 
@@ -13,11 +13,13 @@
     background:
         linear-gradient(
             180deg,
-            #28492e 0%,
-            #1d3822 100%
+            var(--admin-color-primary-strong) 0%,
+            var(--admin-color-sidebar) 100%
         );
 
-    color: #ffffff;
+    color: var(--admin-color-white);
+
+    box-shadow: var(--admin-shadow-sidebar);
 
     transition:
         transform 0.25s ease;
@@ -43,8 +45,8 @@
     height: 43px;
     object-fit: contain;
 
-    border-radius: 10px;
-    background: #ffffff;
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-color-white);
 }
 
 .operational-brand > div {
@@ -56,13 +58,13 @@
 }
 
 .operational-brand strong {
-    font-size: 0.85rem;
+    font-size: var(--admin-font-lg);
     white-space: nowrap;
 }
 
 .operational-brand span {
-    color: #c7d8ca;
-    font-size: 0.66rem;
+    color: var(--admin-color-sidebar-muted);
+    font-size: var(--admin-font-xs);
 }
 
 .operational-sidebar-close {
@@ -75,16 +77,11 @@
     justify-content: center;
 
     border: none;
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
-    background: rgba(
-        255,
-        255,
-        255,
-        0.1
-    );
+    background: var(--admin-color-sidebar-control);
 
-    color: #ffffff;
+    color: var(--admin-color-white);
     cursor: pointer;
 }
 
@@ -96,33 +93,21 @@
     flex-direction: column;
     gap: 4px;
 
-    border: 1px solid
-        rgba(
-            255,
-            255,
-            255,
-            0.12
-        );
+    border: 1px solid var(--admin-color-sidebar-border);
 
-    border-radius: 10px;
+    border-radius: var(--admin-radius-md);
 
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.07
-        );
+    background: var(--admin-color-sidebar-surface);
 }
 
 .operational-user-card span,
 .operational-user-card small {
-    color: #c7d8ca;
-    font-size: 0.63rem;
+    color: var(--admin-color-sidebar-muted);
+    font-size: var(--admin-font-2xs);
 }
 
 .operational-user-card strong {
-    font-size: 0.75rem;
+    font-size: var(--admin-font-sm);
     overflow-wrap: anywhere;
 }
 
@@ -140,10 +125,10 @@
     align-items: center;
     gap: 10px;
 
-    border-radius: 9px;
+    border-radius: var(--admin-radius-feedback);
 
-    color: #dce8de;
-    font-size: 0.75rem;
+    color: var(--admin-color-sidebar-text);
+    font-size: var(--admin-font-sm);
     font-weight: 600;
     text-decoration: none;
 
@@ -153,20 +138,14 @@
 }
 
 .operational-navigation a:hover {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.08
-        );
+    background: var(--admin-color-sidebar-hover);
 
-    color: #ffffff;
+    color: var(--admin-color-white);
 }
 
 .operational-navigation a.active {
-    background: #ffffff;
-    color: #28492e;
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary-strong);
 }
 
 .operational-navigation a svg {
@@ -188,26 +167,20 @@
     justify-content: center;
     gap: 8px;
 
-    border: 1px solid
-        rgba(
-            255,
-            255,
-            255,
-            0.18
-        );
+    border: 1px solid var(--admin-color-sidebar-border-strong);
 
-    border-radius: 9px;
+    border-radius: var(--admin-radius-feedback);
 
     background: transparent;
-    color: #ffffff;
+    color: var(--admin-color-white);
 
     font: inherit;
-    font-size: 0.72rem;
+    font-size: var(--admin-font-sm);
     font-weight: 650;
     cursor: pointer;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 850px) {
     .operational-sidebar {
         transform:
             translateX(-100%);

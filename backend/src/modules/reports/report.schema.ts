@@ -118,6 +118,138 @@ export const reportSummaryQuerySchema =
       },
     );
 
+export const reportDetailsQuerySchema =
+  z.intersection(
+    reportSummaryQuerySchema,
+    z.object({
+      tipo: z.enum([
+        "VENTAS",
+        "GASTOS",
+        "ADELANTOS_RESERVA",
+        "PAGOS",
+        "PRODUCTOS",
+        "PEDIDOS",
+        "RESERVAS",
+        "CAJAS",
+        "BALANCE",
+      ]),
+      filtro: z
+        .string()
+        .trim()
+        .max(100)
+        .optional(),
+      page: z.coerce
+        .number()
+        .int()
+        .min(1)
+        .optional()
+        .default(1),
+      limit: z.coerce
+        .number()
+        .int()
+        .min(1)
+        .max(100)
+        .optional()
+        .default(25),
+    }),
+  ).superRefine(
+    (data, context) => {
+      if (!data.filtro) {
+        return;
+      }
+
+      const allowedFilters: Partial<
+        Record<
+          typeof data.tipo,
+          readonly string[]
+        >
+      > = {
+        VENTAS: [
+          "SUBTOTAL",
+          "CON_ADELANTO",
+          "CON_DESCUENTO",
+          "CON_PROPINA",
+          "SALDO_CAJA",
+        ],
+        ADELANTOS_RESERVA: [
+          "EFECTIVO",
+          "YAPE",
+          "PLIN",
+          "TARJETA",
+          "TRANSFERENCIA",
+        ],
+        PAGOS: [
+          "EFECTIVO",
+          "YAPE",
+          "PLIN",
+          "TARJETA",
+          "TRANSFERENCIA",
+        ],
+        PEDIDOS: [
+          "ABIERTO",
+          "ENVIADO",
+          "EN_PREPARACION",
+          "LISTO",
+          "ENTREGA_PARCIAL",
+          "ENTREGADO",
+          "PAGADO",
+          "CANCELADO",
+        ],
+        RESERVAS: [
+          "SOLICITADA",
+          "EN_REVISION",
+          "ESPERANDO_ADELANTO",
+          "CONFIRMADA",
+          "RECHAZADA",
+          "CANCELADA",
+          "ATENDIDA",
+          "NO_ASISTIO",
+        ],
+        CAJAS: [
+          "ABIERTA",
+          "CERRADA",
+          "ANULADA",
+          "DIFERENCIA",
+        ],
+      };
+
+      if (
+        data.tipo === "PRODUCTOS" &&
+        !uuidSchema.safeParse(
+          data.filtro,
+        ).success
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["filtro"],
+          message:
+            "El producto seleccionado no es válido.",
+        });
+        return;
+      }
+
+      const values =
+        allowedFilters[data.tipo];
+
+      if (
+        data.tipo !== "PRODUCTOS" &&
+        (
+          !values ||
+          !values.includes(
+            data.filtro,
+          )
+        )
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["filtro"],
+          message:
+            "El filtro no es válido para este detalle de reporte.",
+        });
+      }
+    },
+  );
+
 export type ReportOptionsQuery =
   z.infer<
     typeof reportOptionsQuerySchema
@@ -126,4 +258,9 @@ export type ReportOptionsQuery =
 export type ReportSummaryQuery =
   z.infer<
     typeof reportSummaryQuerySchema
+  >;
+
+export type ReportDetailsQuery =
+  z.infer<
+    typeof reportDetailsQuerySchema
   >;

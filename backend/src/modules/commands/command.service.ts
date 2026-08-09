@@ -3,6 +3,7 @@ import {
 } from "../../generated/prisma/client.js";
 
 import { prisma } from "../../lib/prisma.js";
+import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
 
 import type {
@@ -1144,7 +1145,7 @@ export async function startCommand(
           .detallePedidoId,
     );
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
       const updateResult =
         await transaction
@@ -1277,7 +1278,7 @@ export async function completeCommand(
           .detallePedidoId,
     );
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
       const updateResult =
         await transaction

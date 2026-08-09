@@ -5,10 +5,12 @@ import {
 import {
   prisma,
 } from "../../lib/prisma.js";
+import { withSerializableTransaction } from "../../lib/transaction.js";
 
 import {
   AppError,
 } from "../../shared/errors/app-error.js";
+import { reauthenticateUser } from "../../shared/security/reauthentication.js";
 
 import {
   revertSaleLoyalty,
@@ -222,6 +224,11 @@ export async function voidSale(
   saleId: string,
   input: VoidSaleInput,
 ) {
+  await reauthenticateUser(
+    auth.usuarioId,
+    input.password,
+  );
+
   const accessSale =
     await prisma.venta.findFirst({
       where: {
@@ -251,7 +258,7 @@ export async function voidSale(
     accessSale.sucursalId,
   );
 
-  return prisma.$transaction(
+  return withSerializableTransaction(
     async (
       transaction,
     ) => {

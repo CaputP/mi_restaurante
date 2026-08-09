@@ -3,7 +3,8 @@ import { Outlet } from "react-router-dom";
 
 import AdminSidebar from "../components/adminSidebar/AdminSidebar";
 import SessionHeader from "../components/sessionHeader/SessionHeader";
-import "./adminLayout.css";
+import "../styles/adminDesignSystem.css";
+import "./AdminLayout.css";
 
 function AdminLayout() {
     const [sidebarOpen, setSidebarOpen] =

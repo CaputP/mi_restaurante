@@ -1,7 +1,7 @@
-import cuy from "../assets/images/featuredDishes/cuy.png"
-import malaya from "../assets/images/featuredDishes/malaya.png"
-import chicharron from "../assets/images/featuredDishes/chicharron.png"
-import trucha from "../assets/images/featuredDishes/trucha.png"
+import cuy from "../assets/images/featuredDishes/cuy.webp"
+import malaya from "../assets/images/featuredDishes/malaya.webp"
+import chicharron from "../assets/images/featuredDishes/chicharron.webp"
+import trucha from "../assets/images/featuredDishes/trucha.webp"
 
 // ==================================
 // PLATOS DESTACADOS DEL RESTAURANTE

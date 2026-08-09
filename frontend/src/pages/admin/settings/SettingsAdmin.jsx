@@ -30,6 +30,9 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
@@ -324,6 +327,11 @@ function SettingsAdmin() {
         token,
         usuario
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "SETTINGS"
+        ]);
 
     const roleCode =
         usuario?.rol?.codigo ??
@@ -654,7 +662,8 @@ function SettingsAdmin() {
         scopeFilter,
         typeFilter,
         page,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     useEffect(() => {
@@ -663,6 +672,8 @@ function SettingsAdmin() {
             activeTab !==
                 "CORRELATIVOS"
         ) {
+            // Evita mostrar correlativos de una sucursal o pestaña anterior.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCorrelatives([]);
             setCorrelativeDrafts({});
             return undefined;
@@ -748,7 +759,8 @@ function SettingsAdmin() {
         token,
         correlativeBranchId,
         activeTab,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     function clearFeedback() {
@@ -1220,8 +1232,8 @@ function SettingsAdmin() {
     }
 
     return (
-        <section className="settings-admin">
-            <header className="settings-heading">
+        <section className="settings-admin admin-page">
+            <header className="settings-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         CONFIGURACIÓN
@@ -1278,25 +1290,40 @@ function SettingsAdmin() {
             </header>
 
             {message && (
-                <div className="settings-feedback success">
+                <div
+                    className="settings-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="settings-feedback error">
+                <div
+                    className="settings-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <nav className="settings-tabs">
+            <nav
+                className="settings-tabs admin-tabs"
+                role="tablist"
+                aria-label="Secciones de configuración"
+            >
                 <button
                     type="button"
+                    role="tab"
+                    aria-selected={
+                        activeTab ===
+                        "PARAMETROS"
+                    }
                     className={
                         activeTab ===
                         "PARAMETROS"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(
@@ -1310,11 +1337,16 @@ function SettingsAdmin() {
 
                 <button
                     type="button"
+                    role="tab"
+                    aria-selected={
+                        activeTab ===
+                        "CORRELATIVOS"
+                    }
                     className={
                         activeTab ===
                         "CORRELATIVOS"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(
@@ -1328,11 +1360,16 @@ function SettingsAdmin() {
 
                 <button
                     type="button"
+                    role="tab"
+                    aria-selected={
+                        activeTab ===
+                        "AUDITORIA"
+                    }
                     className={
                         activeTab ===
                         "AUDITORIA"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(
@@ -1349,7 +1386,7 @@ function SettingsAdmin() {
             {activeTab ===
                 "PARAMETROS" && (
                 <>
-                    <div className="setting-stat-grid">
+                    <div className="setting-stat-grid admin-metric-grid">
                         <article>
                             <FaFileAlt />
 
@@ -1443,6 +1480,7 @@ function SettingsAdmin() {
                                 <button
                                     type="button"
                                     className="setting-close-button"
+                                    aria-label="Cerrar formulario de configuración"
                                     onClick={
                                         closeSettingForm
                                     }
@@ -1790,7 +1828,7 @@ function SettingsAdmin() {
 
                     <section className="settings-list-card">
                         <form
-                            className="settings-filters"
+                            className="settings-filters admin-filter-bar"
                             onSubmit={
                                 handleSearch
                             }
@@ -1943,8 +1981,8 @@ function SettingsAdmin() {
                                 </strong>
                             </div>
                         ) : (
-                            <div className="settings-table-wrapper">
-                                <table className="settings-table">
+                            <div className="settings-table-wrapper admin-table-shell">
+                                <table className="settings-table admin-data-table">
                                     <thead>
                                         <tr>
                                             <th>Clave</th>
@@ -2101,7 +2139,7 @@ function SettingsAdmin() {
                             </div>
                         )}
 
-                        <div className="settings-pagination">
+                        <div className="settings-pagination admin-pagination">
                             <span>
                                 Página{" "}
                                 {pagination.page} de{" "}
@@ -2279,7 +2317,7 @@ function SettingsAdmin() {
                                                 </div>
 
                                                 <span
-                                                    className={`correlative-status ${
+                                                    className={`admin-status-badge correlative-status ${
                                                         correlative.configurado
                                                             ? "configured"
                                                             : "pending"

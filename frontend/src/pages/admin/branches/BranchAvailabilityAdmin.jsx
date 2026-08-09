@@ -28,6 +28,9 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
@@ -205,6 +208,11 @@ function BranchAvailabilityAdmin() {
         token
     } = useAuth();
 
+    const realtimeVersion =
+        useRealtimeVersion([
+            "BRANCHES"
+        ]);
+
     const [
         availability,
         setAvailability
@@ -356,7 +364,8 @@ function BranchAvailabilityAdmin() {
     }, [
         token,
         branchId,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     function clearFeedback() {
@@ -733,8 +742,8 @@ function BranchAvailabilityAdmin() {
     }
 
     return (
-        <section className="branch-availability-admin">
-            <header className="branch-availability-heading">
+        <section className="branch-availability-admin admin-page">
+            <header className="branch-availability-heading admin-page-header">
                 <div>
                     <button
                         type="button"
@@ -786,18 +795,24 @@ function BranchAvailabilityAdmin() {
             </header>
 
             {message && (
-                <div className="branch-availability-feedback success">
+                <div
+                    className="branch-availability-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="branch-availability-feedback error">
+                <div
+                    className="branch-availability-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <div className="branch-availability-stats">
+            <div className="branch-availability-stats admin-metric-grid">
                 <article>
                     <FaStore />
 
@@ -1028,6 +1043,7 @@ function BranchAvailabilityAdmin() {
                                     <button
                                         type="button"
                                         className="branch-remove-schedule"
+                                        aria-label="Eliminar horario"
                                         title="Eliminar horario"
                                         onClick={() =>
                                             removeSchedule(
@@ -1114,6 +1130,7 @@ function BranchAvailabilityAdmin() {
 
                             <button
                                 type="button"
+                                aria-label="Cerrar formulario de bloqueo"
                                 onClick={
                                     closeBlockForm
                                 }
@@ -1278,8 +1295,8 @@ function BranchAvailabilityAdmin() {
                         </span>
                     </div>
                 ) : (
-                    <div className="branch-block-table-wrapper">
-                        <table className="branch-block-table">
+                    <div className="branch-block-table-wrapper admin-table-shell">
+                        <table className="branch-block-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Alcance</th>
@@ -1342,7 +1359,7 @@ function BranchAvailabilityAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`branch-block-status ${getBlockStatusClass(
+                                                    className={`admin-status-badge branch-block-status ${getBlockStatusClass(
                                                         block.estado
                                                     )}`}
                                                 >

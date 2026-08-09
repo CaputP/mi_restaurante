@@ -5,7 +5,6 @@ import {
 } from "react";
 
 import {
-    FaArrowLeft,
     FaCheckCircle,
     FaCoins,
     FaEye,
@@ -18,12 +17,13 @@ import {
 } from "react-icons/fa";
 
 import {
-    useNavigate
-} from "react-router-dom";
-
-import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
+
+import AdminDialog from "../../../components/adminDialog/AdminDialog";
 
 import {
     ApiError
@@ -197,12 +197,14 @@ function getProgressPercentage(
 }
 
 function LoyaltyCustomersAdmin() {
-    const navigate =
-        useNavigate();
-
     const {
         token
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "LOYALTY"
+        ]);
 
     const [
         branches,
@@ -347,7 +349,19 @@ function LoyaltyCustomersAdmin() {
                 const result =
                     await listLoyaltyCustomersRequest(
                         token,
-                        filters,
+                        {
+                            search:
+                                filters.search,
+
+                            sucursalId:
+                                filters.sucursalId,
+
+                            page:
+                                filters.page,
+
+                            limit:
+                                filters.limit
+                        },
                         controller.signal
                     );
 
@@ -395,7 +409,8 @@ function LoyaltyCustomersAdmin() {
         filters.sucursalId,
         filters.page,
         filters.limit,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     function handleFilterChange(
@@ -448,24 +463,11 @@ function LoyaltyCustomersAdmin() {
     }
 
     return (
-        <section className="loyalty-customers-admin">
-            <header className="loyalty-customers-heading">
+        <section className="loyalty-customers-admin admin-page">
+            <header className="loyalty-customers-heading admin-page-header">
                 <div>
-                    <button
-                        type="button"
-                        className="loyalty-customers-back"
-                        onClick={() =>
-                            navigate(
-                                "/admin/fidelizacion"
-                            )
-                        }
-                    >
-                        <FaArrowLeft />
-                        Volver a programas
-                    </button>
-
                     <span className="admin-eyebrow">
-                        FIDELIZACIÓN
+                        CLIENTES Y PREMIOS
                     </span>
 
                     <h2>
@@ -493,12 +495,15 @@ function LoyaltyCustomersAdmin() {
             </header>
 
             {error && (
-                <div className="loyalty-customers-error">
+                <div
+                    className="loyalty-customers-error admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <section className="loyalty-customers-stats">
+            <section className="loyalty-customers-stats admin-metric-grid columns-3">
                 <article>
                     <FaUser />
 
@@ -544,7 +549,7 @@ function LoyaltyCustomersAdmin() {
                 </article>
             </section>
 
-            <section className="loyalty-customers-filters">
+            <section className="loyalty-customers-filters admin-filter-bar">
                 <label>
                     <FaSearch />
 
@@ -623,8 +628,8 @@ function LoyaltyCustomersAdmin() {
                         </span>
                     </div>
                 ) : (
-                    <div className="loyalty-customers-table-wrapper">
-                        <table className="loyalty-customers-table">
+                    <div className="loyalty-customers-table-wrapper admin-table-shell">
+                        <table className="loyalty-customers-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>
@@ -750,7 +755,7 @@ function LoyaltyCustomersAdmin() {
                     </div>
                 )}
 
-                <div className="loyalty-customers-pagination">
+                <div className="loyalty-customers-pagination admin-pagination">
                     <span>
                         Página{" "}
                         {
@@ -816,15 +821,23 @@ function LoyaltyCustomersAdmin() {
             </section>
 
             {selectedCustomer && (
-                <div className="loyalty-customer-modal-backdrop">
-                    <section className="loyalty-customer-modal">
+                <AdminDialog
+                    className="loyalty-customer-modal"
+                    backdropClassName="loyalty-customer-modal-backdrop"
+                    labelledBy="loyalty-customer-dialog-title"
+                    onClose={() =>
+                        setSelectedCustomer(
+                            null
+                        )
+                    }
+                >
                         <header>
                             <div>
                                 <span className="admin-eyebrow">
                                     CLIENTE
                                 </span>
 
-                                <h3>
+                                <h3 id="loyalty-customer-dialog-title">
                                     {
                                         selectedCustomer.nombreCompleto
                                     }
@@ -842,6 +855,7 @@ function LoyaltyCustomersAdmin() {
 
                             <button
                                 type="button"
+                                aria-label="Cerrar detalle del cliente"
                                 onClick={() =>
                                     setSelectedCustomer(
                                         null
@@ -1037,7 +1051,7 @@ function LoyaltyCustomersAdmin() {
                                                     </div>
 
                                                     <span
-                                                        className={`loyalty-prize-status ${reward.estadoEfectivo.toLowerCase()}`}
+                                                        className={`admin-status-badge loyalty-prize-status ${reward.estadoEfectivo.toLowerCase()}`}
                                                     >
                                                         {formatLabel(
                                                             reward.estadoEfectivo
@@ -1091,8 +1105,7 @@ function LoyaltyCustomersAdmin() {
                                 </div>
                             </section>
                         </div>
-                    </section>
-                </div>
+                </AdminDialog>
             )}
         </section>
     );

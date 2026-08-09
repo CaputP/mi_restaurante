@@ -9,10 +9,19 @@ import {
 import {
   AppError,
 } from "../../shared/errors/app-error.js";
+import {
+  isOrderPayable,
+} from "../../shared/orders/order-payment-policy.js";
 
 import {
   calculateAutomaticPromotions,
 } from "../promotions/promotions-calculation.service.js";
+import {
+  findAvailableCustomerRewards,
+} from "./loyalty-reward-query.service.js";
+import type {
+  AvailableCustomerReward,
+} from "./loyalty-reward-query.service.js";
 
 type RedemptionAuth = {
   usuarioId: string;
@@ -26,52 +35,7 @@ type OrderDetail = {
   subtotal: Prisma.Decimal;
 };
 
-type RewardRecord = {
-  id: string;
-  descripcion: string;
-
-  tipoRecompensaSnapshot:
-  | "PRODUCTO_GRATIS"
-  | "DESCUENTO_FIJO"
-  | "DESCUENTO_PORCENTAJE"
-  | "BENEFICIO"
-  | null;
-
-  productoPremioId:
-  string | null;
-
-  cantidadProducto:
-  Prisma.Decimal | null;
-
-  valorReferencia:
-  Prisma.Decimal | null;
-
-  fechaObtencion:
-  Date;
-
-  fechaVencimiento:
-  Date;
-
-  programa: {
-    id: string;
-    nombre: string;
-
-    tipoRecompensa:
-    | "PRODUCTO_GRATIS"
-    | "DESCUENTO_FIJO"
-    | "DESCUENTO_PORCENTAJE"
-    | "BENEFICIO";
-
-    sucursalId:
-    string | null;
-  };
-
-  productoPremio: {
-    id: string;
-    codigo: string;
-    nombre: string;
-  } | null;
-};
+type RewardRecord = AvailableCustomerReward;
 
 export type LoyaltyRedemptionCalculation = {
   pedidoId: string;
@@ -360,13 +324,14 @@ async function getOrder(
   }
 
   if (
-    order.estado !==
-    "ENTREGADO"
+    !isOrderPayable(
+      order.estado,
+    )
   ) {
     throw new AppError(
       409,
-      "Solo pueden canjearse premios en pedidos entregados.",
-      "PEDIDO_NO_ENTREGADO",
+      "Solo pueden canjearse premios en pedidos enviados y pendientes de cobro.",
+      "PEDIDO_NO_COBRABLE",
     );
   }
 
@@ -385,99 +350,6 @@ async function getOrder(
   return order;
 }
 
-async function getAvailableRewards(
-  transaction:
-    Prisma.TransactionClient,
-  clienteId:
-    string,
-  sucursalId:
-    string,
-) {
-  return transaction
-    .premioCliente
-    .findMany({
-      where: {
-        clienteId,
-
-        estado:
-          "DISPONIBLE",
-
-        fechaVencimiento: {
-          gte:
-            new Date(),
-        },
-
-        OR: [
-          {
-            programa: {
-              sucursalId:
-                null,
-            },
-          },
-          {
-            programa: {
-              sucursalId,
-            },
-          },
-        ],
-      },
-
-      select: {
-        id: true,
-
-        descripcion:
-          true,
-
-        tipoRecompensaSnapshot:
-          true,
-
-        productoPremioId:
-          true,
-
-        cantidadProducto:
-          true,
-
-        valorReferencia:
-          true,
-
-        fechaObtencion:
-          true,
-
-        fechaVencimiento:
-          true,
-
-        programa: {
-          select: {
-            id: true,
-            nombre: true,
-            tipoRecompensa:
-              true,
-            sucursalId:
-              true,
-          },
-        },
-
-        productoPremio: {
-          select: {
-            id: true,
-            codigo: true,
-            nombre: true,
-          },
-        },
-      },
-
-      orderBy: [
-        {
-          fechaVencimiento:
-            "asc",
-        },
-        {
-          fechaObtencion:
-            "asc",
-        },
-      ],
-    });
-}
 
 function getRewardType(
   reward:
@@ -914,7 +786,7 @@ export async function getLoyaltyRedemptionOptions(
         );
 
       const rewards =
-        await getAvailableRewards(
+        await findAvailableCustomerRewards(
           transaction,
           order.clienteId,
           order.sucursalId,
@@ -1061,7 +933,7 @@ export async function calculateLoyaltyRedemption(
     );
 
   const availableRewards =
-    await getAvailableRewards(
+    await findAvailableCustomerRewards(
       transaction,
       order.clienteId,
       order.sucursalId,

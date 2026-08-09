@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RESERVATION_POLICY_VERSION } from "../../shared/legal/legal-versions.js";
 
 const uuidSchema = z
   .string()
@@ -408,9 +409,8 @@ export const listReservationsQuerySchema =
     },
   );
 
-export const createReservationSchema =
-  z
-    .object({
+const createReservationBaseSchema =
+  z.object({
       clienteId: uuidSchema,
 
       ...availabilityFields,
@@ -445,51 +445,89 @@ export const createReservationSchema =
         )
         .optional()
         .default([]),
+
+      aceptaPoliticaReserva: z.boolean().optional(),
+      versionPoliticaReserva: z.string().trim().max(30).optional(),
+    });
+
+function validateReservationInput(
+  data: {
+    tipoReserva:
+      | "NORMAL"
+      | "EVENTO"
+      | "SOLO_ZONA";
+    nombreEvento?: string | null;
+    detalles: Array<{
+      productoSucursalId: string;
+    }>;
+  },
+  context: z.RefinementCtx,
+) {
+  if (
+    data.tipoReserva === "EVENTO" &&
+    !data.nombreEvento
+  ) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        "El nombre del evento es obligatorio.",
+      path: ["nombreEvento"],
+    });
+  }
+
+  const productIds = data.detalles.map(
+    (detail) => detail.productoSucursalId,
+  );
+
+  if (
+    new Set(productIds).size !==
+    productIds.length
+  ) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        "Un producto no puede repetirse dentro de la reserva.",
+      path: ["detalles"],
+    });
+  }
+}
+
+export const createReservationSchema =
+  createReservationBaseSchema.superRefine(
+    validateReservationInput,
+  );
+
+export const createClientReservationSchema =
+  createReservationBaseSchema
+    .omit({
+      clienteId: true,
+      totalEstimado: true,
+      adelantoRequerido: true,
     })
-    .superRefine(
-      (data, context) => {
-        if (
-          data.tipoReserva ===
-            "EVENTO" &&
-          !data.nombreEvento
-        ) {
-          context.addIssue({
-            code:
-              z.ZodIssueCode.custom,
+    .superRefine((data, context) => {
+      validateReservationInput(data, context);
 
-            message:
-              "El nombre del evento es obligatorio.",
+      if (
+        data.aceptaPoliticaReserva !== true ||
+        data.versionPoliticaReserva !== RESERVATION_POLICY_VERSION
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Debes aceptar la Política de Reservas y Cancelaciones vigente.",
+          path: ["aceptaPoliticaReserva"],
+        });
+      }
+    });
 
-            path: [
-              "nombreEvento",
-            ],
-          });
-        }
+export const cancelClientReservationSchema =
+  cancelReservationSchema.omit({
+    penalidadCancelacion: true,
+  });
 
-        const productIds =
-          data.detalles.map(
-            (detail) =>
-              detail
-                .productoSucursalId,
-          );
-
-        if (
-          new Set(productIds)
-            .size !==
-          productIds.length
-        ) {
-          context.addIssue({
-            code:
-              z.ZodIssueCode.custom,
-
-            message:
-              "Un producto no puede repetirse dentro de la reserva.",
-
-            path: ["detalles"],
-          });
-        }
-      },
-    );
+export const rescheduleReservationSchema =
+  z.object({
+    ...availabilityFields,
+  });
 
 export const reservationIdSchema =
   z.object({
@@ -544,4 +582,19 @@ export type ConfirmReservationPaymentInput =
 export type CancelReservationInput =
   z.infer<
     typeof cancelReservationSchema
+  >;
+
+export type CreateClientReservationInput =
+  z.infer<
+    typeof createClientReservationSchema
+  >;
+
+export type CancelClientReservationInput =
+  z.infer<
+    typeof cancelClientReservationSchema
+  >;
+
+export type RescheduleReservationInput =
+  z.infer<
+    typeof rescheduleReservationSchema
   >;

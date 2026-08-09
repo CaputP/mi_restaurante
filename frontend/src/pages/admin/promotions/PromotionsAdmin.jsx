@@ -21,6 +21,9 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
@@ -242,6 +245,11 @@ function PromotionsAdmin() {
         token,
         usuario
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "PROMOTIONS"
+        ]);
 
     const roleCode =
         usuario?.rol?.codigo ?? "";
@@ -525,7 +533,25 @@ function PromotionsAdmin() {
                 const result =
                     await listPromotionsRequest(
                         token,
-                        filters,
+                        {
+                            search:
+                                filters.search,
+
+                            sucursalId:
+                                filters.sucursalId,
+
+                            tipo:
+                                filters.tipo,
+
+                            estado:
+                                filters.estado,
+
+                            page:
+                                filters.page,
+
+                            limit:
+                                filters.limit
+                        },
                         controller.signal
                     );
 
@@ -575,7 +601,8 @@ function PromotionsAdmin() {
         filters.estado,
         filters.page,
         filters.limit,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     useEffect(() => {
@@ -1153,8 +1180,8 @@ function PromotionsAdmin() {
     }
 
     return (
-        <section className="promotions-admin">
-            <header className="promotions-heading">
+        <section className="promotions-admin admin-page">
+            <header className="promotions-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         PROMOCIONES
@@ -1201,18 +1228,24 @@ function PromotionsAdmin() {
             </header>
 
             {message && (
-                <div className="promotions-feedback success">
+                <div
+                    className="promotions-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="promotions-feedback error">
+                <div
+                    className="promotions-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <section className="promotions-stats">
+            <section className="promotions-stats admin-metric-grid columns-3">
                 <article>
                     <FaTags />
 
@@ -1258,7 +1291,7 @@ function PromotionsAdmin() {
                 </article>
             </section>
 
-            <section className="promotions-filters">
+            <section className="promotions-filters admin-filter-bar">
                 <label className="promotions-search">
                     <FaSearch />
 
@@ -1415,6 +1448,7 @@ function PromotionsAdmin() {
 
                         <button
                             type="button"
+                            aria-label="Cerrar formulario de promoción"
                             onClick={
                                 closeForm
                             }
@@ -1970,8 +2004,8 @@ function PromotionsAdmin() {
                         </span>
                     </div>
                 ) : (
-                    <div className="promotions-table-wrapper">
-                        <table className="promotions-table">
+                    <div className="promotions-table-wrapper admin-table-shell">
+                        <table className="promotions-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>
@@ -2094,7 +2128,7 @@ function PromotionsAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`promotions-status ${promotion.estado.toLowerCase()}`}
+                                                    className={`admin-status-badge promotions-status ${promotion.estado.toLowerCase()}`}
                                                 >
                                                     {formatLabel(
                                                         promotion.estado
@@ -2208,7 +2242,7 @@ function PromotionsAdmin() {
                     </div>
                 )}
 
-                <div className="promotions-pagination">
+                <div className="promotions-pagination admin-pagination">
                     <span>
                         Página{" "}
                         {

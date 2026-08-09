@@ -7,6 +7,7 @@ import {
 } from "../../generated/prisma/client.js";
 
 import { prisma } from "../../lib/prisma.js";
+import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
 
 import type {
@@ -1340,7 +1341,7 @@ export async function createDelivery(
   }
 
   const createdDelivery =
-    await prisma.$transaction(
+    await withSerializableTransaction(
       async (transaction) => {
         const order =
           await transaction
@@ -1656,12 +1657,6 @@ export async function createDelivery(
             },
           });
       },
-      {
-        isolationLevel:
-          Prisma
-            .TransactionIsolationLevel
-            .Serializable,
-      },
     );
 
   return getDeliveryById(
@@ -1792,6 +1787,28 @@ async function synchronizeDeliveredOrder(
 
   orderId: string,
 ) {
+  const order =
+    await transaction.pedido
+      .findUnique({
+        where: {
+          id:
+            orderId,
+        },
+
+        select: {
+          pagadoAt:
+            true,
+        },
+      });
+
+  if (!order) {
+    throw new AppError(
+      404,
+      "El pedido no existe.",
+      "PEDIDO_NO_ENCONTRADO",
+    );
+  }
+
   const orderDetails =
     await transaction
       .detallePedido
@@ -1916,7 +1933,9 @@ async function synchronizeDeliveredOrder(
 
   const nextOrderStatus =
     allDelivered
-      ? "ENTREGADO"
+      ? order.pagadoAt
+        ? "PAGADO"
+        : "ENTREGADO"
       : anyDelivered
         ? "ENTREGA_PARCIAL"
         : "LISTO";
@@ -1963,7 +1982,7 @@ export async function completeDelivery(
     );
   }
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (transaction) => {
       const updateResult =
         await transaction

@@ -95,6 +95,7 @@ const permisos = [
   ["CONFIGURACION_GESTIONAR", "Gestionar configuraciones", "CONFIGURACION"],
   ["AUDITORIA_VER", "Consultar auditoría", "AUDITORIA"],
   ["RESPALDO_GESTIONAR", "Gestionar respaldos", "RESPALDOS"],
+  ["RECLAMO_GESTIONAR", "Gestionar el Libro de Reclamaciones", "RECLAMOS"],
 
   ["CLIENTE_HISTORIAL_VER", "Consultar historial personal", "CLIENTES"],
   ["CLIENTE_PREMIOS_VER", "Consultar premios personales", "CLIENTES"],
@@ -118,6 +119,7 @@ const permisosPorRol: Record<string, string[]> = {
     "PEDIDO_CREAR",
     "PEDIDO_MODIFICAR",
     "CAJA_ABRIR",
+    "CAJA_CERRAR",
     "VENTA_CREAR",
   ],
 

@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 
 import { useAuth } from "../../../context/AuthContext";
+import { useRealtimeVersion } from "../../../context/RealtimeContext";
 import { ApiError } from "../../../services/api";
 
 import {
@@ -34,6 +35,11 @@ function CategoriesAdmin() {
     const {
         token
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "CATALOG"
+        ]);
 
     const [categories, setCategories] =
         useState([]);
@@ -148,7 +154,8 @@ function CategoriesAdmin() {
         token,
         appliedSearch,
         statusFilter,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     function openCreateForm() {
@@ -327,8 +334,8 @@ function CategoriesAdmin() {
     }
 
     return (
-        <section className="catalog-admin">
-            <header className="catalog-heading">
+        <section className="catalog-admin admin-page">
+            <header className="catalog-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         CATÁLOGO
@@ -357,7 +364,7 @@ function CategoriesAdmin() {
 
             {message && (
                 <div
-                    className="catalog-feedback success"
+                    className="catalog-feedback admin-feedback success"
                     role="status"
                 >
                     {message}
@@ -366,7 +373,7 @@ function CategoriesAdmin() {
 
             {error && (
                 <div
-                    className="catalog-feedback error"
+                    className="catalog-feedback admin-feedback error"
                     role="alert"
                 >
                     {error}
@@ -374,7 +381,7 @@ function CategoriesAdmin() {
             )}
 
             <form
-                className="catalog-filters"
+                className="catalog-filters admin-filter-bar"
                 onSubmit={handleSearch}
             >
                 <div className="catalog-search">
@@ -569,8 +576,8 @@ function CategoriesAdmin() {
                         </p>
                     </div>
                 ) : (
-                    <div className="catalog-table-wrapper">
-                        <table className="catalog-table">
+                    <div className="catalog-table-wrapper admin-table-shell">
+                        <table className="catalog-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
@@ -610,7 +617,7 @@ function CategoriesAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`catalog-status ${category.estado.toLowerCase()}`}
+                                                    className={`admin-status-badge catalog-status ${category.estado.toLowerCase()}`}
                                                 >
                                                     {
                                                         category.estado

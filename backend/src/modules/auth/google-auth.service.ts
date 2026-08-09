@@ -9,6 +9,10 @@ import type {
 import {
   createAuthSession,
 } from "./auth-session.service.js";
+import {
+  PRIVACY_VERSION,
+  TERMS_VERSION,
+} from "../../shared/legal/legal-versions.js";
 
 const googleClient = new OAuth2Client(
   env.GOOGLE_CLIENT_ID,
@@ -111,6 +115,18 @@ export async function loginWithGoogle(
         },
       });
     } else {
+      if (
+        input.aceptaTerminos !== true ||
+        input.versionTerminos !== TERMS_VERSION ||
+        input.aceptaPrivacidad !== true ||
+        input.versionPrivacidad !== PRIVACY_VERSION
+      ) {
+        throw new AppError(
+          400,
+          "Para crear una cuenta con Google debes aceptar los Términos y la Política de Privacidad vigentes.",
+          "ACEPTACION_LEGAL_REQUERIDA",
+        );
+      }
       const rolCliente =
         await prisma.rol.findUnique({
           where: {
@@ -152,6 +168,10 @@ export async function loginWithGoogle(
           proveedorAuth: "GOOGLE",
           correoVerificado: true,
           estado: "ACTIVO",
+          terminosAceptadosAt: new Date(),
+          terminosVersion: TERMS_VERSION,
+          privacidadAceptadaAt: new Date(),
+          privacidadVersion: PRIVACY_VERSION,
         },
         select: {
           id: true,

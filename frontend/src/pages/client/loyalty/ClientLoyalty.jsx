@@ -21,6 +21,9 @@ import ClientNav from "../../../components/clientNav/ClientNav";
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
@@ -230,6 +233,11 @@ function ClientLoyalty() {
         token
     } = useAuth();
 
+    const realtimeVersion =
+        useRealtimeVersion([
+            "LOYALTY"
+        ]);
+
     const [
         profile,
         setProfile
@@ -312,7 +320,8 @@ function ClientLoyalty() {
             controller.abort();
     }, [
         token,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     const availableRewards =

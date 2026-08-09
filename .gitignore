@@ -7,6 +7,7 @@ backend/node_modules/
 dist/
 frontend/dist/
 backend/dist/
+backend/backups/
 
 # Variables de entorno
 .env
@@ -15,6 +16,9 @@ frontend/.env
 frontend/.env.*
 backend/.env
 backend/.env.*
+!.env.example
+!frontend/.env.example
+!backend/.env.example
 
 # Prisma generado
 backend/generated/
@@ -23,6 +27,12 @@ backend/generated/
 backend/.windsurf/
 backend/.claude/
 backend/.agents/
+.codex-review/
+
+# Entregables y artefactos locales (no publicar en GitHub)
+/archivos_no_github/
+/entregables/
+/.deliverable-build/
 
 # Archivos del sistema
 .DS_Store

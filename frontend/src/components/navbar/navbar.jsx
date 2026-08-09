@@ -11,7 +11,10 @@ import {
 } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
-import logo from "../../assets/images/logo.png";
+import {
+    getHomePathByRole
+} from "../../utils/roleRoutes";
+import logo from "../../assets/images/logo.webp";
 import "./navbar.css";
 
 function Navbar({ titulo }) {
@@ -28,12 +31,20 @@ function Navbar({ titulo }) {
         logout
     } = useAuth();
 
+    const roleHomePath =
+        isAuthenticated && usuario
+            ? getHomePathByRole(
+                usuario.rol.codigo,
+                usuario.permisos
+            )
+            : "/login";
+
     const toggleMenu = () => {
         setMenuAbierto(!menuAbierto);
     };
 
-    function handleLogout() {
-        logout();
+    async function handleLogout() {
+        await logout();
         setMenuAbierto(false);
 
         navigate("/", {
@@ -67,7 +78,7 @@ function Navbar({ titulo }) {
             tipo: "scroll"
         },
         {
-            nombre: "Menu",
+            nombre: "Menú",
             enlace: "#platos",
             tipo: "scroll"
         },
@@ -102,14 +113,28 @@ function Navbar({ titulo }) {
             aria-label="Ir al inicio"
             onClick={() => setMenuAbierto(false)}
             >
-            <img src={logo} alt="Logo de {titulo}" />
+            <img src={logo} alt={`Logo de ${titulo}`} />
             <h2>{titulo}</h2>
             </a>
-            <button className="menu-toggle" onClick={toggleMenu} aria-label="Abrir menú">
+            <button
+                type="button"
+                className="menu-toggle"
+                onClick={toggleMenu}
+                aria-label={
+                    menuAbierto
+                        ? "Cerrar menú"
+                        : "Abrir menú"
+                }
+                aria-expanded={menuAbierto}
+                aria-controls="home-navigation"
+            >
                 {menuAbierto ? <FaTimes /> : <FaBars />}
             </button >
 
-                <ul className={`nav-links ${menuAbierto ? "activo" : ""}`}>
+                <ul
+                    id="home-navigation"
+                    className={`nav-links ${menuAbierto ? "activo" : ""}`}
+                >
                 {menu.map((opcion) => (
                     <li key={opcion.nombre}>
                     {opcion.tipo === "ruta" ? (
@@ -128,21 +153,15 @@ function Navbar({ titulo }) {
                     <>
                         <li className="nav-user-item">
                             <Link
-                                to={
-                                    usuario.rol.codigo ===
-                                        "ADMINISTRADOR_GENERAL" ||
-                                    usuario.rol.codigo ===
-                                        "ADMINISTRADOR_SUCURSAL"
-                                        ? "/admin"
-                                        : "/reservations"
-                                }
+                                to={roleHomePath}
                                 onClick={() =>
                                     setMenuAbierto(false)
                                 }
+                                aria-label={`Volver al área de ${usuario.rol.nombre}`}
                             >
                                 <FaUserCircle />
                                 <span>
-                                    {usuario.nombres}
+                                    {usuario.nombres} · Mi área
                                 </span>
                             </Link>
                         </li>

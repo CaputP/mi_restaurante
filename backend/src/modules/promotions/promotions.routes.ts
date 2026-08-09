@@ -4,6 +4,7 @@ import {
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -38,6 +39,7 @@ promotionRouter.post(
     "ADMINISTRADOR_SUCURSAL",
     "VENDEDOR",
   ),
+  requirePermissions("VENTA_CREAR"),
   previewAutomaticPromotionsController,
 );
 
@@ -80,4 +82,10 @@ promotionRouter.patch(
 promotionRouter.patch(
   "/:id/status",
   updatePromotionStatusController,
+);
+
+promotionRouter.use(
+  requirePermissions(
+    "PROMOCION_GESTIONAR",
+  ),
 );

@@ -19,29 +19,31 @@ function Home(){
             <Navbar 
                 titulo="El Vallecito de Chocco"
             />
-            <Hero 
-                titulo="EL VALLECITO DE CHOCCO"
-                subtitulo="Sabores tradicionales del cusco en un ambiente campestre"
-            />
-            <FeaturedDishes
-                titulo="Platos Destacados"
-            />
-            <Parallax/> 
-            <About
-                titulo="Nuestra Historia"
-            />
-            <Gallery
-                titulo="Galeria"
-            />
-            <Testimonials
-                titulo="Testimonios"
-            />
-            <Events
-                titulo="Eventos disponibles"
-            />
-            <Location
-                titulo="Ubicación"
-            />
+            <main className="home-page">
+                <Hero
+                    titulo="EL VALLECITO DE CHOCCO"
+                    subtitulo="Sabores tradicionales del cusco en un ambiente campestre"
+                />
+                <FeaturedDishes
+                    titulo="Platos Destacados"
+                />
+                <Parallax/>
+                <About
+                    titulo="Nuestra Historia"
+                />
+                <Gallery
+                    titulo="Galeria"
+                />
+                <Testimonials
+                    titulo="Testimonios"
+                />
+                <Events
+                    titulo="Eventos disponibles"
+                />
+                <Location
+                    titulo="Ubicación"
+                />
+            </main>
             <Footer
             />
         </>

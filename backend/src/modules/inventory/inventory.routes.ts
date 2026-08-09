@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -25,20 +26,24 @@ inventoryRouter.use(
 
 inventoryRouter.get(
   "/",
+  requirePermissions("INVENTARIO_VER"),
   listInventoryController,
 );
 
 inventoryRouter.get(
   "/movements",
+  requirePermissions("INVENTARIO_VER"),
   listInventoryMovementsController,
 );
 
 inventoryRouter.post(
   "/daily-stock",
+  requirePermissions("INVENTARIO_AJUSTAR"),
   createDailyStockController,
 );
 
 inventoryRouter.post(
   "/movements",
+  requirePermissions("INVENTARIO_AJUSTAR"),
   createInventoryMovementController,
 );

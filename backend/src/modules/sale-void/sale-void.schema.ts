@@ -11,6 +11,14 @@ export const voidSaleParamsSchema =
 
 export const voidSaleSchema =
   z.object({
+    password: z
+      .string()
+      .min(
+        8,
+        "La contraseña de confirmación es obligatoria.",
+      )
+      .max(200),
+
     motivo: z
       .string()
       .trim()

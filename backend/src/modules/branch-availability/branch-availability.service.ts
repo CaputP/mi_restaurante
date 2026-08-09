@@ -3,7 +3,9 @@ import {
 } from "../../generated/prisma/client.js";
 
 import { prisma } from "../../lib/prisma.js";
+import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { lockBranchAvailability } from "../../shared/availability/availability-lock.js";
 
 import type {
   CreateBlockInput,
@@ -672,10 +674,15 @@ export async function replaceBranchSchedules(
     input.horarios,
   );
 
-  await prisma.$transaction(
+  await withSerializableTransaction(
     async (
       transaction,
     ) => {
+      await lockBranchAvailability(
+        transaction,
+        branchId,
+      );
+
       await transaction
         .horarioAtencion
         .deleteMany({
@@ -751,21 +758,23 @@ export async function createAvailabilityBlock(
       input.fechaFin,
     );
 
-  if (
-    input.estado ===
-    "ACTIVO"
-  ) {
-    await assertNoBlockOverlap(
-      branchId,
-      input.zonaId,
-      startDate,
-      endDate,
-    );
-  }
+  await withSerializableTransaction(
+    async (transaction) => {
+      await lockBranchAvailability(
+        transaction,
+        branchId,
+      );
 
-  await prisma
-    .bloqueoDisponibilidad
-    .create({
+      if (input.estado === "ACTIVO") {
+        await assertNoBlockOverlap(
+          branchId,
+          input.zonaId,
+          startDate,
+          endDate,
+        );
+      }
+
+      await transaction.bloqueoDisponibilidad.create({
       data: {
         sucursalId:
           branchId,
@@ -788,7 +797,9 @@ export async function createAvailabilityBlock(
         estado:
           input.estado,
       },
-    });
+      });
+    },
+  );
 
   return getBranchAvailability(
     auth,
@@ -897,44 +908,94 @@ export async function updateAvailabilityBlock(
     );
   }
 
-  await prisma
-    .bloqueoDisponibilidad
-    .update({
-      where: {
-        id:
+  await withSerializableTransaction(
+    async (transaction) => {
+      await lockBranchAvailability(
+        transaction,
+        branchId,
+      );
+
+      const lockedBlock =
+        await transaction.bloqueoDisponibilidad.findFirst({
+          where: { id: blockId, sucursalId: branchId },
+          select: {
+            id: true,
+            zonaId: true,
+            fechaInicio: true,
+            fechaFin: true,
+            estado: true,
+          },
+        });
+
+      if (!lockedBlock) {
+        throw new AppError(
+          404,
+          "El bloqueo no existe.",
+          "BLOQUEO_NO_ENCONTRADO",
+        );
+      }
+
+      if (lockedBlock.estado === "ARCHIVADO") {
+        throw new AppError(
+          409,
+          "No se puede modificar un bloqueo archivado.",
+          "BLOQUEO_ARCHIVADO",
+        );
+      }
+
+      const lockedZoneId =
+        input.zonaId !== undefined
+          ? input.zonaId
+          : lockedBlock.zonaId;
+      const lockedStartDate = input.fechaInicio
+        ? new Date(input.fechaInicio)
+        : lockedBlock.fechaInicio;
+      const lockedEndDate = input.fechaFin
+        ? new Date(input.fechaFin)
+        : lockedBlock.fechaFin;
+
+      if (lockedStartDate.getTime() >= lockedEndDate.getTime()) {
+        throw new AppError(
+          400,
+          "La fecha inicial debe ser anterior a la fecha final.",
+          "RANGO_FECHAS_INVALIDO",
+        );
+      }
+
+      await assertZoneBelongsToBranch(
+        branchId,
+        lockedZoneId,
+      );
+
+      if (lockedBlock.estado === "ACTIVO") {
+        await assertNoBlockOverlap(
+          branchId,
+          lockedZoneId,
+          lockedStartDate,
+          lockedEndDate,
           blockId,
-      },
+        );
+      }
 
-      data: {
-        ...(input.zonaId !==
-        undefined
-          ? {
-              zonaId:zoneId,
-            }
-          : {}),
-
-        ...(input.fechaInicio
-          ? {
-              fechaInicio:
-                startDate,
-            }
-          : {}),
-
-        ...(input.fechaFin
-          ? {
-              fechaFin:
-                endDate,
-            }
-          : {}),
-
-        ...(input.motivo
-          ? {
-              motivo:
-                input.motivo,
-            }
-          : {}),
-      },
-    });
+      await transaction.bloqueoDisponibilidad.update({
+        where: { id: blockId },
+        data: {
+          ...(input.zonaId !== undefined
+            ? { zonaId: lockedZoneId }
+            : {}),
+          ...(input.fechaInicio
+            ? { fechaInicio: lockedStartDate }
+            : {}),
+          ...(input.fechaFin
+            ? { fechaFin: lockedEndDate }
+            : {}),
+          ...(input.motivo
+            ? { motivo: input.motivo }
+            : {}),
+        },
+      });
+    },
+  );
 
   return getBranchAvailability(
     auth,
@@ -1008,19 +1069,60 @@ export async function updateAvailabilityBlockStatus(
     );
   }
 
-  await prisma
-    .bloqueoDisponibilidad
-    .update({
-      where: {
-        id:
-          blockId,
-      },
+  await withSerializableTransaction(
+    async (transaction) => {
+      await lockBranchAvailability(
+        transaction,
+        branchId,
+      );
 
-      data: {
-        estado:
-          input.estado,
-      },
-    });
+      const lockedBlock =
+        await transaction.bloqueoDisponibilidad.findFirst({
+          where: { id: blockId, sucursalId: branchId },
+          select: {
+            id: true,
+            zonaId: true,
+            fechaInicio: true,
+            fechaFin: true,
+            estado: true,
+          },
+        });
+
+      if (!lockedBlock) {
+        throw new AppError(
+          404,
+          "El bloqueo no existe.",
+          "BLOQUEO_NO_ENCONTRADO",
+        );
+      }
+
+      if (
+        lockedBlock.estado === "ARCHIVADO" &&
+        input.estado !== "ARCHIVADO"
+      ) {
+        throw new AppError(
+          409,
+          "Un bloqueo archivado no puede ser reactivado.",
+          "BLOQUEO_ARCHIVADO",
+        );
+      }
+
+      if (input.estado === "ACTIVO") {
+        await assertNoBlockOverlap(
+          branchId,
+          lockedBlock.zonaId,
+          lockedBlock.fechaInicio,
+          lockedBlock.fechaFin,
+          blockId,
+        );
+      }
+
+      await transaction.bloqueoDisponibilidad.update({
+        where: { id: blockId },
+        data: { estado: input.estado },
+      });
+    },
+  );
 
   return getBranchAvailability(
     auth,

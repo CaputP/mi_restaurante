@@ -4,7 +4,12 @@ function EventCard ({evento}){
     return(
         <div className="event-card">
             <div className="event-image">
-                <img src={evento.imagen} alt={evento.nombre} />
+                <img
+                    src={evento.imagen}
+                    alt={evento.nombre}
+                    loading="lazy"
+                    decoding="async"
+                />
             </div>
             
             <div className="event-content">

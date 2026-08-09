@@ -50,6 +50,40 @@ export async function getOrderOptionsRequest(
     return response.data;
 }
 
+export async function getOrderCustomerRewardsRequest(
+    token,
+    {
+        sucursalId,
+        clienteId,
+        signal
+    }
+) {
+    const params =
+        new URLSearchParams();
+
+    addParameter(
+        params,
+        "sucursalId",
+        sucursalId
+    );
+    addParameter(
+        params,
+        "clienteId",
+        clienteId
+    );
+
+    const response =
+        await apiRequest(
+            `/orders/customer-rewards?${params.toString()}`,
+            {
+                token,
+                signal
+            }
+        );
+
+    return response.data;
+}
+
 export async function listOrdersRequest(
     token,
     {

@@ -74,7 +74,7 @@
     margin-top: auto; 
 }
 
-.dish-content button {
+.dish-action {
     width: 100%;
     padding: 12px;
     border: none;
@@ -84,8 +84,12 @@
     cursor: pointer;
     font-weight: bold;
     transition: background 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
-.dish-content button:hover {
+.dish-action:hover {
     background: #2a4b2f;
 }

@@ -1,7 +1,7 @@
-import zona1 from "../assets/images/gallery/salon.png"
-import zona2 from "../assets/images/gallery/zonaArbol.png"
-import zona3 from "../assets/images/gallery/canchaFutbol.png"
-import zona4 from "../assets/images/gallery/parque.png"
+import zona1 from "../assets/images/gallery/salon.webp"
+import zona2 from "../assets/images/gallery/zonaArbol.webp"
+import zona3 from "../assets/images/gallery/canchaFutbol.webp"
+import zona4 from "../assets/images/gallery/parque.webp"
 
 // ==================================
 // IMAGENES DESTACADAS DEL RESTAURANTE

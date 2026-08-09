@@ -23,6 +23,9 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
@@ -30,12 +33,15 @@ import {
 
 import {
     createOrderRequest,
+    getOrderCustomerRewardsRequest,
     getOrderByIdRequest,
     getOrderOptionsRequest,
     listOrdersRequest,
     sendOrderRequest,
     updateOrderRequest
 } from "../../../services/order.service";
+
+import OrderCustomerRewards from "./OrderCustomerRewards";
 
 import "./ordersAdmin.css";
 
@@ -136,6 +142,57 @@ function formatMoney(value) {
     );
 }
 
+function formatStockAmount(value) {
+    return new Intl.NumberFormat(
+        "es-PE",
+        {
+            maximumFractionDigits: 3
+        }
+    ).format(
+        Number(value ?? 0)
+    );
+}
+
+function getProductStockState(product) {
+    if (!product.stockControlado) {
+        return {
+            available: null,
+            canSelect: true,
+            label: "Sin control de stock",
+            tone: "uncontrolled"
+        };
+    }
+
+    if (!product.stockConfigurado) {
+        return {
+            available: 0,
+            canSelect: false,
+            label:
+                product.tipoStock === "DIARIO"
+                    ? "Stock diario no abierto"
+                    : "Stock no configurado",
+            tone: "unavailable"
+        };
+    }
+
+    const available = Math.max(
+        0,
+        Number(product.stockDisponible ?? 0)
+    );
+
+    return {
+        available,
+        canSelect: available > 0,
+        label: `Disponible: ${formatStockAmount(
+            available
+        )} ${product.unidadMedida?.abreviatura ?? ""}`.trim(),
+        tone:
+            available > 0
+                ? "available"
+                : "unavailable"
+    };
+}
+
 function formatDateTime(value) {
     if (!value) {
         return "-";
@@ -168,6 +225,12 @@ function OrdersAdmin() {
         token,
         usuario
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "ORDERS",
+            "LOYALTY"
+        ]);
 
     const [
         options,
@@ -233,6 +296,24 @@ function OrdersAdmin() {
         selectedProducts,
         setSelectedProducts
     ] = useState({});
+
+    const [
+        customerRewards,
+        setCustomerRewards
+    ] = useState({
+        cliente: null,
+        premios: []
+    });
+
+    const [
+        isLoadingCustomerRewards,
+        setIsLoadingCustomerRewards
+    ] = useState(false);
+
+    const [
+        customerRewardsError,
+        setCustomerRewardsError
+    ] = useState("");
 
     const [
         selectedOrder,
@@ -329,6 +410,105 @@ function OrdersAdmin() {
                 selectedProducts
             ]
         );
+
+    const selectedCatalogProductIds =
+        useMemo(
+            () =>
+                new Set(
+                    options.productos
+                        .filter(
+                            (product) =>
+                                selectedProducts[
+                                    product.productoSucursalId
+                                ]?.selected
+                        )
+                        .map(
+                            (product) =>
+                                product.id
+                        )
+                ),
+            [
+                options.productos,
+                selectedProducts
+            ]
+        );
+
+    useEffect(() => {
+        const controller =
+            new AbortController();
+
+        if (
+            !formVisible ||
+            !form.clienteId ||
+            !form.sucursalId
+        ) {
+            return () =>
+                controller.abort();
+        }
+
+        async function loadCustomerRewards() {
+            setIsLoadingCustomerRewards(true);
+            setCustomerRewardsError("");
+
+            try {
+                const result =
+                    await getOrderCustomerRewardsRequest(
+                        token,
+                        {
+                            sucursalId:
+                                form.sucursalId,
+                            clienteId:
+                                form.clienteId,
+                            signal:
+                                controller.signal
+                        }
+                    );
+
+                setCustomerRewards(
+                    result
+                );
+            } catch (requestError) {
+                if (
+                    isAbortError(
+                        requestError
+                    )
+                ) {
+                    return;
+                }
+
+                setCustomerRewards({
+                    cliente: null,
+                    premios: []
+                });
+                setCustomerRewardsError(
+                    getApiErrorMessage(
+                        requestError
+                    ) ??
+                        "No se pudieron consultar los premios del cliente."
+                );
+            } finally {
+                if (
+                    !controller.signal
+                        .aborted
+                ) {
+                    setIsLoadingCustomerRewards(
+                        false
+                    );
+                }
+            }
+        }
+
+        void loadCustomerRewards();
+
+        return () =>
+            controller.abort();
+    }, [
+        formVisible,
+        form.clienteId,
+        form.sucursalId,
+        token,
+        realtimeVersion
+    ]);
 
     useEffect(() => {
         const controller =
@@ -521,7 +701,42 @@ function OrdersAdmin() {
         appliedSearch,
         filters,
         page,
-        reloadKey
+        reloadKey,
+        realtimeVersion
+    ]);
+
+    useEffect(() => {
+        if (
+            realtimeVersion === 0 ||
+            !selectedOrder?.id
+        ) {
+            return undefined;
+        }
+
+        const controller =
+            new AbortController();
+
+        void getOrderByIdRequest(
+            token,
+            selectedOrder.id,
+            controller.signal
+        )
+            .then(setSelectedOrder)
+            .catch((requestError) => {
+                if (!isAbortError(requestError)) {
+                    console.error(
+                        "No se pudo sincronizar el pedido seleccionado:",
+                        requestError
+                    );
+                }
+            });
+
+        return () =>
+            controller.abort();
+    }, [
+        realtimeVersion,
+        selectedOrder?.id,
+        token
     ]);
 
     function clearFeedback() {
@@ -768,6 +983,39 @@ function OrdersAdmin() {
 
         if (invalidQuantity) {
             return "Las cantidades deben ser mayores que cero.";
+        }
+
+        for (const detail of details) {
+            const product =
+                options.productos.find(
+                    (candidate) =>
+                        candidate.productoSucursalId ===
+                        detail.productoSucursalId
+                );
+
+            if (!product?.stockControlado) {
+                continue;
+            }
+
+            const stock =
+                getProductStockState(
+                    product
+                );
+
+            if (!product.stockConfigurado) {
+                return `${product.nombre}: ${stock.label.toLowerCase()}.`;
+            }
+
+            if (
+                detail.cantidad >
+                stock.available + 0.0005
+            ) {
+                return `Stock insuficiente de "${product.nombre}". Solicitado: ${formatStockAmount(
+                    detail.cantidad
+                )}; disponible: ${formatStockAmount(
+                    stock.available
+                )}.`;
+            }
         }
 
         return null;
@@ -1158,8 +1406,8 @@ function OrdersAdmin() {
         "ABIERTO";
 
     return (
-        <section className="orders-admin">
-            <header className="orders-heading">
+        <section className="orders-admin admin-page">
+            <header className="orders-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         PEDIDOS
@@ -1192,13 +1440,19 @@ function OrdersAdmin() {
             </header>
 
             {message && (
-                <div className="order-feedback success">
+                <div
+                    className="order-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="order-feedback error">
+                <div
+                    className="order-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
@@ -1229,6 +1483,7 @@ function OrdersAdmin() {
                         <button
                             type="button"
                             className="order-close-button"
+                            aria-label="Cerrar formulario de pedido"
                             onClick={() => {
                                 setFormVisible(
                                     false
@@ -1549,6 +1804,28 @@ function OrdersAdmin() {
                         </div>
                     </div>
 
+                    {form.clienteId && (
+                        <OrderCustomerRewards
+                            customer={
+                                customerRewards
+                                    .cliente
+                            }
+                            error={
+                                customerRewardsError
+                            }
+                            isLoading={
+                                isLoadingCustomerRewards
+                            }
+                            rewards={
+                                customerRewards
+                                    .premios
+                            }
+                            selectedProductIds={
+                                selectedCatalogProductIds
+                            }
+                        />
+                    )}
+
                     <section className="order-products-section">
                         <div className="order-section-heading">
                             <div>
@@ -1595,23 +1872,40 @@ function OrdersAdmin() {
                                                     ?.selected
                                             );
 
+                                        const stock =
+                                            getProductStockState(
+                                                product
+                                            );
+
+                                        const unavailable =
+                                            !stock.canSelect;
+
                                         return (
                                             <article
                                                 key={
                                                     product
                                                         .productoSucursalId
                                                 }
-                                                className={
+                                                className={[
                                                     selected
                                                         ? "selected"
+                                                        : "",
+                                                    unavailable
+                                                        ? "out-of-stock"
                                                         : ""
-                                                }
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(" ")}
                                             >
                                                 <label className="order-product-title">
                                                     <input
                                                         type="checkbox"
                                                         checked={
                                                             selected
+                                                        }
+                                                        disabled={
+                                                            !selected &&
+                                                            unavailable
                                                         }
                                                         onChange={() =>
                                                             toggleProduct(
@@ -1648,6 +1942,14 @@ function OrdersAdmin() {
                                                                   )}`
                                                                 : "Entrega directa"}
                                                         </small>
+
+                                                        <small
+                                                            className={`order-stock-label ${stock.tone}`}
+                                                        >
+                                                            {
+                                                                stock.label
+                                                            }
+                                                        </small>
                                                     </span>
                                                 </label>
 
@@ -1657,6 +1959,10 @@ function OrdersAdmin() {
                                                             type="number"
                                                             min="0.001"
                                                             step="0.001"
+                                                            max={
+                                                                stock.available ??
+                                                                undefined
+                                                            }
                                                             value={
                                                                 selection
                                                                     .cantidad
@@ -1744,7 +2050,7 @@ function OrdersAdmin() {
             )}
 
             <form
-                className="order-filters"
+                className="order-filters admin-filter-bar"
                 onSubmit={
                     handleSearch
                 }
@@ -1958,8 +2264,8 @@ function OrdersAdmin() {
                         </strong>
                     </div>
                 ) : (
-                    <div className="order-table-wrapper">
-                        <table className="order-table">
+                    <div className="order-table-wrapper admin-table-shell">
+                        <table className="order-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Código</th>
@@ -2015,7 +2321,7 @@ function OrdersAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`order-status ${order.estado.toLowerCase()}`}
+                                                    className={`admin-status-badge order-status ${order.estado.toLowerCase()}`}
                                                 >
                                                     {formatLabel(
                                                         order.estado
@@ -2033,6 +2339,7 @@ function OrdersAdmin() {
                                                 <button
                                                     type="button"
                                                     className="order-icon-button"
+                                                    aria-label={`Ver pedido ${order.codigo}`}
                                                     disabled={
                                                         isLoadingDetail
                                                     }
@@ -2053,7 +2360,7 @@ function OrdersAdmin() {
                     </div>
                 )}
 
-                <div className="order-pagination">
+                <div className="order-pagination admin-pagination">
                     <span>
                         Página {pagination.page} de{" "}
                         {pagination.totalPages}
@@ -2135,6 +2442,7 @@ function OrdersAdmin() {
                         <button
                             type="button"
                             className="order-close-button"
+                            aria-label="Cerrar detalle de pedido"
                             onClick={() =>
                                 setSelectedOrder(
                                     null
@@ -2348,7 +2656,7 @@ function OrdersAdmin() {
 
                                     <dd>
                                         <span
-                                            className={`order-status ${selectedOrder.estado.toLowerCase()}`}
+                                            className={`admin-status-badge order-status ${selectedOrder.estado.toLowerCase()}`}
                                         >
                                             {formatLabel(
                                                 selectedOrder
@@ -2465,7 +2773,7 @@ function OrdersAdmin() {
                                             </div>
 
                                             <span
-                                                className={`order-status ${command.estado.toLowerCase()}`}
+                                                className={`admin-status-badge order-status ${command.estado.toLowerCase()}`}
                                             >
                                                 {formatLabel(
                                                     command.estado

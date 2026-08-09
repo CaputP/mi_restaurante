@@ -1,0 +1,39 @@
+.not-found-page {
+    display: grid;
+    min-height: 100vh;
+    place-content: center;
+    justify-items: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+    background: #f8f4ed;
+    color: #34251c;
+}
+
+.not-found-code {
+    margin: 0;
+    color: #8f2f24;
+    font-size: clamp(4rem, 12vw, 8rem);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.not-found-page h1,
+.not-found-page p {
+    margin: 0;
+}
+
+.not-found-page a {
+    margin-top: 1rem;
+    padding: 0.75rem 1.1rem;
+    border-radius: 0.5rem;
+    background: #8f2f24;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.not-found-page a:focus-visible {
+    outline: 3px solid #d69c3b;
+    outline-offset: 3px;
+}

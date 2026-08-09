@@ -181,6 +181,26 @@ export const closeCashRegisterSchema =
       optionalText(2000),
   });
 
+export const reopenCashRegisterSchema =
+  z.object({
+    motivo: z
+      .string()
+      .trim()
+      .min(
+        10,
+        "El motivo debe contener al menos 10 caracteres.",
+      )
+      .max(1000),
+
+    password: z
+      .string()
+      .min(
+        8,
+        "La contraseña de confirmación es obligatoria.",
+      )
+      .max(200),
+  });
+
 export const cashRegisterIdSchema =
   z.object({
     id: uuidSchema,
@@ -209,4 +229,9 @@ export type OpenCashRegisterInput =
 export type CloseCashRegisterInput =
   z.infer<
     typeof closeCashRegisterSchema
+  >;
+
+export type ReopenCashRegisterInput =
+  z.infer<
+    typeof reopenCashRegisterSchema
   >;

@@ -4,6 +4,7 @@ import {
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -44,7 +45,9 @@ loyaltyRouter.get(
   "/me",
   requireRoles(
     "CLIENTE",
-    "USUARIO",
+  ),
+  requirePermissions(
+    "CLIENTE_PREMIOS_VER",
   ),
   getMyLoyaltyProfileController,
 );
@@ -59,6 +62,7 @@ loyaltyRouter.get(
     "ADMINISTRADOR_SUCURSAL",
     "VENDEDOR",
   ),
+  requirePermissions("VENTA_CREAR"),
   getLoyaltyRedemptionOptionsController,
 );
 
@@ -69,6 +73,7 @@ loyaltyRouter.post(
     "ADMINISTRADOR_SUCURSAL",
     "VENDEDOR",
   ),
+  requirePermissions("VENTA_CREAR"),
   previewLoyaltyRedemptionController,
 );
 
@@ -120,4 +125,10 @@ loyaltyRouter.patch(
 loyaltyRouter.patch(
   "/programs/:id/status",
   updateLoyaltyProgramStatusController,
+);
+
+loyaltyRouter.use(
+  requirePermissions(
+    "FIDELIZACION_GESTIONAR",
+  ),
 );

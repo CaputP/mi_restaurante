@@ -3,6 +3,10 @@ import jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import {
+  PRIVACY_VERSION,
+  TERMS_VERSION,
+} from "../../shared/legal/legal-versions.js";
 
 export async function createAuthSession(
   usuarioId: string,
@@ -21,12 +25,32 @@ export async function createAuthSession(
       estado: true,
       correoVerificado: true,
       sessionVersion: true,
+      terminosVersion: true,
+      privacidadVersion: true,
 
       rol: {
         select: {
           id: true,
           codigo: true,
           nombre: true,
+
+          permisos: {
+            where: {
+              permiso: {
+                activo: true,
+              },
+            },
+            select: {
+              permiso: {
+                select: {
+                  id: true,
+                  codigo: true,
+                  nombre: true,
+                  modulo: true,
+                },
+              },
+            },
+          },
         },
       },
 
@@ -110,8 +134,20 @@ export async function createAuthSession(
         `${usuario.nombres} ${usuario.apellidos}`.trim(),
       correo: usuario.correo,
       telefono: usuario.telefono,
-      rol: usuario.rol,
+      rol: {
+        id: usuario.rol.id,
+        codigo: usuario.rol.codigo,
+        nombre: usuario.rol.nombre,
+      },
+      permisos:
+        usuario.rol.permisos.map(
+          ({ permiso }) =>
+            permiso,
+        ),
       correoVerificado: usuario.correoVerificado,
+      requiereAceptacionLegal:
+        usuario.terminosVersion !== TERMS_VERSION ||
+        usuario.privacidadVersion !== PRIVACY_VERSION,
 
       sucursales: usuario.sucursales.map(
         ({ sucursal }) => sucursal,

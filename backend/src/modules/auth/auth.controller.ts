@@ -8,12 +8,14 @@ import { AppError } from "../../shared/errors/app-error.js";
 import {
   loginSchema,
   registerSchema,
+  acceptLegalSchema,
 } from "./auth.schema.js";
 
 import {
   getCurrentUser,
   login,
   register,
+  acceptCurrentLegalPolicies,
 } from "./auth.service.js";
 
 import {
@@ -36,6 +38,34 @@ import {
 import {
   loginWithGoogle,
 } from "./google-auth.service.js";
+import {
+  clearAuthSession,
+  ensureCsrfSession,
+  establishAuthSession,
+} from "./auth-session.js";
+import { createAuthSession } from "./auth-session.service.js";
+
+function createSessionResponse(
+  response: Response,
+  result: {
+    token: string;
+    [key: string]: unknown;
+  },
+) {
+  const csrfToken = establishAuthSession(
+    response,
+    result.token,
+  );
+  const {
+    token: _token,
+    ...publicResult
+  } = result;
+
+  return {
+    ...publicResult,
+    csrfToken,
+  };
+}
 
 export async function loginController(
   request: Request,
@@ -49,7 +79,10 @@ export async function loginController(
     response.status(200).json({
       success: true,
       message: "Inicio de sesión correcto.",
-      data: resultado,
+      data: createSessionResponse(
+        response,
+        resultado,
+      ),
     });
   } catch (error: unknown) {
     next(error);
@@ -72,7 +105,10 @@ export async function registerController(
       success: true,
       message:
         "La cuenta del cliente fue creada correctamente.",
-      data: resultado,
+      data: createSessionResponse(
+        response,
+        resultado,
+      ),
     });
   } catch (error: unknown) {
     next(error);
@@ -96,12 +132,17 @@ export async function meController(
     const usuario = await getCurrentUser(
       request.auth.usuarioId,
     );
+    const csrfToken = ensureCsrfSession(
+      request,
+      response,
+    );
 
     response.status(200).json({
       success: true,
       message: "Sesión válida.",
       data: {
         usuario,
+        csrfToken,
       },
     });
   } catch (error: unknown) {
@@ -222,7 +263,75 @@ export async function googleLoginController(
       success: true,
       message:
         "Inicio de sesión con Google correcto.",
-      data: resultado,
+      data: createSessionResponse(
+        response,
+        resultado,
+      ),
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
+export async function acceptLegalController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    if (!request.auth) {
+      throw new AppError(401, "Debes iniciar sesión.", "TOKEN_REQUERIDO");
+    }
+    acceptLegalSchema.parse(request.body);
+    const usuario = await acceptCurrentLegalPolicies(
+      request.auth.usuarioId,
+      request.body,
+    );
+    response.json({
+      success: true,
+      message: "Tus aceptaciones fueron registradas.",
+      data: { usuario },
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
+export function logoutController(
+  _request: Request,
+  response: Response,
+): void {
+  clearAuthSession(response);
+  response.status(204).send();
+}
+
+export async function renewSessionController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    if (!request.auth) {
+      throw new AppError(
+        401,
+        "No existe una sesión válida.",
+        "TOKEN_REQUERIDO",
+      );
+    }
+
+    const result =
+      await createAuthSession(
+        request.auth.usuarioId,
+      );
+
+    response.status(200).json({
+      success: true,
+      message:
+        "Sesión renovada correctamente.",
+      data: createSessionResponse(
+        response,
+        result,
+      ),
     });
   } catch (error: unknown) {
     next(error);

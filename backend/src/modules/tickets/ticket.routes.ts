@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -27,4 +28,10 @@ ticketRouter.use(
 ticketRouter.get(
   "/sales/:id",
   getSaleTicketController,
+);
+
+ticketRouter.use(
+  requirePermissions(
+    "VENTA_CREAR",
+  ),
 );

@@ -304,3 +304,168 @@ export function cancelReservationRequest(
         }
     );
 }
+
+export async function getClientReservationOptionsRequest(
+    token,
+    {
+        sucursalId = "",
+        signal
+    } = {}
+) {
+    const params = new URLSearchParams();
+
+    addParameter(
+        params,
+        "sucursalId",
+        sucursalId
+    );
+
+    const query = params.toString();
+    const response = await apiRequest(
+        `/reservations/options${
+            query ? `?${query}` : ""
+        }`,
+        {
+            token,
+            signal
+        }
+    );
+
+    return response.data;
+}
+
+export async function checkClientReservationAvailabilityRequest(
+    token,
+    data,
+    signal
+) {
+    const params = new URLSearchParams();
+
+    [
+        "sucursalId",
+        "zonaId",
+        "fechaReserva",
+        "horaReserva",
+        "duracionMinutos",
+        "cantidadPersonas"
+    ].forEach((field) => {
+        addParameter(
+            params,
+            field,
+            data[field]
+        );
+    });
+
+    const response = await apiRequest(
+        `/reservations/availability?${params.toString()}`,
+        {
+            token,
+            signal
+        }
+    );
+
+    return response.data;
+}
+
+export async function listClientReservationsRequest(
+    token,
+    {
+        estado = "TODOS",
+        page = 1,
+        limit = 12,
+        signal
+    } = {}
+) {
+    const params = new URLSearchParams();
+
+    addParameter(params, "estado", estado);
+    addParameter(params, "page", page);
+    addParameter(params, "limit", limit);
+
+    const response = await apiRequest(
+        `/reservations?${params.toString()}`,
+        {
+            token,
+            signal
+        }
+    );
+
+    return response.data;
+}
+
+export async function getClientReservationRequest(
+    token,
+    reservationId,
+    signal
+) {
+    const response = await apiRequest(
+        `/reservations/${reservationId}`,
+        {
+            token,
+            signal
+        }
+    );
+
+    return response.data.reserva;
+}
+
+export function createClientReservationRequest(
+    token,
+    data
+) {
+    return apiRequest(
+        "/reservations",
+        {
+            method: "POST",
+            token,
+            body: data
+        }
+    );
+}
+
+export function registerClientReservationPaymentRequest(
+    token,
+    reservationId,
+    data
+) {
+    return apiRequest(
+        `/reservations/${reservationId}/payments`,
+        {
+            method: "POST",
+            token,
+            body: data
+        }
+    );
+}
+
+export function cancelClientReservationRequest(
+    token,
+    reservationId,
+    motivo
+) {
+    return apiRequest(
+        `/reservations/${reservationId}/cancel`,
+        {
+            method: "PATCH",
+            token,
+            body: {
+                motivo
+            }
+        }
+    );
+}
+
+export function rescheduleClientReservationRequest(
+    token,
+    reservationId,
+    data
+) {
+    return apiRequest(
+        `/reservations/${reservationId}/reschedule`,
+        {
+            method: "PATCH",
+            token,
+            body: data
+        }
+    );
+}

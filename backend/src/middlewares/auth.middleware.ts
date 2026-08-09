@@ -9,6 +9,10 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../shared/errors/app-error.js";
+import {
+  accessTokenCookieName,
+  clearAuthSession,
+} from "../modules/auth/auth-session.js";
 
 type AccessTokenPayload = JwtPayload & {
   sessionVersion?: unknown;
@@ -16,13 +20,15 @@ type AccessTokenPayload = JwtPayload & {
 
 export async function requireAuth(
   request: Request,
-  _response: Response,
+  response: Response,
   next: NextFunction,
 ): Promise<void> {
+  const cookieToken =
+    request.cookies?.[accessTokenCookieName];
   const authorizationHeader =
     request.headers.authorization;
 
-  if (!authorizationHeader) {
+  if (!cookieToken && !authorizationHeader) {
     next(
       new AppError(
         401,
@@ -34,13 +40,15 @@ export async function requireAuth(
     return;
   }
 
-  const [scheme, token] = authorizationHeader
-    .trim()
-    .split(/\s+/);
+  const [scheme, bearerToken] =
+    authorizationHeader
+      ?.trim()
+      .split(/\s+/) ?? [];
 
   if (
-    scheme?.toLowerCase() !== "bearer" ||
-    !token
+    !cookieToken &&
+    (scheme?.toLowerCase() !== "bearer" ||
+      !bearerToken)
   ) {
     next(
       new AppError(
@@ -50,6 +58,22 @@ export async function requireAuth(
       ),
     );
 
+    return;
+  }
+
+  const token =
+    typeof cookieToken === "string"
+      ? cookieToken
+      : bearerToken;
+
+  if (!token) {
+    next(
+      new AppError(
+        401,
+        "La sesión no contiene un token válido.",
+        "TOKEN_INVALIDO",
+      ),
+    );
     return;
   }
 
@@ -89,6 +113,22 @@ export async function requireAuth(
           rol: {
             select: {
               codigo: true,
+
+              permisos: {
+                where: {
+                  permiso: {
+                    activo: true,
+                  },
+                },
+
+                select: {
+                  permiso: {
+                    select: {
+                      codigo: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -136,6 +176,11 @@ export async function requireAuth(
     request.auth = {
       usuarioId: usuario.id,
       rol: usuario.rol.codigo,
+      permisos:
+        usuario.rol.permisos.map(
+          ({ permiso }) =>
+            permiso.codigo,
+        ),
       correo: usuario.correo,
       sessionVersion: usuario.sessionVersion,
     };
@@ -143,6 +188,7 @@ export async function requireAuth(
     next();
   } catch (error: unknown) {
     if (error instanceof AppError) {
+      clearAuthSession(response);
       next(error);
       return;
     }
@@ -151,6 +197,7 @@ export async function requireAuth(
       error instanceof Error &&
       error.name === "TokenExpiredError"
     ) {
+      clearAuthSession(response);
       next(
         new AppError(
           401,
@@ -162,6 +209,7 @@ export async function requireAuth(
       return;
     }
 
+    clearAuthSession(response);
     next(
       new AppError(
         401,
@@ -201,6 +249,53 @@ export function requireRoles(
         ),
       );
 
+      return;
+    }
+
+    next();
+  };
+}
+
+export function requirePermissions(
+  ...requiredPermissions: string[]
+): RequestHandler {
+  return (
+    request: Request,
+    _response: Response,
+    next: NextFunction,
+  ): void => {
+    if (!request.auth) {
+      next(
+        new AppError(
+          401,
+          "Debes iniciar sesión para acceder a este recurso.",
+          "TOKEN_REQUERIDO",
+        ),
+      );
+      return;
+    }
+
+    const grantedPermissions =
+      new Set(
+        request.auth.permisos,
+      );
+
+    const missingPermission =
+      requiredPermissions.find(
+        (permission) =>
+          !grantedPermissions.has(
+            permission,
+          ),
+      );
+
+    if (missingPermission) {
+      next(
+        new AppError(
+          403,
+          "Tu rol no tiene el permiso requerido para realizar esta acción.",
+          "PERMISO_REQUERIDO",
+        ),
+      );
       return;
     }
 

@@ -23,6 +23,9 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
@@ -37,7 +40,7 @@ import {
     updateUserStatusRequest
 } from "../../../services/user.service";
 
-import "./usersAdmin.css";
+import "./UsersAdmin.css";
 
 const initialOptions = {
     roles: [],
@@ -123,6 +126,12 @@ function UsersAdmin() {
         token,
         usuario
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "USERS",
+            "ROLES"
+        ]);
 
     const [
         options,
@@ -388,7 +397,8 @@ function UsersAdmin() {
         roleFilter,
         branchFilter,
         page,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     function handleSearch(event) {
@@ -808,8 +818,8 @@ function UsersAdmin() {
     }
 
     return (
-        <section className="users-admin">
-            <header className="users-heading">
+        <section className="users-admin admin-page">
+            <header className="users-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         USUARIOS
@@ -845,7 +855,7 @@ function UsersAdmin() {
 
             {message && (
                 <div
-                    className="users-feedback success"
+                    className="users-feedback admin-feedback success"
                     role="status"
                 >
                     {message}
@@ -854,14 +864,14 @@ function UsersAdmin() {
 
             {error && (
                 <div
-                    className="users-feedback error"
+                    className="users-feedback admin-feedback error"
                     role="alert"
                 >
                     {error}
                 </div>
             )}
 
-            <div className="users-summary-grid">
+            <div className="users-summary-grid admin-metric-grid columns-3">
                 <article>
                     <FaUsers />
 
@@ -906,7 +916,7 @@ function UsersAdmin() {
             </div>
 
             <form
-                className="users-filters"
+                className="users-filters admin-filter-bar"
                 onSubmit={handleSearch}
             >
                 <div className="users-search">
@@ -1459,8 +1469,8 @@ function UsersAdmin() {
                         </p>
                     </div>
                 ) : (
-                    <div className="users-table-wrapper">
-                        <table className="users-table">
+                    <div className="users-table-wrapper admin-table-shell">
+                        <table className="users-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>Usuario</th>
@@ -1568,7 +1578,7 @@ function UsersAdmin() {
 
                                                 <td>
                                                     <span
-                                                        className={`users-status ${user.estado.toLowerCase()}`}
+                                                        className={`admin-status-badge users-status ${user.estado.toLowerCase()}`}
                                                     >
                                                         {user.estado}
                                                     </span>
@@ -1686,7 +1696,7 @@ function UsersAdmin() {
                     </div>
                 )}
 
-                <div className="users-pagination">
+                <div className="users-pagination admin-pagination">
                     <span>
                         Página {pagination.page} de{" "}
                         {pagination.totalPages}

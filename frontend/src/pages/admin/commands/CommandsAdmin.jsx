@@ -24,6 +24,11 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
+
+import AdminMetricCard from "../../../components/adminMetricCard/AdminMetricCard";
 
 import {
     ApiError
@@ -151,6 +156,12 @@ function CommandsAdmin() {
     const {
         token
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "COMMANDS",
+            "ORDERS"
+        ]);
 
     const [
         options,
@@ -423,7 +434,42 @@ function CommandsAdmin() {
         appliedSearch,
         filters,
         page,
-        reloadKey
+        reloadKey,
+        realtimeVersion
+    ]);
+
+    useEffect(() => {
+        if (
+            realtimeVersion === 0 ||
+            !selectedCommand?.id
+        ) {
+            return undefined;
+        }
+
+        const controller =
+            new AbortController();
+
+        void getCommandByIdRequest(
+            token,
+            selectedCommand.id,
+            controller.signal
+        )
+            .then(setSelectedCommand)
+            .catch((requestError) => {
+                if (!isAbortError(requestError)) {
+                    console.error(
+                        "No se pudo sincronizar la comanda seleccionada:",
+                        requestError
+                    );
+                }
+            });
+
+        return () =>
+            controller.abort();
+    }, [
+        realtimeVersion,
+        selectedCommand?.id,
+        token
     ]);
 
     useEffect(() => {
@@ -631,8 +677,8 @@ function CommandsAdmin() {
         "PREPARANDO";
 
     return (
-        <section className="commands-admin">
-            <header className="commands-heading">
+        <section className="commands-admin admin-page">
+            <header className="commands-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         COCINA Y BARRA
@@ -668,85 +714,65 @@ function CommandsAdmin() {
             </header>
 
             {message && (
-                <div className="command-feedback success">
+                <div
+                    className="command-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="command-feedback error">
+                <div
+                    className="command-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <div className="command-stat-grid">
-                <article>
-                    <div className="command-stat-icon pending">
-                        <FaClock />
-                    </div>
+            <div
+                className="admin-metric-grid"
+                aria-label="Resumen de comandas"
+            >
+                <AdminMetricCard
+                    icon={FaClock}
+                    label="Pendientes"
+                    value={pendingCount}
+                    detail="En esta página"
+                    tone="warning"
+                    isLoading={isLoadingList}
+                />
 
-                    <div>
-                        <span>
-                            Pendientes
-                        </span>
+                <AdminMetricCard
+                    icon={FaFire}
+                    label="En preparación"
+                    value={preparingCount}
+                    detail="En esta página"
+                    tone="attention"
+                    isLoading={isLoadingList}
+                />
 
-                        <strong>
-                            {pendingCount}
-                        </strong>
-                    </div>
-                </article>
+                <AdminMetricCard
+                    icon={FaUtensils}
+                    label="Cocina"
+                    value={kitchenCount}
+                    detail="Destino en esta página"
+                    isLoading={isLoadingList}
+                />
 
-                <article>
-                    <div className="command-stat-icon preparing">
-                        <FaFire />
-                    </div>
-
-                    <div>
-                        <span>
-                            En preparación
-                        </span>
-
-                        <strong>
-                            {preparingCount}
-                        </strong>
-                    </div>
-                </article>
-
-                <article>
-                    <div className="command-stat-icon kitchen">
-                        <FaUtensils />
-                    </div>
-
-                    <div>
-                        <span>
-                            Cocina
-                        </span>
-
-                        <strong>
-                            {kitchenCount}
-                        </strong>
-                    </div>
-                </article>
-
-                <article>
-                    <div className="command-stat-icon bar">
-                        <FaGlassMartiniAlt />
-                    </div>
-
-                    <div>
-                        <span>
-                            Barra
-                        </span>
-
-                        <strong>
-                            {barCount}
-                        </strong>
-                    </div>
-                </article>
+                <AdminMetricCard
+                    icon={FaGlassMartiniAlt}
+                    label="Barra"
+                    value={barCount}
+                    detail="Destino en esta página"
+                    tone="info"
+                    isLoading={isLoadingList}
+                />
             </div>
 
             <form
-                className="command-filters"
+                className="command-filters admin-filter-bar"
                 onSubmit={
                     handleSearch
                 }
@@ -1005,7 +1031,7 @@ function CommandsAdmin() {
                                         </div>
 
                                         <span
-                                            className={`command-status ${command.estado.toLowerCase()}`}
+                                            className={`admin-status-badge command-status ${command.estado.toLowerCase()}`}
                                         >
                                             {formatLabel(
                                                 command.estado
@@ -1099,7 +1125,7 @@ function CommandsAdmin() {
                 </div>
             )}
 
-            <div className="command-pagination">
+            <div className="command-pagination admin-pagination">
                 <span>
                     Página {pagination.page} de{" "}
                     {pagination.totalPages}
@@ -1189,6 +1215,7 @@ function CommandsAdmin() {
                         <button
                             type="button"
                             className="command-close-button"
+                            aria-label="Cerrar detalle de comanda"
                             onClick={() =>
                                 setSelectedCommand(
                                     null

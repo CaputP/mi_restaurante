@@ -17,6 +17,7 @@ import {
     getRoleDisplayName
 } from "../utils/roleRoutes";
 
+import "../styles/adminDesignSystem.css";
 import "./operationalLayout.css";
 
 function OperationalLayout() {

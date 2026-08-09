@@ -21,6 +21,9 @@ import {
 import {
     useAuth
 } from "../../../context/AuthContext";
+import {
+    useRealtimeVersion
+} from "../../../context/RealtimeContext";
 
 import {
     ApiError
@@ -244,6 +247,11 @@ function LoyaltyAdmin() {
         token,
         usuario
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "LOYALTY"
+        ]);
 
     const roleCode =
         usuario?.rol?.codigo ?? "";
@@ -563,7 +571,8 @@ function LoyaltyAdmin() {
         filters.activo,
         filters.page,
         filters.limit,
-        reloadKey
+        reloadKey,
+        realtimeVersion
     ]);
 
     useEffect(() => {
@@ -1120,11 +1129,11 @@ function LoyaltyAdmin() {
     }
 
     return (
-        <section className="loyalty-admin">
-            <header className="loyalty-heading">
+        <section className="loyalty-admin admin-page">
+            <header className="loyalty-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
-                        FIDELIZACIÓN
+                        PROGRAMAS DE FIDELIZACIÓN
                     </span>
 
                     <h2>
@@ -1168,18 +1177,24 @@ function LoyaltyAdmin() {
             </header>
 
             {message && (
-                <div className="loyalty-feedback success">
+                <div
+                    className="loyalty-feedback admin-feedback success"
+                    role="status"
+                >
                     {message}
                 </div>
             )}
 
             {error && (
-                <div className="loyalty-feedback error">
+                <div
+                    className="loyalty-feedback admin-feedback error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
-            <section className="loyalty-stats">
+            <section className="loyalty-stats admin-metric-grid">
                 <article>
                     <FaGift />
 
@@ -1239,7 +1254,7 @@ function LoyaltyAdmin() {
                 </article>
             </section>
 
-            <section className="loyalty-filters">
+            <section className="loyalty-filters admin-filter-bar">
                 <label className="loyalty-search">
                     <FaSearch />
 
@@ -1392,6 +1407,7 @@ function LoyaltyAdmin() {
 
                         <button
                             type="button"
+                            aria-label="Cerrar formulario de programa"
                             onClick={
                                 closeForm
                             }
@@ -1928,8 +1944,8 @@ function LoyaltyAdmin() {
                         </span>
                     </div>
                 ) : (
-                    <div className="loyalty-table-wrapper">
-                        <table className="loyalty-table">
+                    <div className="loyalty-table-wrapper admin-table-shell">
+                        <table className="loyalty-table admin-data-table">
                             <thead>
                                 <tr>
                                     <th>
@@ -2046,7 +2062,7 @@ function LoyaltyAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`loyalty-status ${
+                                                    className={`admin-status-badge loyalty-status ${
                                                         program.activo
                                                             ? "active"
                                                             : "inactive"
@@ -2108,7 +2124,7 @@ function LoyaltyAdmin() {
                     </div>
                 )}
 
-                <div className="loyalty-pagination">
+                <div className="loyalty-pagination admin-pagination">
                     <span>
                         Página{" "}
                         {

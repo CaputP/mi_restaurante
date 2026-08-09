@@ -4,6 +4,7 @@ declare global {
       auth?: {
         usuarioId: string;
         rol: string;
+        permisos: string[];
         correo: string;
         sessionVersion: number;
       };

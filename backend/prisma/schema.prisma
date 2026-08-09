@@ -2,7 +2,7 @@ generator client {
   provider            = "prisma-client"
   output              = "../src/generated/prisma"
   moduleFormat        = "esm"
-  importFileExtension = "ts"
+  importFileExtension = "js"
 }
 
 datasource db {
@@ -59,6 +59,7 @@ enum TipoMovimientoInventario {
   COMPROMISO_RESERVA
   LIBERACION_RESERVA
   CONSUMO_INTERNO
+  COMPROMISO_PEDIDO
 }
 
 enum TipoReserva {
@@ -254,6 +255,37 @@ enum PrioridadNotificacion {
   CRITICA
 }
 
+enum TipoReclamoConsumidor {
+  RECLAMO
+  QUEJA
+}
+
+enum TipoBienReclamado {
+  PRODUCTO
+  SERVICIO
+}
+
+enum EstadoReclamoConsumidor {
+  RECIBIDO
+  EN_REVISION
+  RESPONDIDO
+  CERRADO
+}
+
+enum CanalRespuestaConsumidor {
+  CORREO
+  TELEFONO
+  DOMICILIO
+}
+
+enum TipoDocumentoConsumidor {
+  DNI
+  CE
+  PASAPORTE
+  RUC
+  OTRO
+}
+
 enum TipoDocumentoCorrelativo {
   RESERVA
   PEDIDO
@@ -314,6 +346,7 @@ model Sucursal {
   auditorias            Auditoria[]
   correlativos          Correlativo[]
   respaldos             Respaldo[]
+  reclamosConsumidor    ReclamoConsumidor[]
 
   @@index([estado])
   @@map("sucursal")
@@ -440,20 +473,24 @@ model RolPermiso {
 // ======================================================
 
 model Usuario {
-  id               String         @id @default(uuid()) @db.Uuid
-  rolId            String         @map("rol_id") @db.Uuid
-  nombres          String         @db.VarChar(120)
-  apellidos        String         @db.VarChar(150)
-  telefono         String?        @db.VarChar(30)
-  correo           String         @unique @db.VarChar(160)
-  passwordHash     String?        @map("password_hash") @db.VarChar(255)
-  googleId         String?        @unique @map("google_id") @db.VarChar(255)
-  proveedorAuth    ProveedorAuth  @default(LOCAL) @map("proveedor_auth")
-  googleSubject    String?        @unique @map("google_subject") @db.VarChar(255)
-  estado           EstadoRegistro @default(ACTIVO)
-  correoVerificado Boolean        @default(false) @map("correo_verificado")
-  ultimoAcceso     DateTime?      @map("ultimo_acceso") @db.Timestamptz(3)
-  sessionVersion   Int            @default(0) @map("session_version")
+  id                   String         @id @default(uuid()) @db.Uuid
+  rolId                String         @map("rol_id") @db.Uuid
+  nombres              String         @db.VarChar(120)
+  apellidos            String         @db.VarChar(150)
+  telefono             String?        @db.VarChar(30)
+  correo               String         @unique @db.VarChar(160)
+  passwordHash         String?        @map("password_hash") @db.VarChar(255)
+  googleId             String?        @unique @map("google_id") @db.VarChar(255)
+  proveedorAuth        ProveedorAuth  @default(LOCAL) @map("proveedor_auth")
+  googleSubject        String?        @unique @map("google_subject") @db.VarChar(255)
+  estado               EstadoRegistro @default(ACTIVO)
+  correoVerificado     Boolean        @default(false) @map("correo_verificado")
+  ultimoAcceso         DateTime?      @map("ultimo_acceso") @db.Timestamptz(3)
+  sessionVersion       Int            @default(0) @map("session_version")
+  terminosAceptadosAt  DateTime?      @map("terminos_aceptados_at") @db.Timestamptz(3)
+  terminosVersion      String?        @map("terminos_version") @db.VarChar(30)
+  privacidadAceptadaAt DateTime?      @map("privacidad_aceptada_at") @db.Timestamptz(3)
+  privacidadVersion    String?        @map("privacidad_version") @db.VarChar(30)
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -512,6 +549,7 @@ model Usuario {
 
   tokensVerificacionCorreo TokenVerificacionCorreo[]
   tokensRecuperacion       TokenRecuperacionPassword[]
+  reclamosRespondidos      ReclamoConsumidor[]         @relation("ReclamosRespondidosPor")
 
   @@index([rolId, estado])
   @@index([apellidos, nombres])
@@ -722,11 +760,13 @@ model Reserva {
   aprobadoPorId   String?   @map("aprobado_por_id") @db.Uuid
   fechaAprobacion DateTime? @map("fecha_aprobacion") @db.Timestamptz(3)
 
-  canceladoPorId       String?   @map("cancelado_por_id") @db.Uuid
-  fechaCancelacion     DateTime? @map("fecha_cancelacion") @db.Timestamptz(3)
-  motivoCancelacion    String?   @map("motivo_cancelacion") @db.Text
-  penalidadCancelacion Decimal   @default(0) @map("penalidad_cancelacion") @db.Decimal(12, 2)
-  montoDevuelto        Decimal   @default(0) @map("monto_devuelto") @db.Decimal(12, 2)
+  canceladoPorId            String?   @map("cancelado_por_id") @db.Uuid
+  fechaCancelacion          DateTime? @map("fecha_cancelacion") @db.Timestamptz(3)
+  motivoCancelacion         String?   @map("motivo_cancelacion") @db.Text
+  penalidadCancelacion      Decimal   @default(0) @map("penalidad_cancelacion") @db.Decimal(12, 2)
+  montoDevuelto             Decimal   @default(0) @map("monto_devuelto") @db.Decimal(12, 2)
+  politicaReservaAceptadaAt DateTime? @map("politica_reserva_aceptada_at") @db.Timestamptz(3)
+  politicaReservaVersion    String?   @map("politica_reserva_version") @db.VarChar(30)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -870,15 +910,16 @@ model Pedido {
 }
 
 model DetallePedido {
-  id                 String              @id @default(uuid()) @db.Uuid
-  pedidoId           String              @map("pedido_id") @db.Uuid
-  productoSucursalId String              @map("producto_sucursal_id") @db.Uuid
-  nombreProducto     String              @map("nombre_producto") @db.VarChar(150)
-  cantidad           Decimal             @db.Decimal(12, 3)
-  precioUnitario     Decimal             @map("precio_unitario") @db.Decimal(12, 2)
-  subtotal           Decimal             @db.Decimal(12, 2)
-  observaciones      String?             @db.Text
-  estado             EstadoDetallePedido @default(PENDIENTE)
+  id                   String              @id @default(uuid()) @db.Uuid
+  pedidoId             String              @map("pedido_id") @db.Uuid
+  productoSucursalId   String              @map("producto_sucursal_id") @db.Uuid
+  nombreProducto       String              @map("nombre_producto") @db.VarChar(150)
+  cantidad             Decimal             @db.Decimal(12, 3)
+  cantidadComprometida Decimal             @default(0) @map("cantidad_comprometida") @db.Decimal(12, 3)
+  precioUnitario       Decimal             @map("precio_unitario") @db.Decimal(12, 2)
+  subtotal             Decimal             @db.Decimal(12, 2)
+  observaciones        String?             @db.Text
+  estado               EstadoDetallePedido @default(PENDIENTE)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -1520,6 +1561,45 @@ model Notificacion {
   @@map("notificacion")
 }
 
+model ReclamoConsumidor {
+  id                   String                   @id @default(uuid()) @db.Uuid
+  codigo               String                   @unique @db.VarChar(30)
+  tokenConsultaHash    String                   @map("token_consulta_hash") @db.VarChar(64)
+  sucursalId           String?                  @map("sucursal_id") @db.Uuid
+  tipoDocumento        TipoDocumentoConsumidor  @map("tipo_documento")
+  numeroDocumento      String                   @map("numero_documento") @db.VarChar(20)
+  nombreCompleto       String                   @map("nombre_completo") @db.VarChar(200)
+  domicilio            String                   @db.VarChar(300)
+  telefono             String?                  @db.VarChar(30)
+  correo               String                   @db.VarChar(160)
+  esMenorEdad          Boolean                  @default(false) @map("es_menor_edad")
+  nombreApoderado      String?                  @map("nombre_apoderado") @db.VarChar(200)
+  tipo                 TipoReclamoConsumidor
+  bienContratado       TipoBienReclamado        @map("bien_contratado")
+  descripcionBien      String                   @map("descripcion_bien") @db.VarChar(300)
+  montoReclamado       Decimal?                 @map("monto_reclamado") @db.Decimal(12, 2)
+  detalle              String                   @db.Text
+  pedidoConsumidor     String                   @map("pedido_consumidor") @db.Text
+  canalRespuesta       CanalRespuestaConsumidor @map("canal_respuesta")
+  estado               EstadoReclamoConsumidor  @default(RECIBIDO)
+  respuesta            String?                  @db.Text
+  medidasAdoptadas     String?                  @map("medidas_adoptadas") @db.Text
+  respondidoAt         DateTime?                @map("respondido_at") @db.Timestamptz(3)
+  respondidoPorId      String?                  @map("respondido_por_id") @db.Uuid
+  privacidadVersion    String                   @map("privacidad_version") @db.VarChar(30)
+  privacidadAceptadaAt DateTime                 @map("privacidad_aceptada_at") @db.Timestamptz(3)
+  createdAt            DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sucursal      Sucursal? @relation(fields: [sucursalId], references: [id], onDelete: Restrict)
+  respondidoPor Usuario?  @relation("ReclamosRespondidosPor", fields: [respondidoPorId], references: [id], onDelete: Restrict)
+
+  @@index([estado, createdAt])
+  @@index([sucursalId, estado, createdAt])
+  @@index([numeroDocumento, createdAt])
+  @@map("reclamo_consumidor")
+}
+
 // ======================================================
 // AUDITORÍA
 // ======================================================
@@ -1592,9 +1672,10 @@ model Respaldo {
   tamanoBytes   BigInt? @map("tamano_bytes")
   checksum      String? @db.VarChar(128)
 
-  fechaInicio  DateTime? @map("fecha_inicio") @db.Timestamptz(3)
-  fechaFin     DateTime? @map("fecha_fin") @db.Timestamptz(3)
-  mensajeError String?   @map("mensaje_error") @db.Text
+  fechaInicio      DateTime? @map("fecha_inicio") @db.Timestamptz(3)
+  fechaFin         DateTime? @map("fecha_fin") @db.Timestamptz(3)
+  fechaEliminacion DateTime? @map("fecha_eliminacion") @db.Timestamptz(3)
+  mensajeError     String?   @map("mensaje_error") @db.Text
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)

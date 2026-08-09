@@ -1,16 +1,24 @@
-import { Navigate } from "react-router-dom";
+import {
+    Navigate,
+    useLocation
+} from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import {
+    getHomePathByRole
+} from "../utils/roleRoutes";
 
 function ProtectedRoute({
     children,
-    allowedRoles = []
+    allowedRoles = [],
+    requiredPermissions = []
 }) {
     const {
         usuario,
         isAuthenticated,
         isLoadingSession
     } = useAuth();
+    const location = useLocation();
 
     if (isLoadingSession) {
         return (
@@ -25,6 +33,25 @@ function ProtectedRoute({
             <Navigate
                 to="/login"
                 replace
+                state={{
+                    from: `${location.pathname}${location.search}${location.hash}`
+                }}
+            />
+        );
+    }
+
+    const authorizedHomePath =
+        getHomePathByRole(
+            usuario.rol.codigo,
+            usuario.permisos
+        );
+
+    if (usuario.requiereAceptacionLegal) {
+        return (
+            <Navigate
+                to="/aceptar-politicas"
+                replace
+                state={{ from: `${location.pathname}${location.search}${location.hash}` }}
             />
         );
     }
@@ -35,7 +62,27 @@ function ProtectedRoute({
     ) {
         return (
             <Navigate
-                to="/"
+                to={authorizedHomePath}
+                replace
+            />
+        );
+    }
+
+    const grantedPermissions = new Set(
+        usuario.permisos?.map(
+            (permission) => permission.codigo
+        ) ?? []
+    );
+
+    if (
+        requiredPermissions.some(
+            (permission) =>
+                !grantedPermissions.has(permission)
+        )
+    ) {
+        return (
+            <Navigate
+                to={authorizedHomePath}
                 replace
             />
         );

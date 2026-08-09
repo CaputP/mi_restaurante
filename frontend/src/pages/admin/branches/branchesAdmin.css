@@ -1,6 +1,6 @@
 .branches-admin {
     width: 100%;
-    max-width: 1500px;
+    max-width: var(--admin-content-max-width);
     min-width: 0;
     margin: 0 auto;
 }
@@ -12,9 +12,9 @@
     width: 100%;
     min-width: 0;
 
-    border: 1px solid #dce4dd;
-    border-radius: 14px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-white);
 }
 
 .branches-heading {
@@ -29,20 +29,20 @@
 
 .branches-heading h2 {
     margin: 7px 0 6px;
-    color: #263d2a;
+    color: var(--admin-color-text-strong);
 }
 
 .branches-heading p,
 .branch-section-heading p,
 .zones-heading p {
     margin: 0;
-    color: #748078;
-    font-size: 0.78rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-md);
 }
 
 .branches-heading > button,
 .zones-heading > button {
-    min-height: 42px;
+    min-height: var(--admin-control-height);
     padding: 9px 14px;
 
     display: inline-flex;
@@ -51,10 +51,10 @@
     gap: 8px;
 
     border: none;
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
-    background: #355e3b;
-    color: #ffffff;
+    background: var(--admin-color-primary);
+    color: var(--admin-color-white);
 
     font: inherit;
     font-weight: 650;
@@ -71,20 +71,20 @@
     margin-bottom: 17px;
     padding: 12px 15px;
 
-    border-radius: 9px;
-    font-size: 0.8rem;
+    border-radius: var(--admin-radius-feedback);
+    font-size: var(--admin-font-md);
 }
 
 .branches-feedback.success {
-    border: 1px solid #a5d6a7;
-    background: #e8f5e9;
-    color: #1b5e20;
+    border: 1px solid var(--admin-color-success-border);
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-success-text);
 }
 
 .branches-feedback.error {
-    border: 1px solid #ef9a9a;
-    background: #ffebee;
-    color: #9b111e;
+    border: 1px solid var(--admin-color-danger-border);
+    background: var(--admin-color-danger-soft);
+    color: var(--admin-color-danger-text);
 }
 
 .branch-stat-grid,
@@ -106,9 +106,9 @@
     align-items: center;
     gap: 12px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 11px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-lg);
+    background: var(--admin-color-white);
 }
 
 .branch-stat-grid svg,
@@ -118,9 +118,9 @@
     height: 42px;
     padding: 11px;
 
-    border-radius: 10px;
-    background: #eef4ef;
-    color: #355e3b;
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-color-primary-soft);
+    color: var(--admin-color-primary);
 }
 
 .branch-stat-grid article > div,
@@ -131,15 +131,15 @@
 .branch-stat-grid span,
 .branch-detail-statistics span {
     display: block;
-    color: #758078;
-    font-size: 0.66rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
 }
 
 .branch-stat-grid strong,
 .branch-detail-statistics strong {
     display: block;
     margin-top: 3px;
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .branches-list-card,
@@ -150,11 +150,11 @@
 }
 
 .branch-form-card {
-    border-left: 4px solid #355e3b;
+    border-left: 4px solid var(--admin-color-primary);
 }
 
 .branch-detail-card {
-    border-left: 4px solid #9b6c20;
+    border-left: 4px solid var(--admin-color-accent);
 }
 
 .branches-filters {
@@ -168,23 +168,23 @@
         auto;
     gap: 9px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 10px;
-    background: #fafbfa;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-color-surface-subtle);
 }
 
 .branches-search {
     min-width: 0;
-    min-height: 42px;
+    min-height: var(--admin-control-height);
     padding: 0 11px;
 
     display: flex;
     align-items: center;
     gap: 8px;
 
-    border: 1px solid #cbd5cc;
-    border-radius: 8px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+    background: var(--admin-color-white);
 }
 
 .branches-search input {
@@ -198,22 +198,22 @@
 
 .branches-filters select {
     min-width: 0;
-    min-height: 42px;
+    min-height: var(--admin-control-height);
     padding: 8px 10px;
 
-    border: 1px solid #cbd5cc;
-    border-radius: 8px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+    background: var(--admin-color-white);
 }
 
 .branches-filters > button {
     padding: 8px 14px;
 
     border: none;
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
-    background: #e6eee7;
-    color: #294b30;
+    background: var(--admin-color-border-subtle);
+    color: var(--admin-color-primary-strong);
 
     font: inherit;
     font-weight: 650;
@@ -236,21 +236,21 @@
 .branches-table td {
     padding: 12px 10px;
 
-    border-bottom: 1px solid #e4ebe5;
+    border-bottom: 1px solid var(--admin-color-border-subtle);
     text-align: left;
     vertical-align: middle;
 }
 
 .branches-table th {
-    color: #69766c;
-    font-size: 0.64rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-2xs);
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
 .branches-table td {
-    color: #536057;
-    font-size: 0.74rem;
+    color: var(--admin-color-text);
+    font-size: var(--admin-font-sm);
 }
 
 .branch-name-cell {
@@ -262,37 +262,37 @@
 }
 
 .branch-name-cell strong {
-    color: #344738;
+    color: var(--admin-color-primary-strong);
 }
 
 .branch-name-cell small {
-    color: #7c867e;
+    color: var(--admin-color-text-muted);
 }
 
 .branch-status {
     padding: 5px 8px;
     display: inline-block;
 
-    border-radius: 20px;
+    border-radius: var(--admin-radius-pill);
 
-    font-size: 0.61rem;
+    font-size: var(--admin-font-2xs);
     font-weight: 750;
     white-space: nowrap;
 }
 
 .branch-status.activo {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-success);
 }
 
 .branch-status.inactivo {
-    background: #fff8e1;
-    color: #9a6817;
+    background: var(--admin-color-warning-soft);
+    color: var(--admin-color-accent);
 }
 
 .branch-status.archivado {
-    background: #eceff1;
-    color: #546e7a;
+    background: var(--admin-color-surface-muted);
+    color: var(--admin-color-text-muted);
 }
 
 .branch-actions {
@@ -309,17 +309,17 @@
     align-items: center;
     justify-content: center;
 
-    border: 1px solid #d2dcd4;
-    border-radius: 7px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-sm);
 
-    background: #ffffff;
-    color: #355e3b;
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary);
     cursor: pointer;
 }
 
 .branch-actions button.danger {
-    border-color: #ebc0c0;
-    color: #b12b35;
+    border-color: var(--admin-color-control-border);
+    color: var(--admin-color-danger);
 }
 
 .branch-actions button:disabled {
@@ -337,8 +337,8 @@
 }
 
 .branches-pagination span {
-    color: #748078;
-    font-size: 0.71rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
 }
 
 .branches-pagination > div {
@@ -354,14 +354,14 @@
     align-items: center;
     gap: 6px;
 
-    border: 1px solid #d2dcd4;
-    border-radius: 7px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-sm);
 
-    background: #ffffff;
-    color: #415047;
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary);
 
     font: inherit;
-    font-size: 0.7rem;
+    font-size: var(--admin-font-xs);
     cursor: pointer;
 }
 
@@ -383,12 +383,12 @@
 .branch-section-heading h3,
 .zones-heading h3 {
     margin: 4px 0;
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .branch-section-heading h4 {
     margin: 0;
-    color: #2d4231;
+    color: var(--admin-color-text-strong);
 }
 
 .branch-close-button {
@@ -400,10 +400,10 @@
     justify-content: center;
 
     border: none;
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
-    background: #edf2ee;
-    color: #465248;
+    background: var(--admin-color-surface-muted);
+    color: var(--admin-color-text);
     cursor: pointer;
 }
 
@@ -423,8 +423,8 @@
     flex-direction: column;
     gap: 7px;
 
-    color: #354239;
-    font-size: 0.75rem;
+    color: var(--admin-color-primary-strong);
+    font-size: var(--admin-font-sm);
     font-weight: 650;
 }
 
@@ -435,13 +435,13 @@
 .zone-form-grid textarea {
     width: 100%;
     min-width: 0;
-    min-height: 42px;
+    min-height: var(--admin-control-height);
     padding: 9px 11px;
 
-    border: 1px solid #cbd5cc;
-    border-radius: 8px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
 
-    background: #ffffff;
+    background: var(--admin-color-white);
     font: inherit;
     outline: none;
 }
@@ -451,8 +451,8 @@
 }
 
 .branch-form-grid input:disabled {
-    background: #f1f4f1;
-    color: #6d786f;
+    background: var(--admin-color-canvas);
+    color: var(--admin-color-text-muted);
 }
 
 .branch-field-full {
@@ -468,7 +468,7 @@
 }
 
 .branch-form-actions button {
-    min-height: 42px;
+    min-height: var(--admin-control-height);
     padding: 9px 16px;
 
     display: inline-flex;
@@ -476,7 +476,7 @@
     justify-content: center;
     gap: 7px;
 
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
     font: inherit;
     font-weight: 650;
@@ -484,15 +484,15 @@
 }
 
 .branch-form-actions .secondary {
-    border: 1px solid #cad6cc;
-    background: #ffffff;
-    color: #355e3b;
+    border: 1px solid var(--admin-color-control-border);
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary);
 }
 
 .branch-form-actions .primary {
     border: none;
-    background: #355e3b;
-    color: #ffffff;
+    background: var(--admin-color-primary);
+    color: var(--admin-color-white);
 }
 
 .branch-form-actions button:disabled {
@@ -517,20 +517,20 @@
     justify-content: space-between;
     gap: 20px;
 
-    border-bottom: 1px solid #e6ece7;
+    border-bottom: 1px solid var(--admin-color-border-subtle);
 }
 
 .branch-data-list dt {
-    color: #777f79;
-    font-size: 0.71rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
 }
 
 .branch-data-list dd {
     min-width: 0;
     margin: 0;
 
-    color: #3c4a40;
-    font-size: 0.74rem;
+    color: var(--admin-color-primary);
+    font-size: var(--admin-font-sm);
     font-weight: 600;
     text-align: right;
     overflow-wrap: anywhere;
@@ -540,9 +540,9 @@
     margin-bottom: 18px;
     padding: 16px;
 
-    border: 1px solid #d9e2da;
-    border-radius: 11px;
-    background: #fafbfa;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-lg);
+    background: var(--admin-color-surface-subtle);
 }
 
 .zones-grid {
@@ -556,17 +556,17 @@
     min-width: 0;
     padding: 16px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 11px;
-    background: #ffffff;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-lg);
+    background: var(--admin-color-white);
 }
 
 .zone-card.inactivo {
-    background: #fffdf7;
+    background: var(--admin-color-surface-subtle);
 }
 
 .zone-card.archivado {
-    background: #f4f6f7;
+    background: var(--admin-color-canvas);
 }
 
 .zone-card header {
@@ -584,13 +584,13 @@
 
 .zone-card h4 {
     margin: 0 0 6px;
-    color: #344738;
+    color: var(--admin-color-primary-strong);
     overflow-wrap: anywhere;
 }
 
 .zone-card header > strong {
-    color: #6e786f;
-    font-size: 0.66rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
     text-align: right;
 }
 
@@ -598,8 +598,8 @@
     min-height: 38px;
     margin: 0 0 12px;
 
-    color: #768078;
-    font-size: 0.69rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
     line-height: 1.45;
 }
 
@@ -614,18 +614,18 @@
     justify-content: space-between;
     gap: 10px;
 
-    border-bottom: 1px solid #edf1ed;
+    border-bottom: 1px solid var(--admin-color-surface-muted);
 }
 
 .zone-card dt {
-    color: #78827a;
-    font-size: 0.66rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
 }
 
 .zone-card dd {
     margin: 0;
-    color: #405047;
-    font-size: 0.7rem;
+    color: var(--admin-color-primary);
+    font-size: var(--admin-font-xs);
     font-weight: 700;
 }
 
@@ -643,20 +643,20 @@
     align-items: center;
     gap: 6px;
 
-    border: 1px solid #d2dcd4;
-    border-radius: 7px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-sm);
 
-    background: #ffffff;
-    color: #355e3b;
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary);
 
     font: inherit;
-    font-size: 0.66rem;
+    font-size: var(--admin-font-xs);
     cursor: pointer;
 }
 
 .zone-card footer button.danger {
-    border-color: #ebc0c0;
-    color: #b12b35;
+    border-color: var(--admin-color-control-border);
+    color: var(--admin-color-danger);
 }
 
 .zone-card footer button:disabled {
@@ -673,7 +673,7 @@
     flex-direction: column;
     gap: 9px;
 
-    color: #7a857c;
+    color: var(--admin-color-text-muted);
     text-align: center;
 }
 
@@ -682,11 +682,11 @@
 }
 
 .branches-empty-state svg {
-    color: #8ba08e;
-    font-size: 2rem;
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-icon-lg);
 }
 
-@media (max-width: 1300px) {
+@media (max-width: 1200px) {
     .branch-stat-grid,
     .branch-detail-statistics {
         grid-template-columns:

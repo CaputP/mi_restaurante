@@ -9,6 +9,7 @@ import { AppError } from "../../shared/errors/app-error.js";
 import {
   createOrderSchema,
   listOrdersQuerySchema,
+  orderCustomerRewardsQuerySchema,
   orderIdSchema,
   orderOptionsQuerySchema,
   sendOrderSchema,
@@ -18,6 +19,7 @@ import {
 import {
   createOrder,
   getOrderById,
+  getOrderCustomerRewards,
   getOrderOptions,
   listOrders,
   sendOrder,
@@ -42,6 +44,34 @@ function getRequestAuth(
     rol:
       request.auth.rol,
   };
+}
+
+export async function getOrderCustomerRewardsController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const query =
+      orderCustomerRewardsQuerySchema.parse(
+        request.query,
+      );
+
+    const result =
+      await getOrderCustomerRewards(
+        getRequestAuth(request),
+        query,
+      );
+
+    response.status(200).json({
+      success: true,
+      message:
+        "Premios del cliente obtenidos correctamente.",
+      data: result,
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
 }
 
 export async function getOrderOptionsController(

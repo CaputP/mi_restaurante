@@ -1,5 +1,5 @@
 .admin-dashboard {
-    max-width: 1500px;
+    max-width: var(--admin-content-max-width);
     margin: 0 auto;
 }
 
@@ -12,27 +12,20 @@
     justify-content: space-between;
     gap: 24px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 15px;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card-lg);
     background: white;
-}
-
-.admin-eyebrow {
-    color: #90711d;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
 }
 
 .admin-welcome h2 {
     margin: 7px 0 6px;
-    color: #223927;
-    font-size: 1.65rem;
+    color: var(--admin-color-sidebar);
+    font-size: var(--admin-font-3xl);
 }
 
 .admin-welcome p {
     margin: 0;
-    color: #667168;
+    color: var(--admin-color-text-muted);
 }
 
 .admin-current-role {
@@ -43,18 +36,18 @@
     flex-direction: column;
     gap: 4px;
 
-    border-radius: 10px;
-    background: #edf3ee;
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-color-surface-muted);
 }
 
 .admin-current-role span {
-    color: #6c776e;
-    font-size: 0.74rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-sm);
 }
 
 .admin-current-role strong {
-    color: #294b30;
-    font-size: 0.88rem;
+    color: var(--admin-color-primary-strong);
+    font-size: var(--admin-font-lg);
 }
 
 .admin-indicator-grid {
@@ -74,8 +67,8 @@
     align-items: flex-start;
     gap: 15px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 14px;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
     background: white;
 }
 
@@ -89,10 +82,10 @@
 
     flex-shrink: 0;
 
-    border-radius: 11px;
-    background: #e8f0e9;
-    color: #355e3b;
-    font-size: 1.15rem;
+    border-radius: var(--admin-radius-lg);
+    background: var(--admin-color-success-soft);
+    color: var(--admin-color-primary);
+    font-size: var(--admin-font-xl);
 }
 
 .admin-indicator-card > div:last-child {
@@ -101,19 +94,19 @@
 }
 
 .admin-indicator-card span {
-    color: #687269;
-    font-size: 0.82rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-md);
 }
 
 .admin-indicator-card strong {
     margin: 5px 0;
-    color: #233927;
-    font-size: 1.8rem;
+    color: var(--admin-color-sidebar);
+    font-size: var(--admin-font-4xl);
 }
 
 .admin-indicator-card small {
-    color: #929a94;
-    font-size: 0.7rem;
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-xs);
 }
 
 .admin-dashboard-columns {
@@ -127,8 +120,8 @@
 .admin-dashboard-panel {
     padding: 23px;
 
-    border: 1px solid #dce4dd;
-    border-radius: 15px;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card-lg);
     background: white;
 }
 
@@ -138,8 +131,8 @@
 
 .admin-panel-heading h3 {
     margin: 6px 0 0;
-    color: #263c2a;
-    font-size: 1.15rem;
+    color: var(--admin-color-text-strong);
+    font-size: var(--admin-font-xl);
 }
 
 .admin-quick-grid {
@@ -158,10 +151,10 @@
     justify-content: space-between;
     gap: 14px;
 
-    border: 1px solid #e0e7e1;
-    border-radius: 11px;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-lg);
 
-    color: #293c2c;
+    color: var(--admin-color-text-strong);
     text-decoration: none;
 
     transition:
@@ -171,33 +164,32 @@
 }
 
 .admin-quick-card:hover {
-    border-color: #8cac91;
-    box-shadow:
-        0 8px 22px rgba(41, 75, 48, 0.1);
+    border-color: var(--admin-color-text-subtle);
+    box-shadow: var(--admin-shadow-card-hover);
     transform: translateY(-2px);
 }
 
 .admin-quick-card div > svg {
-    color: #355e3b;
-    font-size: 1.15rem;
+    color: var(--admin-color-primary);
+    font-size: var(--admin-font-xl);
 }
 
 .admin-quick-card h4 {
     margin: 10px 0 6px;
-    font-size: 0.94rem;
+    font-size: var(--admin-font-lg);
 }
 
 .admin-quick-card p {
     margin: 0;
-    color: #707a72;
-    font-size: 0.78rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-md);
     line-height: 1.45;
 }
 
 .admin-quick-card > svg {
     margin-top: 4px;
-    color: #829085;
-    font-size: 0.8rem;
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-md);
 }
 
 .admin-empty-state {
@@ -210,23 +202,23 @@
     flex-direction: column;
 
     text-align: center;
-    color: #79827b;
+    color: var(--admin-color-text-muted);
 }
 
 .admin-empty-state > svg {
     margin-bottom: 14px;
-    color: #9dac9f;
-    font-size: 2.2rem;
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-icon-lg);
 }
 
 .admin-empty-state strong {
-    color: #465249;
+    color: var(--admin-color-text);
 }
 
 .admin-empty-state p {
     max-width: 320px;
     margin: 8px 0 0;
-    font-size: 0.82rem;
+    font-size: var(--admin-font-md);
     line-height: 1.5;
 }
 
@@ -239,8 +231,8 @@
     justify-content: center;
     flex-direction: column;
 
-    border: 1px solid #dce4dd;
-    border-radius: 15px;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card-lg);
     background: white;
 
     text-align: center;
@@ -248,17 +240,17 @@
 
 .admin-placeholder h2 {
     margin: 0 0 9px;
-    color: #263c2a;
+    color: var(--admin-color-text-strong);
 }
 
 .admin-placeholder p {
     max-width: 540px;
     margin: 0;
-    color: #707a72;
+    color: var(--admin-color-text-muted);
     line-height: 1.55;
 }
 
-@media (max-width: 1250px) {
+@media (max-width: 1200px) {
     .admin-indicator-grid {
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
@@ -269,7 +261,7 @@
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 850px) {
     .admin-welcome {
         align-items: flex-start;
         flex-direction: column;
@@ -287,8 +279,8 @@
 
 .admin-current-role small {
     margin-top: 3px;
-    color: #667369;
-    font-size: 0.72rem;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-sm);
 }
 
 .admin-dashboard-feedback {
@@ -300,25 +292,25 @@
     justify-content: space-between;
     gap: 16px;
 
-    border-radius: 10px;
+    border-radius: var(--admin-radius-md);
 }
 
 .admin-dashboard-feedback.error {
-    border: 1px solid #ef9a9a;
-    background: #ffebee;
-    color: #8e0000;
+    border: 1px solid var(--admin-color-danger-border);
+    background: var(--admin-color-danger-soft);
+    color: var(--admin-color-danger-text);
 }
 
 .admin-dashboard-feedback button {
     padding: 7px 12px;
 
     border: none;
-    border-radius: 7px;
+    border-radius: var(--admin-radius-sm);
 
-    background: #8e0000;
+    background: var(--admin-color-danger-text);
     color: white;
     font: inherit;
-    font-size: 0.8rem;
+    font-size: var(--admin-font-md);
     cursor: pointer;
 }
 
@@ -336,7 +328,7 @@
     align-items: center;
     gap: 12px;
 
-    border-bottom: 1px solid #e5ebe6;
+    border-bottom: 1px solid var(--admin-color-border-subtle);
 }
 
 .admin-activity-item:last-child {
@@ -346,11 +338,11 @@
 .admin-activity-type {
     padding: 5px 7px;
 
-    border-radius: 6px;
-    background: #edf3ee;
-    color: #355e3b;
+    border-radius: var(--admin-radius-xs);
+    background: var(--admin-color-surface-muted);
+    color: var(--admin-color-primary);
 
-    font-size: 0.62rem;
+    font-size: var(--admin-font-2xs);
     font-weight: 800;
     letter-spacing: 0.05em;
 }
@@ -364,23 +356,23 @@
 }
 
 .admin-activity-body strong {
-    color: #293c2c;
-    font-size: 0.86rem;
+    color: var(--admin-color-text-strong);
+    font-size: var(--admin-font-md);
 }
 
 .admin-activity-body span {
     overflow: hidden;
 
-    color: #626e65;
-    font-size: 0.78rem;
+    color: var(--admin-color-text);
+    font-size: var(--admin-font-md);
 
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .admin-activity-body small {
-    color: #909892;
-    font-size: 0.68rem;
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-xs);
 }
 
 .admin-activity-meta {
@@ -393,13 +385,13 @@
 }
 
 .admin-activity-meta strong {
-    color: #355e3b;
-    font-size: 0.79rem;
+    color: var(--admin-color-primary);
+    font-size: var(--admin-font-md);
 }
 
 .admin-activity-meta time {
-    color: #909892;
-    font-size: 0.67rem;
+    color: var(--admin-color-text-subtle);
+    font-size: var(--admin-font-xs);
 }
 
 @media (max-width: 600px) {

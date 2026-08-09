@@ -1,0 +1,112 @@
+services:
+  database:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vallecito}
+      POSTGRES_USER: ${POSTGRES_USER:-vallecito}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - backend
+
+  migrate:
+    build:
+      context: ./backend
+      target: build
+    command: npm run prisma:migrate:deploy
+    environment: &backend-environment
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      AUTH_COOKIE_SAME_SITE: ${AUTH_COOKIE_SAME_SITE:-lax}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is required}
+      EMAIL_MODE: ${EMAIL_MODE:-console}
+      MAIL_FROM: ${MAIL_FROM:-El Vallecito <no-reply@example.com>}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-1}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      RESERVATION_CLIENT_CANCELLATION_HOURS: ${RESERVATION_CLIENT_CANCELLATION_HOURS:-24}
+      BACKUP_ENABLED: ${BACKUP_ENABLED:-false}
+      BACKUP_DIRECTORY: ${BACKUP_DIRECTORY:-/app/backups}
+      BACKUP_INTERVAL_HOURS: ${BACKUP_INTERVAL_HOURS:-24}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      PG_DUMP_PATH: ${PG_DUMP_PATH:-pg_dump}
+      PG_RESTORE_PATH: ${PG_RESTORE_PATH:-pg_restore}
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - backend
+
+  api:
+    build:
+      context: ./backend
+      target: runtime
+    restart: unless-stopped
+    environment:
+      <<: *backend-environment
+      PORT: 3000
+    depends_on:
+      database:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - backup_data:/app/backups
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000/api/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api/v1}
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is required}
+        VITE_LEGAL_BUSINESS_NAME: ${LEGAL_BUSINESS_NAME:?LEGAL_BUSINESS_NAME is required}
+        VITE_LEGAL_RUC: ${LEGAL_RUC:?LEGAL_RUC is required}
+        VITE_LEGAL_ADDRESS: ${LEGAL_ADDRESS:?LEGAL_ADDRESS is required}
+        VITE_LEGAL_EMAIL: ${LEGAL_EMAIL:?LEGAL_EMAIL is required}
+        VITE_LEGAL_PHONE: ${LEGAL_PHONE:?LEGAL_PHONE is required}
+        VITE_DATA_BANK_REGISTRATION: ${DATA_BANK_REGISTRATION:?DATA_BANK_REGISTRATION is required}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - frontend
+      - backend
+
+volumes:
+  postgres_data:
+  backup_data:
+
+networks:
+  frontend:
+  backend:
+    internal: true

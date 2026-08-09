@@ -13,6 +13,7 @@ import {
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
+import { useRealtimeVersion } from "../../context/RealtimeContext";
 import { ApiError } from "../../services/api";
 import {
     getAdminDashboardRequest
@@ -64,6 +65,15 @@ function Admin() {
         usuario,
         token
     } = useAuth();
+
+    const realtimeVersion =
+        useRealtimeVersion([
+            "RESERVATIONS",
+            "ORDERS",
+            "SALES",
+            "INVENTORY",
+            "CASH"
+        ]);
 
     const [dashboard, setDashboard] =
         useState(null);
@@ -132,7 +142,11 @@ function Admin() {
         return () => {
             controller.abort();
         };
-    }, [token, reloadKey]);
+    }, [
+        token,
+        reloadKey,
+        realtimeVersion
+    ]);
 
     const indicators = [
         {
@@ -197,8 +211,8 @@ function Admin() {
         dashboard?.actividadReciente ?? [];
 
     return (
-        <section className="admin-dashboard">
-            <div className="admin-welcome">
+        <section className="admin-dashboard admin-page">
+            <div className="admin-welcome admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         RESUMEN GENERAL
@@ -235,7 +249,7 @@ function Admin() {
 
             {error && (
                 <div
-                    className="admin-dashboard-feedback error"
+                    className="admin-dashboard-feedback admin-feedback error"
                     role="alert"
                 >
                     <span>{error}</span>
@@ -254,7 +268,7 @@ function Admin() {
                 </div>
             )}
 
-            <div className="admin-indicator-grid">
+            <div className="admin-indicator-grid admin-metric-grid">
                 {indicators.map(
                     (indicator) => {
                         const Icono =
@@ -358,7 +372,7 @@ function Admin() {
                             </span>
 
                             <h3>
-                                Movimientos recientes
+                                Movimientos de hoy
                             </h3>
                         </div>
                     </div>
@@ -376,14 +390,14 @@ function Admin() {
                             <FaClipboardList />
 
                             <strong>
-                                Aún no hay datos
-                                disponibles
+                                Aún no hay movimientos
+                                registrados hoy
                             </strong>
 
                             <p>
                                 Las reservas, ventas y
-                                pedidos recientes aparecerán
-                                aquí.
+                                pedidos creados durante el
+                                día aparecerán aquí.
                             </p>
                         </div>
                     ) : (

@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
@@ -68,4 +69,10 @@ settingRouter.patch(
 settingRouter.get(
   "/:id",
   getSettingByIdController,
+);
+
+settingRouter.use(
+  requirePermissions(
+    "CONFIGURACION_GESTIONAR",
+  ),
 );

@@ -17,9 +17,9 @@ function CatalogAdmin() {
         useState("PRODUCTOS");
 
     return (
-        <section className="catalog-admin">
+        <section className="catalog-admin admin-page">
             <div
-                className="catalog-tabs"
+                className="catalog-tabs admin-tabs"
                 role="tablist"
                 aria-label="Secciones del catálogo"
             >
@@ -33,8 +33,8 @@ function CatalogAdmin() {
                     className={
                         activeTab ===
                         "PRODUCTOS"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(
@@ -56,8 +56,8 @@ function CatalogAdmin() {
                     className={
                         activeTab ===
                         "CATEGORIAS"
-                            ? "active"
-                            : ""
+                            ? "admin-tab active"
+                            : "admin-tab"
                     }
                     onClick={() =>
                         setActiveTab(

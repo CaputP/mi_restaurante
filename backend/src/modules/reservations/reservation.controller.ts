@@ -19,12 +19,13 @@ import {
   confirmReservationPaymentSchema,
   registerReservationPaymentSchema,
   reservationPaymentIdSchema,
+  cancelClientReservationSchema,
+  createClientReservationSchema,
+  rescheduleReservationSchema,
 } from "./reservation.schema.js";
 
 import {
   cancelReservation,
-  confirmReservationPayment,
-  registerReservationPayment,
   checkReservationAvailability,
   createReservation,
   getReservationById,
@@ -33,7 +34,13 @@ import {
   approveReservation,
   rejectReservation,
   reviewReservation,
+  rescheduleReservation,
 } from "./reservation.service.js";
+
+import {
+  confirmReservationPayment,
+  registerReservationPayment,
+} from "./reservation-payment.service.js";
 
 function getRequestAuth(
   request: Request,
@@ -437,6 +444,114 @@ export async function rejectReservationController(
       data: {
         reserva:
           reservation,
+      },
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
+export async function createClientReservationController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const auth = getRequestAuth(request);
+    const input =
+      createClientReservationSchema.parse(
+        request.body,
+      );
+
+    const reservation =
+      await createReservation(
+        auth,
+        {
+          ...input,
+          clienteId: auth.usuarioId,
+          adelantoRequerido: 0,
+        },
+      );
+
+    response.status(201).json({
+      success: true,
+      message:
+        "Tu solicitud de reserva fue registrada correctamente.",
+      data: {
+        reserva: reservation,
+      },
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
+export async function cancelClientReservationController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { id } =
+      reservationIdSchema.parse(
+        request.params,
+      );
+    const input =
+      cancelClientReservationSchema.parse(
+        request.body,
+      );
+
+    const reservation =
+      await cancelReservation(
+        getRequestAuth(request),
+        id,
+        {
+          ...input,
+          penalidadCancelacion: 0,
+        },
+      );
+
+    response.status(200).json({
+      success: true,
+      message:
+        "Tu reserva fue cancelada correctamente.",
+      data: {
+        reserva: reservation,
+      },
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
+export async function rescheduleReservationController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { id } =
+      reservationIdSchema.parse(
+        request.params,
+      );
+    const input =
+      rescheduleReservationSchema.parse(
+        request.body,
+      );
+
+    const reservation =
+      await rescheduleReservation(
+        getRequestAuth(request),
+        id,
+        input,
+      );
+
+    response.status(200).json({
+      success: true,
+      message:
+        "Reserva reprogramada correctamente.",
+      data: {
+        reserva: reservation,
       },
     });
   } catch (error: unknown) {

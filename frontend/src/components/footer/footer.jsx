@@ -1,8 +1,9 @@
 import "./footer.css";
 // Importamos el logo
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 // Importamos los iconos de react-icons
 import { FaMapMarkerAlt, FaPhoneAlt, FaClock, FaWhatsapp, FaGithub } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 function Footer() {
     return (
@@ -12,7 +13,12 @@ function Footer() {
                     
                     {/* Columna 1: Logo y Descripción */}
                     <div className="footer-column brand-column">
-                        <img src={logo} alt="Logo El Vallecito de Chocco" className="footer-logo" />
+                        <a
+                            href="#inicio"
+                            aria-label="Volver al inicio"
+                        >
+                            <img src={logo} alt="Logo El Vallecito de Chocco" className="footer-logo" />
+                        </a>
                         <h2>EL VALLECITO DE CHOCCO</h2>
                         <p>Quinta campestre donde la tradición y la naturaleza se unen para ofrecer una experiencia gastronómica única.</p>
                     </div>
@@ -31,21 +37,29 @@ function Footer() {
                     <div className="footer-column contact-column">
                         <h3>Contacto</h3>
                         
-                        <div className="contact-item">
+                        <a
+                            className="contact-item"
+                            href="https://www.google.com/maps/search/?api=1&query=El+Vallecito+de+Chocco+Cusco"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             <FaMapMarkerAlt className="footer-icon" />
                             <div>
                                 <strong>Dirección</strong>
                                 <p>Chocco, Santiago - Cusco</p>
                             </div>
-                        </div>
+                        </a>
 
-                        <div className="contact-item">
+                        <a
+                            className="contact-item"
+                            href="tel:+51994744356"
+                        >
                             <FaPhoneAlt className="footer-icon" />
                             <div>
                                 <strong>Teléfono</strong>
-                                <p>+51 944 744 356</p>
+                                <p>+51 994 744 356</p>
                             </div>
-                        </div>
+                        </a>
 
                         <div className="contact-item">
                             <FaClock className="footer-icon" />
@@ -55,15 +69,30 @@ function Footer() {
                             </div>
                         </div>
 
-                        <div className="contact-item">
+                        <a
+                            className="contact-item"
+                            href="https://wa.me/51994744356"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             <FaWhatsapp className="footer-icon" />
                             <div>
                                 <strong>WhatsApp</strong>
-                                <p>+51 944 744 356</p>
+                                <p>+51 994 744 356</p>
                             </div>
-                        </div>
+                        </a>
                     </div>
 
+                    <div className="footer-column legal-column">
+                        <h3>Información legal</h3>
+                        <Link to="/legal/terminos">Términos y Condiciones</Link>
+                        <Link to="/legal/privacidad">Política de Privacidad</Link>
+                        <Link to="/legal/cookies">Política de Cookies</Link>
+                        <Link to="/legal/reservas-cancelaciones">Reservas y cancelaciones</Link>
+                        <Link className="complaint-book-link" to="/libro-de-reclamaciones">
+                            Libro de Reclamaciones
+                        </Link>
+                    </div>
                 </div>
             </div>
 
@@ -72,6 +101,13 @@ function Footer() {
                 <div className="footer-bottom-container">
                     <p>© 2026 El Vallecito de Chocco. Todos los derechos reservados.</p>
                     <p>Desarrollado por <strong>CaputDEV</strong></p>
+                    <button
+                        type="button"
+                        className="footer-cookie-settings"
+                        onClick={() => globalThis.dispatchEvent(new Event("vallecito:open-cookie-settings"))}
+                    >
+                        Configurar cookies
+                    </button>
                     <a href="https://github.com/CaputP" target="_blank" rel="noopener noreferrer" className="github-link">
                         <FaGithub /> GitHub
                     </a>

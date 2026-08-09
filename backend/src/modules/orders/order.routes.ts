@@ -2,12 +2,14 @@ import { Router } from "express";
 
 import {
   requireAuth,
+  requirePermissions,
   requireRoles,
 } from "../../middlewares/auth.middleware.js";
 
 import {
   createOrderController,
   getOrderByIdController,
+  getOrderCustomerRewardsController,
   getOrderOptionsController,
   listOrdersController,
   sendOrderController,
@@ -28,7 +30,19 @@ orderRouter.get(
     "ADMINISTRADOR_SUCURSAL",
     "VENDEDOR",
   ),
+  requirePermissions("PEDIDO_VER"),
   getOrderOptionsController,
+);
+
+orderRouter.get(
+  "/customer-rewards",
+  requireRoles(
+    "ADMINISTRADOR_GENERAL",
+    "ADMINISTRADOR_SUCURSAL",
+    "VENDEDOR",
+  ),
+  requirePermissions("PEDIDO_VER"),
+  getOrderCustomerRewardsController,
 );
 
 orderRouter.get(
@@ -39,6 +53,7 @@ orderRouter.get(
     "VENDEDOR",
     "MOZO",
   ),
+  requirePermissions("PEDIDO_VER"),
   listOrdersController,
 );
 
@@ -49,6 +64,7 @@ orderRouter.post(
     "ADMINISTRADOR_SUCURSAL",
     "VENDEDOR",
   ),
+  requirePermissions("PEDIDO_CREAR"),
   createOrderController,
 );
 
@@ -59,6 +75,7 @@ orderRouter.patch(
     "ADMINISTRADOR_SUCURSAL",
     "VENDEDOR",
   ),
+  requirePermissions("PEDIDO_MODIFICAR"),
   updateOrderController,
 );
 
@@ -69,6 +86,7 @@ orderRouter.patch(
     "ADMINISTRADOR_SUCURSAL",
     "VENDEDOR",
   ),
+  requirePermissions("PEDIDO_MODIFICAR"),
   sendOrderController,
 );
 
@@ -80,5 +98,6 @@ orderRouter.get(
     "VENDEDOR",
     "MOZO",
   ),
+  requirePermissions("PEDIDO_VER"),
   getOrderByIdController,
 );

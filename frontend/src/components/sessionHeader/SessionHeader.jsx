@@ -11,7 +11,11 @@ import {
 
 import NotificationBell from "../notificationBell/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
-import logo from "../../assets/images/logo.png";
+import {
+    getHomePathByRole,
+    getRoleDisplayName
+} from "../../utils/roleRoutes";
+import logo from "../../assets/images/logo.webp";
 import "./SessionHeader.css";
 
 function SessionHeader({
@@ -26,8 +30,18 @@ function SessionHeader({
         logout
     } = useAuth();
 
-    function handleLogout() {
-        logout();
+    const roleHomePath =
+        getHomePathByRole(
+            usuario?.rol?.codigo,
+            usuario?.permisos
+        );
+    const roleDisplayName =
+        getRoleDisplayName(
+            usuario?.rol?.codigo
+        );
+
+    async function handleLogout() {
+        await logout();
 
         navigate("/login", {
             replace: true
@@ -48,7 +62,11 @@ function SessionHeader({
                     </button>
                 )}
 
-                <div className="session-header-brand">
+                <Link
+                    to={roleHomePath}
+                    className="session-header-brand"
+                    aria-label={`Volver al área de ${roleDisplayName}`}
+                >
                     <img
                         src={logo}
                         alt="El Vallecito de Chocco"
@@ -58,7 +76,7 @@ function SessionHeader({
                         <h1>{title}</h1>
                         <p>El Vallecito de Chocco</p>
                     </div>
-                </div>
+                </Link>
             </div>
 
             <div className="session-header-actions">
@@ -69,7 +87,11 @@ function SessionHeader({
                             usuario?.rol?.codigo
                         }
                     />
-                    <div className="session-user">
+                    <Link
+                        to={roleHomePath}
+                        className="session-user"
+                        aria-label={`Abrir el área de ${roleDisplayName}`}
+                    >
                         <FaUserCircle />
 
                         <div>
@@ -82,14 +104,14 @@ function SessionHeader({
                                 {usuario.rol.nombre}
                             </span>
                         </div>
-                    </div>
+                    </Link>
 
                     <Link
-                        to="/"
+                        to={roleHomePath}
                         className="session-home-link"
                     >
                         <FaHome />
-                        <span>Inicio</span>
+                        <span>Mi área</span>
                     </Link>
 
                     <button

@@ -218,3 +218,18 @@ export function closeCashRegisterRequest(
         }
     );
 }
+
+export function reopenCashRegisterRequest(
+    token,
+    cashId,
+    data
+) {
+    return apiRequest(
+        `/cash/${cashId}/reopen`,
+        {
+            method: "PATCH",
+            token,
+            body: data
+        }
+    );
+}

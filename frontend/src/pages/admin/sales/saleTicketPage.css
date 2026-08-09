@@ -5,7 +5,7 @@
 
 .sale-ticket-toolbar {
     width: 100%;
-    max-width: 420px;
+    max-width: 760px;
     margin: 0 auto 18px;
 
     display: flex;
@@ -13,9 +13,43 @@
     gap: 10px;
 }
 
+.sale-ticket-print-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
+.sale-ticket-print-controls label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-xs);
+    font-weight: 700;
+}
+
+.sale-ticket-print-controls select {
+    min-height: var(--admin-control-height);
+    padding: 8px 10px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+    background: var(--admin-color-white);
+    color: var(--admin-color-text-strong);
+    font: inherit;
+}
+
+.sale-ticket-copy-control {
+    min-height: var(--admin-control-height);
+    padding: 8px 10px;
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+    background: var(--admin-color-white);
+}
+
 .sale-ticket-toolbar button,
 .sale-ticket-error button {
-    min-height: 42px;
+    min-height: var(--admin-control-height);
     padding: 9px 15px;
 
     display: inline-flex;
@@ -23,7 +57,7 @@
     justify-content: center;
     gap: 8px;
 
-    border-radius: 8px;
+    border-radius: var(--admin-radius-control);
 
     font: inherit;
     font-weight: 650;
@@ -31,16 +65,16 @@
 }
 
 .sale-ticket-toolbar .secondary {
-    border: 1px solid #cad6cc;
-    background: #ffffff;
-    color: #355e3b;
+    border: 1px solid var(--admin-color-control-border);
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary);
 }
 
 .sale-ticket-toolbar .primary,
 .sale-ticket-error button {
     border: none;
-    background: #355e3b;
-    color: #ffffff;
+    background: var(--admin-color-primary);
+    color: var(--admin-color-white);
 }
 
 .sale-ticket-paper {
@@ -49,13 +83,11 @@
     margin: 0 auto;
     padding: 7mm 5mm;
 
-    border: 1px solid #d6ddd7;
-    background: #ffffff;
-    color: #111111;
+    border: 1px solid var(--admin-color-border);
+    background: var(--admin-color-white);
+    color: var(--admin-color-ink);
 
-    box-shadow:
-        0 8px 25px
-        rgba(0, 0, 0, 0.08);
+    box-shadow: var(--admin-shadow-ticket);
 
     font-family:
         "Courier New",
@@ -63,6 +95,22 @@
 
     font-size: 11px;
     line-height: 1.35;
+}
+
+.sale-ticket-paper.paper-58 {
+    width: 58mm;
+    padding-inline: 4mm;
+    font-size: 9.5px;
+}
+
+.sale-ticket-copy-label {
+    margin: 4px auto 0;
+    padding: 3px 7px;
+    display: table;
+    border: 1px dashed currentColor;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
 }
 
 .sale-ticket-business {
@@ -85,7 +133,7 @@
     margin: 8px 0;
     overflow: hidden;
 
-    color: #333333;
+    color: var(--admin-color-text-strong);
     white-space: nowrap;
     letter-spacing: -0.5px;
 }
@@ -110,14 +158,14 @@
 
 .sale-ticket-state {
     padding: 3px 6px;
-    border: 1px solid #333333;
+    border: 1px solid var(--admin-color-text-strong);
     font-size: 9px;
     font-weight: 700;
 }
 
 .sale-ticket-state.anulada {
-    border-color: #b71c1c;
-    color: #b71c1c;
+    border-color: var(--admin-color-danger);
+    color: var(--admin-color-danger);
 }
 
 .sale-ticket-information,
@@ -136,7 +184,7 @@
 
 .sale-ticket-information dt,
 .sale-ticket-totals dt {
-    color: #333333;
+    color: var(--admin-color-text-strong);
 }
 
 .sale-ticket-information dd,
@@ -153,7 +201,7 @@
 
 .sale-ticket-items th {
     padding: 3px 2px;
-    border-bottom: 1px solid #333333;
+    border-bottom: 1px solid var(--admin-color-text-strong);
     font-size: 9px;
     text-align: left;
 }
@@ -182,7 +230,7 @@
 
 .sale-ticket-items td small {
     margin-top: 2px;
-    color: #555555;
+    color: var(--admin-color-text);
     font-size: 9px;
 }
 
@@ -190,8 +238,8 @@
     margin: 4px 0;
     padding: 5px 0;
 
-    border-top: 1px solid #222222;
-    border-bottom: 1px solid #222222;
+    border-top: 1px solid var(--admin-color-sidebar);
+    border-bottom: 1px solid var(--admin-color-sidebar);
 
     font-size: 14px;
     font-weight: 800;
@@ -212,7 +260,7 @@
     justify-content: space-between;
     gap: 8px;
 
-    border-bottom: 1px dotted #777777;
+    border-bottom: 1px dotted var(--admin-color-text-muted);
 }
 
 .sale-ticket-promotions article > div {
@@ -229,7 +277,7 @@
 .sale-ticket-promotions article small {
     margin-top: 1px;
 
-    color: #444444;
+    color: var(--admin-color-primary);
     font-size: 8px;
 
     overflow-wrap: anywhere;
@@ -246,7 +294,7 @@
     margin-top: 2px;
     padding-top: 3px;
 
-    border-top: 1px dotted #777777;
+    border-top: 1px dotted var(--admin-color-text-muted);
 
     font-weight: 700;
 }
@@ -259,7 +307,7 @@
 
 .sale-ticket-payments article {
     padding: 3px 0;
-    border-bottom: 1px dotted #777777;
+    border-bottom: 1px dotted var(--admin-color-text-muted);
 }
 
 .sale-ticket-payments article > div {
@@ -275,7 +323,7 @@
 }
 
 .sale-ticket-payments .payment-voided {
-    color: #b71c1c;
+    color: var(--admin-color-danger);
     font-weight: 700;
 }
 
@@ -293,8 +341,8 @@
     margin-top: 10px;
     padding: 8px;
 
-    border: 2px solid #b71c1c;
-    color: #b71c1c;
+    border: 2px solid var(--admin-color-danger);
+    color: var(--admin-color-danger);
     text-align: center;
 }
 
@@ -335,14 +383,14 @@
     flex-direction: column;
     gap: 11px;
 
-    color: #667269;
+    color: var(--admin-color-text-muted);
     text-align: center;
 }
 
 .sale-ticket-loading > svg,
 .sale-ticket-error > svg {
-    color: #55775b;
-    font-size: 2.5rem;
+    color: var(--admin-color-text);
+    font-size: var(--admin-font-icon-lg);
 }
 
 .sale-ticket-error h2,
@@ -350,8 +398,13 @@
     margin: 0;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 600px) {
     .sale-ticket-toolbar {
+        flex-direction: column;
+    }
+
+    .sale-ticket-print-controls {
+        align-items: stretch;
         flex-direction: column;
     }
 
@@ -366,15 +419,20 @@
 }
 
 @media print {
-    @page {
+    @page ticket-80 {
         size: 80mm auto;
+        margin: 3mm;
+    }
+
+    @page ticket-58 {
+        size: 58mm auto;
         margin: 3mm;
     }
 
     body {
         margin: 0 !important;
         padding: 0 !important;
-        background: #ffffff !important;
+        background: var(--admin-color-white) !important;
     }
 
     body * {
@@ -391,13 +449,23 @@
         top: 0;
         left: 0;
 
-        width: 74mm;
-        max-width: 74mm;
         margin: 0;
         padding: 0;
 
         border: none;
         box-shadow: none;
+    }
+
+    .sale-ticket-paper.paper-80 {
+        width: 74mm;
+        max-width: 74mm;
+        page: ticket-80;
+    }
+
+    .sale-ticket-paper.paper-58 {
+        width: 52mm;
+        max-width: 52mm;
+        page: ticket-58;
     }
 
     .sale-ticket-toolbar {
@@ -420,7 +488,7 @@
     justify-content: space-between;
     gap: 8px;
 
-    border-bottom: 1px dotted #777777;
+    border-bottom: 1px dotted var(--admin-color-text-muted);
 }
 
 .sale-ticket-rewards article > div {
@@ -437,7 +505,7 @@
 .sale-ticket-rewards article small {
     margin-top: 1px;
 
-    color: #444444;
+    color: var(--admin-color-primary);
     font-size: 8px;
 
     overflow-wrap: anywhere;
@@ -451,6 +519,6 @@
 }
 
 .sale-ticket-rewards .reward-reverted {
-    color: #b71c1c;
+    color: var(--admin-color-danger);
     font-weight: 700;
 }

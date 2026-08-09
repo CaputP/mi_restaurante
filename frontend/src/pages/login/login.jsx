@@ -2,7 +2,7 @@ import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
 import { useState } from "react";
 import GoogleAuthButton from "./GoogleAuthButton";
 import "./login.css";
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 
 import {
     getHomePathByRole
@@ -10,19 +10,27 @@ import {
 
 import {
     Link,
+    useLocation,
     useNavigate
 } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 import { ApiError } from "../../services/api";
+import { LEGAL_VERSIONS } from "../../config/legal.config";
 
 // Importamos la función de validación
 import { validateAuthForm } from "./validations";
 
 function Login() {
 
+    const location = useLocation();
+
     // Estado para alternar entre iniciar sesión y registrarse
-    const [isRegister, setIsRegister] = useState(false);
+    const [isRegister, setIsRegister] = useState(() =>
+        new URLSearchParams(
+            location.search
+        ).get("mode") === "register"
+    );
 
     // Estados de los campos del formulario
     const [nombre, setNombre] = useState("");
@@ -30,6 +38,8 @@ function Login() {
     const [telefono, setTelefono] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [aceptaTerminos, setAceptaTerminos] = useState(false);
+    const [aceptaPrivacidad, setAceptaPrivacidad] = useState(false);
 
     // Estado que almacena los mensajes de error
     const [errors, setErrors] = useState({
@@ -37,7 +47,9 @@ function Login() {
         correo: "",
         telefono: "",
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
+        aceptaTerminos: "",
+        aceptaPrivacidad: ""
     });
 
     const navigate = useNavigate();
@@ -78,7 +90,9 @@ function Login() {
             correo: "",
             telefono: "",
             password: "",
-            confirmPassword: ""
+            confirmPassword: "",
+            aceptaTerminos: "",
+            aceptaPrivacidad: ""
         });
 
         // Limpiamos los campos por seguridad
@@ -87,15 +101,28 @@ function Login() {
         setNombre("");
         setCorreo("");
         setTelefono("");
+        setAceptaTerminos(false);
+        setAceptaPrivacidad(false);
     }
 
     function redirectAuthenticatedUser(
         usuario
     ) {
+        const requestedPath =
+            location.state?.from;
+        const safeRequestedPath =
+            typeof requestedPath === "string" &&
+            requestedPath.startsWith("/") &&
+            !requestedPath.startsWith("//")
+                ? requestedPath
+                : null;
+
         navigate(
-            getHomePathByRole(
-                usuario.rol.codigo
-            ),
+            safeRequestedPath ??
+                getHomePathByRole(
+                    usuario.rol.codigo,
+                    usuario.permisos
+                ),
             {
                 replace:
                     true
@@ -126,7 +153,21 @@ function Login() {
 
         try {
             const usuario =
-                await loginWithGoogle(credential);
+                await loginWithGoogle({
+                    credential,
+                    aceptaTerminos: isRegister
+                        ? aceptaTerminos
+                        : undefined,
+                    versionTerminos: isRegister
+                        ? LEGAL_VERSIONS.terms
+                        : undefined,
+                    aceptaPrivacidad: isRegister
+                        ? aceptaPrivacidad
+                        : undefined,
+                    versionPrivacidad: isRegister
+                        ? LEGAL_VERSIONS.privacy
+                        : undefined
+                });
 
             redirectAuthenticatedUser(usuario);
         } catch (error) {
@@ -205,7 +246,9 @@ function Login() {
             correo,
             telefono,
             password,
-            confirmPassword
+            confirmPassword,
+            aceptaTerminos,
+            aceptaPrivacidad
         });
 
         setErrors(newErrors);
@@ -230,19 +273,24 @@ function Login() {
                     apellidos
                 } = splitFullName(nombre);
 
-                await register({
+                const usuario = await register({
                     nombres,
                     apellidos,
                     telefono: telefono.trim(),
                     correo: correoLimpio,
                     password,
                     confirmarPassword:
-                        confirmPassword
+                        confirmPassword,
+                    aceptaTerminos,
+                    versionTerminos:
+                        LEGAL_VERSIONS.terms,
+                    aceptaPrivacidad,
+                    versionPrivacidad:
+                        LEGAL_VERSIONS.privacy
                 });
 
-                navigate(
-                    "/reservations",
-                    { replace: true }
+                redirectAuthenticatedUser(
+                    usuario
                 );
 
                 return;
@@ -548,6 +596,28 @@ function Login() {
                                 </div>
                             )}
 
+                            {isRegister && (
+                                <fieldset className="login-legal-consents">
+                                    <legend>Condiciones necesarias</legend>
+                                    <label>
+                                        <input type="checkbox" checked={aceptaTerminos} onChange={(event) => {
+                                            setAceptaTerminos(event.target.checked);
+                                            clearFieldError("aceptaTerminos");
+                                        }} />
+                                        <span>He leído y acepto los <Link to="/legal/terminos" target="_blank">Términos y Condiciones</Link>.</span>
+                                    </label>
+                                    {errors.aceptaTerminos && <span className="error-message">{errors.aceptaTerminos}</span>}
+                                    <label>
+                                        <input type="checkbox" checked={aceptaPrivacidad} onChange={(event) => {
+                                            setAceptaPrivacidad(event.target.checked);
+                                            clearFieldError("aceptaPrivacidad");
+                                        }} />
+                                        <span>Declaro haber leído la <Link to="/legal/privacidad" target="_blank">Política de Privacidad</Link> aplicable a mi cuenta.</span>
+                                    </label>
+                                    {errors.aceptaPrivacidad && <span className="error-message">{errors.aceptaPrivacidad}</span>}
+                                </fieldset>
+                            )}
+
                             {serverMessage && (
                                 <div
                                     className="auth-server-message"
@@ -602,6 +672,10 @@ function Login() {
                             <GoogleAuthButton
                                 onSuccess={handleGoogleSuccess}
                                 onError={handleGoogleError}
+                                canAuthenticate={
+                                    !isRegister ||
+                                    (aceptaTerminos && aceptaPrivacidad)
+                                }
                             />
                         </form>
                     </div>

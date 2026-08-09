@@ -14,89 +14,121 @@ import {
     FaFireAlt,
     FaTruck,
     FaTags,
+    FaDatabase,
+    FaUserShield,
+    FaBookOpen,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
-import "./adminSidebar.css";
+import "./AdminSidebar.css";
 
 const menuItems = [
     {
         nombre: "Resumen",
         ruta: "/admin",
         icono: FaChartLine,
-        end: true
+        end: true,
+        permiso: "DASHBOARD_VER"
     },
     {
         nombre: "Reservas",
         ruta: "/admin/reservas",
-        icono: FaCalendarCheck
+        icono: FaCalendarCheck,
+        permiso: "RESERVA_CREAR"
     },
     {
         nombre: "Pedidos",
         ruta: "/admin/pedidos",
-        icono: FaClipboardList
+        icono: FaClipboardList,
+        permiso: "PEDIDO_VER"
     },
     {
         nombre: "Comandas",
         ruta: "/admin/comandas",
-        icono: FaFireAlt
+        icono: FaFireAlt,
+        permiso: "COMANDA_VER"
     },
     {
         nombre: "Entregas",
         ruta: "/admin/entregas",
-        icono: FaTruck
+        icono: FaTruck,
+        permiso: "ENTREGA_REGISTRAR"
     },
     {
         nombre: "Ventas y caja",
         ruta: "/admin/ventas",
-        icono: FaCashRegister
+        icono: FaCashRegister,
+        permiso: "VENTA_CREAR"
     },
     {
         nombre: "Productos",
         ruta: "/admin/productos",
-        icono: FaUtensils
+        icono: FaUtensils,
+        permiso: "PRODUCTO_GESTIONAR"
     },
     {
         nombre: "Inventario",
         ruta: "/admin/inventario",
-        icono: FaBoxes
+        icono: FaBoxes,
+        permiso: "INVENTARIO_VER"
     },
     {
         nombre: "Usuarios",
         ruta: "/admin/usuarios",
-        icono: FaUsers
+        icono: FaUsers,
+        permiso: "USUARIO_GESTIONAR"
+    },
+    {
+        nombre: "Roles y permisos",
+        ruta: "/admin/roles",
+        icono: FaUserShield,
+        soloAdministradorGeneral: true,
+        permiso: "ROL_GESTIONAR"
     },
     {
         nombre: "Sucursales",
         ruta: "/admin/sucursales",
         icono: FaStore,
-        soloAdministradorGeneral: true
+        soloAdministradorGeneral: true,
+        permiso: "SUCURSAL_GESTIONAR"
     },
     {
         nombre: "Reportes",
         ruta: "/admin/reportes",
-        icono: FaChartBar
+        icono: FaChartBar,
+        permiso: "REPORTE_VER"
     },
     {
         nombre: "Fidelización",
         ruta: "/admin/fidelizacion",
-        icono: FaGift
-    },
-    {
-        nombre: "Clientes y premios",
-        ruta: "/admin/fidelizacion/clientes",
-        icono: FaUsers
+        icono: FaGift,
+        permiso: "FIDELIZACION_GESTIONAR"
     },
     {
         nombre: "Promociones",
         ruta: "/admin/promociones",
-        icono: FaTags
+        icono: FaTags,
+        permiso: "PROMOCION_GESTIONAR"
     },
     {
         nombre: "Configuración",
         ruta: "/admin/configuracion",
-        icono: FaCog
+        icono: FaCog,
+        permiso: "CONFIGURACION_GESTIONAR"
+    },
+    {
+        nombre: "Respaldos",
+        ruta: "/admin/respaldos",
+        icono: FaDatabase,
+        soloAdministradorGeneral: true,
+        permiso: "RESPALDO_GESTIONAR"
+    },
+    {
+        nombre: "Libro de Reclamaciones",
+        ruta: "/admin/reclamaciones",
+        icono: FaBookOpen,
+        permiso: "RECLAMO_GESTIONAR"
     }
 ];
 
@@ -110,10 +142,22 @@ function AdminSidebar({
         usuario.rol.codigo ===
         "ADMINISTRADOR_GENERAL";
 
+    const permisos = new Set(
+        usuario.permisos?.map(
+            (permiso) => permiso.codigo
+        ) ?? []
+    );
+
     const opcionesVisibles = menuItems.filter(
         (opcion) =>
-            !opcion.soloAdministradorGeneral ||
-            esAdministradorGeneral
+            (
+                !opcion.soloAdministradorGeneral ||
+                esAdministradorGeneral
+            ) &&
+            (
+                !opcion.permiso ||
+                permisos.has(opcion.permiso)
+            )
     );
 
     return (
