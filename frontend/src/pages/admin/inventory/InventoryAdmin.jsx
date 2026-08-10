@@ -290,9 +290,9 @@ function InventoryAdmin() {
             } catch (requestError) {
                 if (
                     requestError instanceof
-                        DOMException &&
+                    DOMException &&
                     requestError.name ===
-                        "AbortError"
+                    "AbortError"
                 ) {
                     return;
                 }
@@ -371,9 +371,9 @@ function InventoryAdmin() {
             } catch (requestError) {
                 if (
                     requestError instanceof
-                        DOMException &&
+                    DOMException &&
                     requestError.name ===
-                        "AbortError"
+                    "AbortError"
                 ) {
                     return;
                 }
@@ -418,7 +418,7 @@ function InventoryAdmin() {
                     (item) =>
                         item.producto
                             .tipoStock ===
-                            "DIARIO" &&
+                        "DIARIO" &&
                         !item
                             .stockDiarioInicializado
                 ).length,
@@ -716,7 +716,7 @@ function InventoryAdmin() {
     function getStockStatus(item) {
         if (
             item.producto.tipoStock ===
-                "DIARIO" &&
+            "DIARIO" &&
             !item.stockDiarioInicializado
         ) {
             return {
@@ -740,6 +740,37 @@ function InventoryAdmin() {
 
     return (
         <section className="inventory-admin admin-page">
+            <header className="inventory-heading admin-page-header">
+                <div>
+                    <span className="admin-eyebrow">
+                        INVENTARIO
+                    </span>
+
+                    <h2>
+                        Control de existencias
+                    </h2>
+
+                    <p>
+                        Administra entradas,
+                        salidas, cantidades
+                        comprometidas y alertas
+                        de stock.
+                    </p>
+                </div>
+
+                <div className="inventory-date">
+                    <span>
+                        Fecha operativa
+                    </span>
+
+                    <strong>
+                        {inventory
+                            .fechaOperativa ||
+                            "Cargando..."}
+                    </strong>
+                </div>
+            </header>
+
             <div
                 className="inventory-tabs admin-tabs"
                 role="tablist"
@@ -775,7 +806,7 @@ function InventoryAdmin() {
                     }
                     className={
                         activeTab ===
-                        "MOVIMIENTOS"
+                            "MOVIMIENTOS"
                             ? "admin-tab active"
                             : "admin-tab"
                     }
@@ -791,37 +822,6 @@ function InventoryAdmin() {
                     </span>
                 </button>
             </div>
-
-            <header className="inventory-heading admin-page-header">
-                <div>
-                    <span className="admin-eyebrow">
-                        INVENTARIO
-                    </span>
-
-                    <h2>
-                        Control de existencias
-                    </h2>
-
-                    <p>
-                        Administra entradas,
-                        salidas, cantidades
-                        comprometidas y alertas
-                        de stock.
-                    </p>
-                </div>
-
-                <div className="inventory-date">
-                    <span>
-                        Fecha operativa
-                    </span>
-
-                    <strong>
-                        {inventory
-                            .fechaOperativa ||
-                            "Cargando..."}
-                    </strong>
-                </div>
-            </header>
 
             {message && (
                 <div
@@ -1480,7 +1480,7 @@ function InventoryAdmin() {
                                                         item
                                                             .producto
                                                             .tipoStock ===
-                                                            "DIARIO" &&
+                                                        "DIARIO" &&
                                                         !item
                                                             .stockDiarioInicializado;
 
@@ -1759,7 +1759,7 @@ function InventoryAdmin() {
                                 </strong>
                             </div>
                         ) : movements.length ===
-                          0 ? (
+                            0 ? (
                             <div className="inventory-empty-state">
                                 <FaHistory />
 
@@ -1835,11 +1835,10 @@ function InventoryAdmin() {
                                                     >
                                                         <td>
                                                             <span
-                                                                className={`movement-type ${
-                                                                    isEntry
+                                                                className={`movement-type ${isEntry
                                                                         ? "entry"
                                                                         : "exit"
-                                                                }`}
+                                                                    }`}
                                                             >
                                                                 {isEntry ? (
                                                                     <FaArrowUp />
@@ -1928,7 +1927,7 @@ function InventoryAdmin() {
                                                         <td>
                                                             {movement
                                                                 .costoTotal !==
-                                                            null
+                                                                null
                                                                 ? moneyFormatter.format(
                                                                     movement
                                                                         .costoTotal

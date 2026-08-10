@@ -243,13 +243,13 @@ function RolesAdmin() {
     );
 
     return (
-        <section className="roles-admin-page">
-            <header className="roles-heading">
+        <section className="roles-admin-page admin-page">
+            <header className="roles-heading admin-page-header">
                 <div>
-                    <span className="admin-page-eyebrow">
+                    <span className="admin-eyebrow">
                         Seguridad y responsabilidad
                     </span>
-                    <h1>Roles y permisos</h1>
+                    <h2>Roles y permisos</h2>
                     <p>
                         Aplica el principio de menor privilegio y
                         revoca las sesiones afectadas al guardar.

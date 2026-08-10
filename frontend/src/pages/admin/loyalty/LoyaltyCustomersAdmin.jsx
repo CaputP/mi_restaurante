@@ -1,8 +1,13 @@
 import {
+    useCallback,
     useEffect,
     useMemo,
     useState
 } from "react";
+
+import {
+    useOutletContext
+} from "react-router-dom";
 
 import {
     FaCheckCircle,
@@ -197,6 +202,11 @@ function getProgressPercentage(
 }
 
 function LoyaltyCustomersAdmin() {
+
+    const {
+        setHeaderActions
+    } = useOutletContext();
+
     const {
         token
     } = useAuth();
@@ -269,7 +279,7 @@ function LoyaltyCustomersAdmin() {
                         total +
                         Number(
                             customer.premiosDisponibles ??
-                                0
+                            0
                         ),
                     0
                 ),
@@ -287,7 +297,7 @@ function LoyaltyCustomersAdmin() {
                         total +
                         Number(
                             customer.visitasAcumuladas ??
-                                0
+                            0
                         ),
                     0
                 ),
@@ -309,7 +319,7 @@ function LoyaltyCustomersAdmin() {
 
                 setBranches(
                     result.sucursales ??
-                        []
+                    []
                 );
             } catch (requestError) {
                 if (
@@ -324,7 +334,7 @@ function LoyaltyCustomersAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar las sucursales."
+                    "No se pudieron cargar las sucursales."
                 );
             }
         }
@@ -367,12 +377,12 @@ function LoyaltyCustomersAdmin() {
 
                 setCustomers(
                     result.clientes ??
-                        []
+                    []
                 );
 
                 setPagination(
                     result.pagination ??
-                        EMPTY_PAGINATION
+                    EMPTY_PAGINATION
                 );
             } catch (requestError) {
                 if (
@@ -387,7 +397,7 @@ function LoyaltyCustomersAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar los clientes."
+                    "No se pudieron cargar los clientes."
                 );
             } finally {
                 if (
@@ -455,44 +465,49 @@ function LoyaltyCustomersAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cargar el cliente."
+                "No se pudo cargar el cliente."
             );
         } finally {
             setIsLoadingDetail(false);
         }
     }
 
+    const refreshCustomers =
+        useCallback(
+            () => {
+                setError("");
+
+                setReloadKey(
+                    (value) =>
+                        value + 1
+                );
+            },
+            []
+        );
+
+    useEffect(() => {
+        setHeaderActions([
+            {
+                key: "refresh",
+                label: "Actualizar",
+                icon: FaSyncAlt,
+                variant: "secondary",
+                disabled: isLoading,
+                onClick: refreshCustomers
+            }
+        ]);
+
+        return () => {
+            setHeaderActions([]);
+        };
+    }, [
+        setHeaderActions,
+        isLoading,
+        refreshCustomers
+    ]);
+
     return (
-        <section className="loyalty-customers-admin admin-page">
-            <header className="loyalty-customers-heading admin-page-header">
-                <div>
-                    <span className="admin-eyebrow">
-                        CLIENTES Y PREMIOS
-                    </span>
-
-                    <h2>
-                        Clientes y premios
-                    </h2>
-
-                    <p>
-                        Consulta visitas, consumo acumulado y beneficios obtenidos.
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    className="loyalty-customers-refresh"
-                    onClick={() =>
-                        setReloadKey(
-                            (value) =>
-                                value + 1
-                        )
-                    }
-                >
-                    <FaSyncAlt />
-                    Actualizar
-                </button>
-            </header>
+        <section className="loyalty-customers-admin">
 
             {error && (
                 <div
@@ -615,7 +630,7 @@ function LoyaltyCustomersAdmin() {
                         Cargando clientes...
                     </div>
                 ) : customers.length ===
-                  0 ? (
+                    0 ? (
                     <div className="loyalty-customers-empty">
                         <FaUser />
 
@@ -831,280 +846,280 @@ function LoyaltyCustomersAdmin() {
                         )
                     }
                 >
-                        <header>
+                    <header>
+                        <div>
+                            <span className="admin-eyebrow">
+                                CLIENTE
+                            </span>
+
+                            <h3 id="loyalty-customer-dialog-title">
+                                {
+                                    selectedCustomer.nombreCompleto
+                                }
+                            </h3>
+
+                            <p>
+                                {
+                                    selectedCustomer.correo
+                                }
+                                {" · "}
+                                {selectedCustomer.telefono ??
+                                    "Sin teléfono"}
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            aria-label="Cerrar detalle del cliente"
+                            onClick={() =>
+                                setSelectedCustomer(
+                                    null
+                                )
+                            }
+                        >
+                            <FaTimes />
+                        </button>
+                    </header>
+
+                    <section className="loyalty-customer-summary">
+                        <article>
+                            <FaCoins />
+
                             <div>
-                                <span className="admin-eyebrow">
-                                    CLIENTE
+                                <span>
+                                    Programas
                                 </span>
 
-                                <h3 id="loyalty-customer-dialog-title">
+                                <strong>
                                     {
-                                        selectedCustomer.nombreCompleto
+                                        selectedCustomer.resumen
+                                            .cantidadProgramas
                                     }
-                                </h3>
-
-                                <p>
-                                    {
-                                        selectedCustomer.correo
-                                    }
-                                    {" · "}
-                                    {selectedCustomer.telefono ??
-                                        "Sin teléfono"}
-                                </p>
+                                </strong>
                             </div>
+                        </article>
 
-                            <button
-                                type="button"
-                                aria-label="Cerrar detalle del cliente"
-                                onClick={() =>
-                                    setSelectedCustomer(
-                                        null
-                                    )
-                                }
-                            >
-                                <FaTimes />
-                            </button>
-                        </header>
+                        <article>
+                            <FaGift />
 
-                        <section className="loyalty-customer-summary">
-                            <article>
-                                <FaCoins />
+                            <div>
+                                <span>
+                                    Disponibles
+                                </span>
 
-                                <div>
-                                    <span>
-                                        Programas
-                                    </span>
+                                <strong>
+                                    {
+                                        selectedCustomer.resumen
+                                            .premiosDisponibles
+                                    }
+                                </strong>
+                            </div>
+                        </article>
 
-                                    <strong>
-                                        {
-                                            selectedCustomer.resumen
-                                                .cantidadProgramas
-                                        }
-                                    </strong>
-                                </div>
-                            </article>
+                        <article>
+                            <FaCheckCircle />
 
-                            <article>
-                                <FaGift />
+                            <div>
+                                <span>
+                                    Canjeados
+                                </span>
 
-                                <div>
-                                    <span>
-                                        Disponibles
-                                    </span>
+                                <strong>
+                                    {
+                                        selectedCustomer.resumen
+                                            .premiosCanjeados
+                                    }
+                                </strong>
+                            </div>
+                        </article>
+                    </section>
 
-                                    <strong>
-                                        {
-                                            selectedCustomer.resumen
-                                                .premiosDisponibles
-                                        }
-                                    </strong>
-                                </div>
-                            </article>
+                    <div className="loyalty-customer-modal-content">
+                        <section>
+                            <h4>
+                                Progreso
+                            </h4>
 
-                            <article>
-                                <FaCheckCircle />
-
-                                <div>
-                                    <span>
-                                        Canjeados
-                                    </span>
-
-                                    <strong>
-                                        {
-                                            selectedCustomer.resumen
-                                                .premiosCanjeados
-                                        }
-                                    </strong>
-                                </div>
-                            </article>
-                        </section>
-
-                        <div className="loyalty-customer-modal-content">
-                            <section>
-                                <h4>
-                                    Progreso
-                                </h4>
-
-                                <div className="loyalty-progress-list">
-                                    {selectedCustomer.progresos.map(
-                                        (
-                                            progress
-                                        ) => (
-                                            <article
-                                                key={
-                                                    progress.id
-                                                }
-                                                className="loyalty-progress-card"
-                                            >
-                                                <div className="loyalty-progress-heading">
-                                                    <div>
-                                                        <strong>
-                                                            {
-                                                                progress.programa
-                                                                    .nombre
-                                                            }
-                                                        </strong>
-
-                                                        <span>
-                                                            {progress.programa
-                                                                .sucursal
-                                                                ?.nombre ??
-                                                                "Programa global"}
-                                                        </span>
-                                                    </div>
+                            <div className="loyalty-progress-list">
+                                {selectedCustomer.progresos.map(
+                                    (
+                                        progress
+                                    ) => (
+                                        <article
+                                            key={
+                                                progress.id
+                                            }
+                                            className="loyalty-progress-card"
+                                        >
+                                            <div className="loyalty-progress-heading">
+                                                <div>
+                                                    <strong>
+                                                        {
+                                                            progress.programa
+                                                                .nombre
+                                                        }
+                                                    </strong>
 
                                                     <span>
-                                                        {
-                                                            progress.ciclosCompletados
-                                                        }{" "}
-                                                        ciclos
+                                                        {progress.programa
+                                                            .sucursal
+                                                            ?.nombre ??
+                                                            "Programa global"}
                                                     </span>
                                                 </div>
 
-                                                <div className="loyalty-progress-bar">
-                                                    <span
-                                                        style={{
-                                                            width: `${getProgressPercentage(
-                                                                progress
-                                                            )}%`
-                                                        }}
-                                                    />
+                                                <span>
+                                                    {
+                                                        progress.ciclosCompletados
+                                                    }{" "}
+                                                    ciclos
+                                                </span>
+                                            </div>
+
+                                            <div className="loyalty-progress-bar">
+                                                <span
+                                                    style={{
+                                                        width: `${getProgressPercentage(
+                                                            progress
+                                                        )}%`
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <dl>
+                                                <div>
+                                                    <dt>
+                                                        Visitas
+                                                    </dt>
+
+                                                    <dd>
+                                                        {
+                                                            progress.visitasAcumuladas
+                                                        }
+                                                        {progress.programa
+                                                            .visitasRequeridas
+                                                            ? ` / ${progress.programa.visitasRequeridas}`
+                                                            : ""}
+                                                    </dd>
                                                 </div>
+
+                                                <div>
+                                                    <dt>
+                                                        Consumo
+                                                    </dt>
+
+                                                    <dd>
+                                                        {formatMoney(
+                                                            progress.montoAcumulado
+                                                        )}
+                                                        {progress.programa
+                                                            .montoRequerido
+                                                            ? ` / ${formatMoney(
+                                                                progress.programa
+                                                                    .montoRequerido
+                                                            )}`
+                                                            : ""}
+                                                    </dd>
+                                                </div>
+                                            </dl>
+                                        </article>
+                                    )
+                                )}
+                            </div>
+                        </section>
+
+                        <section>
+                            <h4>
+                                Premios
+                            </h4>
+
+                            <div className="loyalty-prize-list">
+                                {selectedCustomer.premios.length ===
+                                    0 ? (
+                                    <p>
+                                        El cliente todavía no tiene premios.
+                                    </p>
+                                ) : (
+                                    selectedCustomer.premios.map(
+                                        (
+                                            reward
+                                        ) => (
+                                            <article
+                                                key={
+                                                    reward.id
+                                                }
+                                                className="loyalty-prize-card"
+                                            >
+                                                <div>
+                                                    <strong>
+                                                        {
+                                                            reward.descripcion
+                                                        }
+                                                    </strong>
+
+                                                    <span>
+                                                        {
+                                                            reward.programa
+                                                                .nombre
+                                                        }
+                                                    </span>
+                                                </div>
+
+                                                <span
+                                                    className={`admin-status-badge loyalty-prize-status ${reward.estadoEfectivo.toLowerCase()}`}
+                                                >
+                                                    {formatLabel(
+                                                        reward.estadoEfectivo
+                                                    )}
+                                                </span>
 
                                                 <dl>
                                                     <div>
                                                         <dt>
-                                                            Visitas
+                                                            Obtenido
                                                         </dt>
 
                                                         <dd>
-                                                            {
-                                                                progress.visitasAcumuladas
-                                                            }
-                                                            {progress.programa
-                                                                .visitasRequeridas
-                                                                ? ` / ${progress.programa.visitasRequeridas}`
-                                                                : ""}
+                                                            {formatDate(
+                                                                reward.fechaObtencion
+                                                            )}
                                                         </dd>
                                                     </div>
 
                                                     <div>
                                                         <dt>
-                                                            Consumo
+                                                            Vence
                                                         </dt>
 
                                                         <dd>
-                                                            {formatMoney(
-                                                                progress.montoAcumulado
+                                                            {formatDate(
+                                                                reward.fechaVencimiento
                                                             )}
-                                                            {progress.programa
-                                                                .montoRequerido
-                                                                ? ` / ${formatMoney(
-                                                                      progress.programa
-                                                                          .montoRequerido
-                                                                  )}`
-                                                                : ""}
                                                         </dd>
                                                     </div>
+
+                                                    {reward.ventaCanje && (
+                                                        <div>
+                                                            <dt>
+                                                                Ticket de canje
+                                                            </dt>
+
+                                                            <dd>
+                                                                {
+                                                                    reward.ventaCanje
+                                                                        .numeroTicket
+                                                                }
+                                                            </dd>
+                                                        </div>
+                                                    )}
                                                 </dl>
                                             </article>
                                         )
-                                    )}
-                                </div>
-                            </section>
-
-                            <section>
-                                <h4>
-                                    Premios
-                                </h4>
-
-                                <div className="loyalty-prize-list">
-                                    {selectedCustomer.premios.length ===
-                                    0 ? (
-                                        <p>
-                                            El cliente todavía no tiene premios.
-                                        </p>
-                                    ) : (
-                                        selectedCustomer.premios.map(
-                                            (
-                                                reward
-                                            ) => (
-                                                <article
-                                                    key={
-                                                        reward.id
-                                                    }
-                                                    className="loyalty-prize-card"
-                                                >
-                                                    <div>
-                                                        <strong>
-                                                            {
-                                                                reward.descripcion
-                                                            }
-                                                        </strong>
-
-                                                        <span>
-                                                            {
-                                                                reward.programa
-                                                                    .nombre
-                                                            }
-                                                        </span>
-                                                    </div>
-
-                                                    <span
-                                                        className={`admin-status-badge loyalty-prize-status ${reward.estadoEfectivo.toLowerCase()}`}
-                                                    >
-                                                        {formatLabel(
-                                                            reward.estadoEfectivo
-                                                        )}
-                                                    </span>
-
-                                                    <dl>
-                                                        <div>
-                                                            <dt>
-                                                                Obtenido
-                                                            </dt>
-
-                                                            <dd>
-                                                                {formatDate(
-                                                                    reward.fechaObtencion
-                                                                )}
-                                                            </dd>
-                                                        </div>
-
-                                                        <div>
-                                                            <dt>
-                                                                Vence
-                                                            </dt>
-
-                                                            <dd>
-                                                                {formatDate(
-                                                                    reward.fechaVencimiento
-                                                                )}
-                                                            </dd>
-                                                        </div>
-
-                                                        {reward.ventaCanje && (
-                                                            <div>
-                                                                <dt>
-                                                                    Ticket de canje
-                                                                </dt>
-
-                                                                <dd>
-                                                                    {
-                                                                        reward.ventaCanje
-                                                                            .numeroTicket
-                                                                    }
-                                                                </dd>
-                                                            </div>
-                                                        )}
-                                                    </dl>
-                                                </article>
-                                            )
-                                        )
-                                    )}
-                                </div>
-                            </section>
-                        </div>
+                                    )
+                                )}
+                            </div>
+                        </section>
+                    </div>
                 </AdminDialog>
             )}
         </section>

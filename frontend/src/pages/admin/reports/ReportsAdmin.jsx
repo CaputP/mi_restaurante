@@ -1757,7 +1757,7 @@ function ReportsAdmin() {
                                                     type="button"
                                                     className="report-product-drilldown"
                                                     key={
-                                                        product.productoSucursalId
+                                                        `${product.productoSucursalId}-${product.nombreProducto}`
                                                     }
                                                     onClick={() =>
                                                         openReportDetails({

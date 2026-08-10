@@ -13,12 +13,62 @@ import ProductsAdmin from "./ProductsAdmin";
 import "./catalogAdmin.css";
 
 function CatalogAdmin() {
-    const [activeTab, setActiveTab] =
-        useState("PRODUCTOS");
+    const [
+        activeTab,
+        setActiveTab
+    ] = useState("PRODUCTOS");
+
+    const [
+        headerAction,
+        setHeaderAction
+    ] = useState(null);
+
+    const ActionIcon =
+        headerAction?.icon;
 
     return (
         <section className="catalog-admin admin-page">
-            <div
+
+            <header className="catalog-heading admin-page-header">
+                <div>
+                    <span className="admin-eyebrow">
+                        CATÁLOGO
+                    </span>
+
+                    <h2>
+                        Productos y categorías
+                    </h2>
+
+                    <p>
+                        Administra platos,
+                        bebidas, insumos y categorías
+                        disponibles en el restaurante.
+                    </p>
+                </div>
+
+                {headerAction?.onClick && (
+                    <button
+                        type="button"
+                        className="catalog-primary-button"
+                        disabled={
+                            headerAction.disabled
+                        }
+                        onClick={
+                            headerAction.onClick
+                        }
+                    >
+                        {ActionIcon && (
+                            <ActionIcon />
+                        )}
+
+                        <span>
+                            {headerAction.label}
+                        </span>
+                    </button>
+                )}
+            </header>
+
+            <nav
                 className="catalog-tabs admin-tabs"
                 role="tablist"
                 aria-label="Secciones del catálogo"
@@ -43,7 +93,7 @@ function CatalogAdmin() {
                     }
                 >
                     <FaUtensils />
-                    <span>Productos</span>
+                    Productos
                 </button>
 
                 <button
@@ -66,13 +116,25 @@ function CatalogAdmin() {
                     }
                 >
                     <FaFolderOpen />
-                    <span>Categorías</span>
+                    Categorías
                 </button>
-            </div>
+            </nav>
 
-            {activeTab === "PRODUCTOS"
-                ? <ProductsAdmin />
-                : <CategoriesAdmin />}
+            {activeTab ===
+            "PRODUCTOS" ? (
+                <ProductsAdmin
+                    setHeaderAction={
+                        setHeaderAction
+                    }
+                />
+            ) : (
+                <CategoriesAdmin
+                    setHeaderAction={
+                        setHeaderAction
+                    }
+                />
+            )}
+
         </section>
     );
 }

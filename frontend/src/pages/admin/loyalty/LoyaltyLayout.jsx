@@ -1,7 +1,12 @@
 import {
+    useState
+} from "react";
+
+import {
     FaGift,
     FaUsers
 } from "react-icons/fa";
+
 import {
     NavLink,
     Outlet
@@ -12,23 +17,84 @@ import "./loyaltyLayout.css";
 const LOYALTY_SECTIONS = [
     {
         label: "Programas",
-        description: "Reglas y recompensas",
         path: "/admin/fidelizacion",
         icon: FaGift
     },
     {
         label: "Clientes y premios",
-        description: "Progreso y beneficios",
         path: "/admin/fidelizacion/clientes",
         icon: FaUsers
     }
 ];
 
 function LoyaltyLayout() {
+    const [
+        headerActions,
+        setHeaderActions
+    ] = useState([]);
+
     return (
-        <div className="loyalty-module-layout">
+        <section className="loyalty-module-layout admin-page">
+
+            {/* CARD PRINCIPAL */}
+            <header className="loyalty-layout-heading admin-page-header">
+                <div>
+                    <span className="admin-eyebrow">
+                        FIDELIZACIÓN
+                    </span>
+
+                    <h2>
+                        Programas y clientes
+                    </h2>
+
+                    <p>
+                        Administra programas de fidelización,
+                        progreso de clientes, recompensas
+                        y premios disponibles.
+                    </p>
+                </div>
+
+                {/* BOTONES DE LA PESTAÑA ACTIVA */}
+                {headerActions.length > 0 && (
+                    <div className="loyalty-layout-actions">
+                        {headerActions.map(
+                            (action) => {
+                                const Icon =
+                                    action.icon;
+
+                                return (
+                                    <button
+                                        key={action.key}
+                                        type="button"
+                                        className={
+                                            action.variant
+                                        }
+                                        disabled={
+                                            action.disabled
+                                        }
+                                        onClick={
+                                            action.onClick
+                                        }
+                                    >
+                                        {Icon && (
+                                            <Icon />
+                                        )}
+
+                                        <span>
+                                            {action.label}
+                                        </span>
+                                    </button>
+                                );
+                            }
+                        )}
+                    </div>
+                )}
+            </header>
+
+            {/* PESTAÑAS */}
             <nav
                 className="loyalty-module-nav admin-tabs"
+                role="tablist"
                 aria-label="Secciones de fidelización"
             >
                 {LOYALTY_SECTIONS.map(
@@ -38,9 +104,14 @@ function LoyaltyLayout() {
 
                         return (
                             <NavLink
-                                key={section.path}
-                                to={section.path}
+                                key={
+                                    section.path
+                                }
+                                to={
+                                    section.path
+                                }
                                 end
+                                role="tab"
                                 className={({
                                     isActive
                                 }) =>
@@ -51,18 +122,12 @@ function LoyaltyLayout() {
                                     }`
                                 }
                             >
-                                <span className="loyalty-module-link-icon">
-                                    <Icon />
-                                </span>
+                                <Icon />
 
-                                <span className="loyalty-module-link-copy">
-                                    <strong>
-                                        {section.label}
-                                    </strong>
-
-                                    <small>
-                                        {section.description}
-                                    </small>
+                                <span>
+                                    {
+                                        section.label
+                                    }
                                 </span>
                             </NavLink>
                         );
@@ -70,8 +135,16 @@ function LoyaltyLayout() {
                 )}
             </nav>
 
-            <Outlet />
-        </div>
+            {/* CONTENIDO */}
+            <div className="loyalty-module-content">
+                <Outlet
+                    context={{
+                        setHeaderActions
+                    }}
+                />
+            </div>
+
+        </section>
     );
 }
 

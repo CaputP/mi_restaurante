@@ -171,7 +171,9 @@ function getRequestErrorMessage(error) {
     return error.message;
 }
 
-function ProductsAdmin() {
+function ProductsAdmin({
+    setHeaderAction
+}) {
     const { token } = useAuth();
     const realtimeVersion =
         useRealtimeVersion([
@@ -265,9 +267,9 @@ function ProductsAdmin() {
             } catch (requestError) {
                 if (
                     requestError instanceof
-                        DOMException &&
+                    DOMException &&
                     requestError.name ===
-                        "AbortError"
+                    "AbortError"
                 ) {
                     return;
                 }
@@ -333,9 +335,9 @@ function ProductsAdmin() {
             } catch (requestError) {
                 if (
                     requestError instanceof
-                        DOMException &&
+                    DOMException &&
                     requestError.name ===
-                        "AbortError"
+                    "AbortError"
                 ) {
                     return;
                 }
@@ -387,6 +389,18 @@ function ProductsAdmin() {
         setFormVisible(true);
     }
 
+    useEffect(() => {
+        setHeaderAction({
+            label: "Nuevo producto",
+            icon: FaPlus,
+            onClick: openCreateForm,
+            disabled: optionsLoading
+        });
+    }, [
+        setHeaderAction,
+        optionsLoading
+    ]);
+
     function openEditForm(product) {
         setEditingProduct(product);
 
@@ -434,7 +448,7 @@ function ProductsAdmin() {
 
             if (
                 field ===
-                    "requierePreparacion" &&
+                "requierePreparacion" &&
                 value === false
             ) {
                 nextForm.destinoPreparacion =
@@ -443,11 +457,11 @@ function ProductsAdmin() {
 
             if (
                 field ===
-                    "requierePreparacion" &&
+                "requierePreparacion" &&
                 value === true &&
                 previous
                     .destinoPreparacion ===
-                    "NINGUNO"
+                "NINGUNO"
             ) {
                 nextForm.destinoPreparacion =
                     "COCINA";
@@ -524,7 +538,7 @@ function ProductsAdmin() {
         if (
             form.requierePreparacion &&
             form.destinoPreparacion ===
-                "NINGUNO"
+            "NINGUNO"
         ) {
             return "Selecciona cocina o barra como destino.";
         }
@@ -568,7 +582,7 @@ function ProductsAdmin() {
 
         if (
             form.tipoStock !==
-                "SIN_CONTROL" &&
+            "SIN_CONTROL" &&
             invalidMinimumStock
         ) {
             return "El stock mínimo no puede ser negativo.";
@@ -647,7 +661,7 @@ function ProductsAdmin() {
 
                         stockMinimo:
                             form.tipoStock ===
-                            "SIN_CONTROL"
+                                "SIN_CONTROL"
                                 ? 0
                                 : Number(
                                     branch
@@ -760,34 +774,7 @@ function ProductsAdmin() {
     }
 
     return (
-        <section>
-            <header className="catalog-heading admin-page-header">
-                <div>
-                    <span className="admin-eyebrow">
-                        PRODUCTOS
-                    </span>
-
-                    <h2>
-                        Catálogo de productos
-                    </h2>
-
-                    <p>
-                        Administra platos,
-                        bebidas, insumos,
-                        precios y disponibilidad.
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    className="catalog-primary-button"
-                    disabled={optionsLoading}
-                    onClick={openCreateForm}
-                >
-                    <FaPlus />
-                    <span>Nuevo producto</span>
-                </button>
-            </header>
+        <section className="catalog-content">
 
             {message && (
                 <div
@@ -1218,11 +1205,10 @@ function ProductsAdmin() {
                                         key={
                                             branch.sucursalId
                                         }
-                                        className={`product-branch-row ${
-                                            branch.seleccionada
-                                                ? "selected"
-                                                : ""
-                                        }`}
+                                        className={`product-branch-row ${branch.seleccionada
+                                            ? "selected"
+                                            : ""
+                                            }`}
                                     >
                                         <label className="product-branch-selector">
                                             <input
@@ -1304,7 +1290,7 @@ function ProductsAdmin() {
                                                 disabled={
                                                     !branch.seleccionada ||
                                                     form.tipoStock ===
-                                                        "SIN_CONTROL"
+                                                    "SIN_CONTROL"
                                                 }
                                                 onChange={(event) =>
                                                     handleBranchChange(
@@ -1540,27 +1526,27 @@ function ProductsAdmin() {
 
                                                     {product.estado !==
                                                         "ARCHIVADO" && (
-                                                        <button
-                                                            type="button"
-                                                            title={
-                                                                product.estado ===
-                                                                "ACTIVO"
-                                                                    ? "Desactivar"
-                                                                    : "Activar"
-                                                            }
-                                                            aria-label="Cambiar estado"
-                                                            disabled={
-                                                                isSaving
-                                                            }
-                                                            onClick={() =>
-                                                                handleStatusChange(
-                                                                    product
-                                                                )
-                                                            }
-                                                        >
-                                                            <FaPowerOff />
-                                                        </button>
-                                                    )}
+                                                            <button
+                                                                type="button"
+                                                                title={
+                                                                    product.estado ===
+                                                                        "ACTIVO"
+                                                                        ? "Desactivar"
+                                                                        : "Activar"
+                                                                }
+                                                                aria-label="Cambiar estado"
+                                                                disabled={
+                                                                    isSaving
+                                                                }
+                                                                onClick={() =>
+                                                                    handleStatusChange(
+                                                                        product
+                                                                    )
+                                                                }
+                                                            >
+                                                                <FaPowerOff />
+                                                            </button>
+                                                        )}
                                                 </div>
                                             </td>
                                         </tr>

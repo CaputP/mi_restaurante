@@ -1,8 +1,13 @@
 import {
+    useCallback,
     useEffect,
     useMemo,
     useState
 } from "react";
+
+import {
+    useOutletContext
+} from "react-router-dom";
 
 import {
     FaBan,
@@ -62,9 +67,9 @@ function getCurrentDate() {
     const localDate =
         new Date(
             now.getTime() -
-                now.getTimezoneOffset() *
-                    60 *
-                    1000
+            now.getTimezoneOffset() *
+            60 *
+            1000
         );
 
     return localDate
@@ -210,18 +215,16 @@ function formatReward(
     program
 ) {
     switch (
-        program.tipoRecompensa
+    program.tipoRecompensa
     ) {
         case "PRODUCTO_GRATIS":
-            return `${program.cantidadPremio} ${
-                program.productoPremio
-                    ?.unidadMedida
-                    ?.abreviatura ?? ""
-            } de ${
-                program.productoPremio
+            return `${program.cantidadPremio} ${program.productoPremio
+                ?.unidadMedida
+                ?.abreviatura ?? ""
+                } de ${program.productoPremio
                     ?.nombre ??
                 "producto"
-            }`.trim();
+                }`.trim();
 
         case "DESCUENTO_FIJO":
             return `${formatMoney(
@@ -243,6 +246,11 @@ function formatReward(
 }
 
 function LoyaltyAdmin() {
+
+    const {
+        setHeaderActions
+    } = useOutletContext();
+
     const {
         token,
         usuario
@@ -379,7 +387,7 @@ function LoyaltyAdmin() {
                         total +
                         Number(
                             program.cantidadClientes ??
-                                0
+                            0
                         ),
                     0
                 ),
@@ -397,7 +405,7 @@ function LoyaltyAdmin() {
                         total +
                         Number(
                             program.cantidadPremios ??
-                                0
+                            0
                         ),
                     0
                 ),
@@ -425,7 +433,7 @@ function LoyaltyAdmin() {
 
                 setRewardProducts(
                     result.productos ??
-                        []
+                    []
                 );
 
                 if (
@@ -468,7 +476,7 @@ function LoyaltyAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar las opciones de fidelización."
+                    "No se pudieron cargar las opciones de fidelización."
                 );
             } finally {
                 if (
@@ -527,12 +535,12 @@ function LoyaltyAdmin() {
 
                 setPrograms(
                     result.programas ??
-                        []
+                    []
                 );
 
                 setPagination(
                     result.pagination ??
-                        EMPTY_PAGINATION
+                    EMPTY_PAGINATION
                 );
             } catch (requestError) {
                 if (
@@ -547,7 +555,7 @@ function LoyaltyAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar los programas."
+                    "No se pudieron cargar los programas."
                 );
             } finally {
                 if (
@@ -599,7 +607,7 @@ function LoyaltyAdmin() {
 
                 setRewardProducts(
                     result.productos ??
-                        []
+                    []
                 );
             } catch (requestError) {
                 if (
@@ -614,7 +622,7 @@ function LoyaltyAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar los productos para el premio."
+                    "No se pudieron cargar los productos para el premio."
                 );
             } finally {
                 if (
@@ -638,10 +646,14 @@ function LoyaltyAdmin() {
         showForm
     ]);
 
-    function clearFeedback() {
-        setMessage("");
-        setError("");
-    }
+    const clearFeedback =
+        useCallback(
+            () => {
+                setMessage("");
+                setError("");
+            },
+            []
+        );
 
     function handleFilterChange(
         field,
@@ -668,34 +680,94 @@ function LoyaltyAdmin() {
         );
     }
 
-    function getDefaultBranchId() {
-        if (
-            isGeneralAdministrator
-        ) {
-            return "";
-        }
+    const getDefaultBranchId =
+        useCallback(
+            () => {
+                if (
+                    isGeneralAdministrator
+                ) {
+                    return "";
+                }
 
-        return (
-            options.sucursales[0]
-                ?.id ?? ""
-        );
-    }
-
-    function openCreateForm() {
-        clearFeedback();
-
-        setEditingProgramId(
-            null
-        );
-
-        setForm(
-            createEmptyForm(
-                getDefaultBranchId()
-            )
+                return (
+                    options.sucursales[0]
+                        ?.id ?? ""
+                );
+            },
+            [
+                isGeneralAdministrator,
+                options.sucursales
+            ]
         );
 
-        setShowForm(true);
-    }
+    const openCreateForm =
+        useCallback(
+            () => {
+                clearFeedback();
+
+                setEditingProgramId(
+                    null
+                );
+
+                setForm(
+                    createEmptyForm(
+                        getDefaultBranchId()
+                    )
+                );
+
+                setShowForm(true);
+            },
+            [
+                clearFeedback,
+                getDefaultBranchId
+            ]
+        );
+
+    const refreshPrograms =
+        useCallback(
+            () => {
+                clearFeedback();
+
+                setReloadKey(
+                    (value) =>
+                        value + 1
+                );
+            },
+            [
+                clearFeedback
+            ]
+        );
+
+    useEffect(() => {
+        setHeaderActions([
+            {
+                key: "refresh",
+                label: "Actualizar",
+                icon: FaSyncAlt,
+                variant: "secondary",
+                disabled: isLoading,
+                onClick: refreshPrograms
+            },
+            {
+                key: "create",
+                label: "Nuevo programa",
+                icon: FaPlus,
+                variant: "primary",
+                disabled: isLoadingOptions,
+                onClick: openCreateForm
+            }
+        ]);
+
+        return () => {
+            setHeaderActions([]);
+        };
+    }, [
+        setHeaderActions,
+        isLoading,
+        isLoadingOptions,
+        refreshPrograms,
+        openCreateForm
+    ]);
 
     async function openEditForm(
         programId
@@ -789,7 +861,7 @@ function LoyaltyAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cargar el programa."
+                "No se pudo cargar el programa."
             );
         } finally {
             setIsLoadingDetail(false);
@@ -826,7 +898,7 @@ function LoyaltyAdmin() {
         if (
             form.fechaFin &&
             form.fechaFin <
-                form.fechaInicio
+            form.fechaInicio
         ) {
             return "La fecha final no puede ser anterior a la fecha inicial.";
         }
@@ -834,9 +906,9 @@ function LoyaltyAdmin() {
         if (
             (
                 form.tipo ===
-                    "VISITAS" ||
+                "VISITAS" ||
                 form.tipo ===
-                    "AMBOS"
+                "AMBOS"
             ) &&
             Number(
                 form.visitasRequeridas
@@ -848,9 +920,9 @@ function LoyaltyAdmin() {
         if (
             (
                 form.tipo ===
-                    "MONTO_CONSUMIDO" ||
+                "MONTO_CONSUMIDO" ||
                 form.tipo ===
-                    "AMBOS"
+                "AMBOS"
             ) &&
             Number(
                 form.montoRequerido
@@ -861,7 +933,7 @@ function LoyaltyAdmin() {
 
         if (
             form.tipoRecompensa ===
-                "PRODUCTO_GRATIS" &&
+            "PRODUCTO_GRATIS" &&
             (
                 !form.productoPremioId ||
                 Number(
@@ -874,7 +946,7 @@ function LoyaltyAdmin() {
 
         if (
             form.tipoRecompensa ===
-                "DESCUENTO_FIJO" &&
+            "DESCUENTO_FIJO" &&
             Number(
                 form.montoDescuento
             ) <= 0
@@ -884,7 +956,7 @@ function LoyaltyAdmin() {
 
         if (
             form.tipoRecompensa ===
-                "DESCUENTO_PORCENTAJE" &&
+            "DESCUENTO_PORCENTAJE" &&
             (
                 Number(
                     form.porcentajeDescuento
@@ -899,7 +971,7 @@ function LoyaltyAdmin() {
 
         if (
             form.tipoRecompensa ===
-                "BENEFICIO" &&
+            "BENEFICIO" &&
             form.descripcionBeneficio
                 .trim()
                 .length < 3
@@ -913,15 +985,15 @@ function LoyaltyAdmin() {
     function buildPayload() {
         const usesVisits =
             form.tipo ===
-                "VISITAS" ||
+            "VISITAS" ||
             form.tipo ===
-                "AMBOS";
+            "AMBOS";
 
         const usesAmount =
             form.tipo ===
-                "MONTO_CONSUMIDO" ||
+            "MONTO_CONSUMIDO" ||
             form.tipo ===
-                "AMBOS";
+            "AMBOS";
 
         return {
             sucursalId:
@@ -942,15 +1014,15 @@ function LoyaltyAdmin() {
             visitasRequeridas:
                 usesVisits
                     ? Number(
-                          form.visitasRequeridas
-                      )
+                        form.visitasRequeridas
+                    )
                     : null,
 
             montoRequerido:
                 usesAmount
                     ? Number(
-                          form.montoRequerido
-                      )
+                        form.montoRequerido
+                    )
                     : null,
 
             tipoRecompensa:
@@ -958,39 +1030,39 @@ function LoyaltyAdmin() {
 
             productoPremioId:
                 form.tipoRecompensa ===
-                "PRODUCTO_GRATIS"
+                    "PRODUCTO_GRATIS"
                     ? form.productoPremioId
                     : null,
 
             cantidadPremio:
                 form.tipoRecompensa ===
-                "PRODUCTO_GRATIS"
+                    "PRODUCTO_GRATIS"
                     ? Number(
-                          form.cantidadPremio
-                      )
+                        form.cantidadPremio
+                    )
                     : null,
 
             montoDescuento:
                 form.tipoRecompensa ===
-                "DESCUENTO_FIJO"
+                    "DESCUENTO_FIJO"
                     ? Number(
-                          form.montoDescuento
-                      )
+                        form.montoDescuento
+                    )
                     : null,
 
             porcentajeDescuento:
                 form.tipoRecompensa ===
-                "DESCUENTO_PORCENTAJE"
+                    "DESCUENTO_PORCENTAJE"
                     ? Number(
-                          form.porcentajeDescuento
-                      )
+                        form.porcentajeDescuento
+                    )
                     : null,
 
             descripcionBeneficio:
                 form.tipoRecompensa ===
-                "BENEFICIO"
+                    "BENEFICIO"
                     ? form.descripcionBeneficio
-                          .trim()
+                        .trim()
                     : null,
 
             vigenciaDiasPremio:
@@ -1067,7 +1139,7 @@ function LoyaltyAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo guardar el programa."
+                "No se pudo guardar el programa."
             );
         } finally {
             setIsSaving(false);
@@ -1119,7 +1191,7 @@ function LoyaltyAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cambiar el estado del programa."
+                "No se pudo cambiar el estado del programa."
             );
         } finally {
             setChangingStatusId(
@@ -1129,53 +1201,8 @@ function LoyaltyAdmin() {
     }
 
     return (
-        <section className="loyalty-admin admin-page">
-            <header className="loyalty-heading admin-page-header">
-                <div>
-                    <span className="admin-eyebrow">
-                        PROGRAMAS DE FIDELIZACIÓN
-                    </span>
-
-                    <h2>
-                        Programas para clientes
-                    </h2>
-
-                    <p>
-                        Configura recompensas por visitas y consumo acumulado.
-                    </p>
-                </div>
-
-                <div className="loyalty-heading-actions">
-                    <button
-                        type="button"
-                        className="secondary"
-                        onClick={() =>
-                            setReloadKey(
-                                (value) =>
-                                    value + 1
-                            )
-                        }
-                    >
-                        <FaSyncAlt />
-                        Actualizar
-                    </button>
-
-                    <button
-                        type="button"
-                        className="primary"
-                        disabled={
-                            isLoadingOptions
-                        }
-                        onClick={
-                            openCreateForm
-                        }
-                    >
-                        <FaPlus />
-                        Nuevo programa
-                    </button>
-                </div>
-            </header>
-
+        <section className="loyalty-admin">
+            
             {message && (
                 <div
                     className="loyalty-feedback admin-feedback success"
@@ -1547,56 +1574,56 @@ function LoyaltyAdmin() {
                         {(form.tipo ===
                             "VISITAS" ||
                             form.tipo ===
-                                "AMBOS") && (
-                            <label>
-                                Visitas requeridas *
+                            "AMBOS") && (
+                                <label>
+                                    Visitas requeridas *
 
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="1000"
-                                    value={
-                                        form.visitasRequeridas
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        handleFormChange(
-                                            "visitasRequeridas",
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                />
-                            </label>
-                        )}
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="1000"
+                                        value={
+                                            form.visitasRequeridas
+                                        }
+                                        onChange={(
+                                            event
+                                        ) =>
+                                            handleFormChange(
+                                                "visitasRequeridas",
+                                                event.target
+                                                    .value
+                                            )
+                                        }
+                                    />
+                                </label>
+                            )}
 
                         {(form.tipo ===
                             "MONTO_CONSUMIDO" ||
                             form.tipo ===
-                                "AMBOS") && (
-                            <label>
-                                Monto requerido *
+                            "AMBOS") && (
+                                <label>
+                                    Monto requerido *
 
-                                <input
-                                    type="number"
-                                    min="0.01"
-                                    step="0.01"
-                                    value={
-                                        form.montoRequerido
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        handleFormChange(
-                                            "montoRequerido",
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                />
-                            </label>
-                        )}
+                                    <input
+                                        type="number"
+                                        min="0.01"
+                                        step="0.01"
+                                        value={
+                                            form.montoRequerido
+                                        }
+                                        onChange={(
+                                            event
+                                        ) =>
+                                            handleFormChange(
+                                                "montoRequerido",
+                                                event.target
+                                                    .value
+                                            )
+                                        }
+                                    />
+                                </label>
+                            )}
 
                         <label>
                             Tipo de recompensa *
@@ -1638,155 +1665,155 @@ function LoyaltyAdmin() {
 
                         {form.tipoRecompensa ===
                             "PRODUCTO_GRATIS" && (
-                            <>
+                                <>
+                                    <label>
+                                        Producto de premio *
+
+                                        <select
+                                            value={
+                                                form.productoPremioId
+                                            }
+                                            disabled={
+                                                isLoadingProducts
+                                            }
+                                            onChange={(
+                                                event
+                                            ) =>
+                                                handleFormChange(
+                                                    "productoPremioId",
+                                                    event.target
+                                                        .value
+                                                )
+                                            }
+                                        >
+                                            <option value="">
+                                                Seleccionar producto
+                                            </option>
+
+                                            {rewardProducts.map(
+                                                (
+                                                    product
+                                                ) => (
+                                                    <option
+                                                        key={
+                                                            product.id
+                                                        }
+                                                        value={
+                                                            product.id
+                                                        }
+                                                    >
+                                                        {
+                                                            product.codigo
+                                                        }
+                                                        {" — "}
+                                                        {
+                                                            product.nombre
+                                                        }
+                                                    </option>
+                                                )
+                                            )}
+                                        </select>
+                                    </label>
+
+                                    <label>
+                                        Cantidad del premio *
+
+                                        <input
+                                            type="number"
+                                            min="0.001"
+                                            step="0.001"
+                                            value={
+                                                form.cantidadPremio
+                                            }
+                                            onChange={(
+                                                event
+                                            ) =>
+                                                handleFormChange(
+                                                    "cantidadPremio",
+                                                    event.target
+                                                        .value
+                                                )
+                                            }
+                                        />
+                                    </label>
+                                </>
+                            )}
+
+                        {form.tipoRecompensa ===
+                            "DESCUENTO_FIJO" && (
                                 <label>
-                                    Producto de premio *
-
-                                    <select
-                                        value={
-                                            form.productoPremioId
-                                        }
-                                        disabled={
-                                            isLoadingProducts
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            handleFormChange(
-                                                "productoPremioId",
-                                                event.target
-                                                    .value
-                                            )
-                                        }
-                                    >
-                                        <option value="">
-                                            Seleccionar producto
-                                        </option>
-
-                                        {rewardProducts.map(
-                                            (
-                                                product
-                                            ) => (
-                                                <option
-                                                    key={
-                                                        product.id
-                                                    }
-                                                    value={
-                                                        product.id
-                                                    }
-                                                >
-                                                    {
-                                                        product.codigo
-                                                    }
-                                                    {" — "}
-                                                    {
-                                                        product.nombre
-                                                    }
-                                                </option>
-                                            )
-                                        )}
-                                    </select>
-                                </label>
-
-                                <label>
-                                    Cantidad del premio *
+                                    Monto de descuento *
 
                                     <input
                                         type="number"
-                                        min="0.001"
-                                        step="0.001"
+                                        min="0.01"
+                                        step="0.01"
                                         value={
-                                            form.cantidadPremio
+                                            form.montoDescuento
                                         }
                                         onChange={(
                                             event
                                         ) =>
                                             handleFormChange(
-                                                "cantidadPremio",
+                                                "montoDescuento",
                                                 event.target
                                                     .value
                                             )
                                         }
                                     />
                                 </label>
-                            </>
-                        )}
-
-                        {form.tipoRecompensa ===
-                            "DESCUENTO_FIJO" && (
-                            <label>
-                                Monto de descuento *
-
-                                <input
-                                    type="number"
-                                    min="0.01"
-                                    step="0.01"
-                                    value={
-                                        form.montoDescuento
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        handleFormChange(
-                                            "montoDescuento",
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                />
-                            </label>
-                        )}
+                            )}
 
                         {form.tipoRecompensa ===
                             "DESCUENTO_PORCENTAJE" && (
-                            <label>
-                                Porcentaje de descuento *
+                                <label>
+                                    Porcentaje de descuento *
 
-                                <input
-                                    type="number"
-                                    min="0.01"
-                                    max="100"
-                                    step="0.01"
-                                    value={
-                                        form.porcentajeDescuento
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        handleFormChange(
-                                            "porcentajeDescuento",
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                />
-                            </label>
-                        )}
+                                    <input
+                                        type="number"
+                                        min="0.01"
+                                        max="100"
+                                        step="0.01"
+                                        value={
+                                            form.porcentajeDescuento
+                                        }
+                                        onChange={(
+                                            event
+                                        ) =>
+                                            handleFormChange(
+                                                "porcentajeDescuento",
+                                                event.target
+                                                    .value
+                                            )
+                                        }
+                                    />
+                                </label>
+                            )}
 
                         {form.tipoRecompensa ===
                             "BENEFICIO" && (
-                            <label className="loyalty-field-full">
-                                Descripción del beneficio *
+                                <label className="loyalty-field-full">
+                                    Descripción del beneficio *
 
-                                <input
-                                    type="text"
-                                    maxLength="250"
-                                    placeholder="Ejemplo: atención preferencial o zona reservada"
-                                    value={
-                                        form.descripcionBeneficio
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        handleFormChange(
-                                            "descripcionBeneficio",
-                                            event.target
-                                                .value
-                                        )
-                                    }
-                                />
-                            </label>
-                        )}
+                                    <input
+                                        type="text"
+                                        maxLength="250"
+                                        placeholder="Ejemplo: atención preferencial o zona reservada"
+                                        value={
+                                            form.descripcionBeneficio
+                                        }
+                                        onChange={(
+                                            event
+                                        ) =>
+                                            handleFormChange(
+                                                "descripcionBeneficio",
+                                                event.target
+                                                    .value
+                                            )
+                                        }
+                                    />
+                                </label>
+                            )}
 
                         <label>
                             Fecha inicial *
@@ -1917,8 +1944,8 @@ function LoyaltyAdmin() {
                             {isSaving
                                 ? "Guardando..."
                                 : editingProgramId
-                                  ? "Actualizar programa"
-                                  : "Crear programa"}
+                                    ? "Actualizar programa"
+                                    : "Crear programa"}
                         </button>
                     </div>
                 </form>
@@ -1931,7 +1958,7 @@ function LoyaltyAdmin() {
                         Cargando programas...
                     </div>
                 ) : programs.length ===
-                  0 ? (
+                    0 ? (
                     <div className="loyalty-empty">
                         <FaGift />
 
@@ -2062,11 +2089,10 @@ function LoyaltyAdmin() {
 
                                             <td>
                                                 <span
-                                                    className={`admin-status-badge loyalty-status ${
-                                                        program.activo
-                                                            ? "active"
-                                                            : "inactive"
-                                                    }`}
+                                                    className={`admin-status-badge loyalty-status ${program.activo
+                                                        ? "active"
+                                                        : "inactive"
+                                                        }`}
                                                 >
                                                     {program.activo
                                                         ? "Activo"

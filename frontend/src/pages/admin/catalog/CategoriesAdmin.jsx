@@ -31,7 +31,9 @@ const initialForm = {
     descripcion: ""
 };
 
-function CategoriesAdmin() {
+function CategoriesAdmin({
+    setHeaderAction
+}) {
     const {
         token
     } = useAuth();
@@ -84,6 +86,18 @@ function CategoriesAdmin() {
         useState(0);
 
     useEffect(() => {
+        setHeaderAction({
+            label: "Nueva categoría",
+            icon: FaPlus,
+            onClick: openCreateForm,
+            disabled: isSaving
+        });
+    }, [
+        setHeaderAction,
+        isSaving
+    ]);
+
+    useEffect(() => {
         const controller =
             new AbortController();
 
@@ -111,9 +125,9 @@ function CategoriesAdmin() {
             } catch (requestError) {
                 if (
                     requestError instanceof
-                        DOMException &&
+                    DOMException &&
                     requestError.name ===
-                        "AbortError"
+                    "AbortError"
                 ) {
                     return;
                 }
@@ -334,33 +348,8 @@ function CategoriesAdmin() {
     }
 
     return (
-        <section className="catalog-admin admin-page">
-            <header className="catalog-heading admin-page-header">
-                <div>
-                    <span className="admin-eyebrow">
-                        CATÁLOGO
-                    </span>
+        <section className="catalog-content">
 
-                    <h2>
-                        Productos y categorías
-                    </h2>
-
-                    <p>
-                        Organiza las categorías que
-                        utilizarán los platos, bebidas
-                        e insumos del restaurante.
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    className="catalog-primary-button"
-                    onClick={openCreateForm}
-                >
-                    <FaPlus />
-                    <span>Nueva categoría</span>
-                </button>
-            </header>
 
             {message && (
                 <div
@@ -645,27 +634,27 @@ function CategoriesAdmin() {
 
                                                     {category.estado !==
                                                         "ARCHIVADO" && (
-                                                        <button
-                                                            type="button"
-                                                            aria-label="Cambiar estado"
-                                                            title={
-                                                                category.estado ===
-                                                                "ACTIVO"
-                                                                    ? "Desactivar"
-                                                                    : "Activar"
-                                                            }
-                                                            disabled={
-                                                                isSaving
-                                                            }
-                                                            onClick={() =>
-                                                                handleStatusChange(
-                                                                    category
-                                                                )
-                                                            }
-                                                        >
-                                                            <FaPowerOff />
-                                                        </button>
-                                                    )}
+                                                            <button
+                                                                type="button"
+                                                                aria-label="Cambiar estado"
+                                                                title={
+                                                                    category.estado ===
+                                                                        "ACTIVO"
+                                                                        ? "Desactivar"
+                                                                        : "Activar"
+                                                                }
+                                                                disabled={
+                                                                    isSaving
+                                                                }
+                                                                onClick={() =>
+                                                                    handleStatusChange(
+                                                                        category
+                                                                    )
+                                                                }
+                                                            >
+                                                                <FaPowerOff />
+                                                            </button>
+                                                        )}
                                                 </div>
                                             </td>
                                         </tr>

@@ -5,96 +5,172 @@
     margin: 0 auto;
 }
 
-.loyalty-module-nav {
-    width: 100%;
-    margin-bottom: 18px;
-    padding: 6px;
 
-    display: grid;
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-    gap: 6px;
+/* ==========================================
+   ENCABEZADO
+========================================== */
+
+.loyalty-layout-heading {
+    width: 100%;
+    min-width: 0;
+
+    margin-bottom: 18px;
+    padding: 24px 26px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
 
     border: 1px solid var(--admin-color-border);
     border-radius: var(--admin-radius-card);
     background: var(--admin-color-white);
 }
 
-.loyalty-module-link {
-    min-width: 0;
-    min-height: 58px;
-    padding: 9px 13px;
+.loyalty-layout-heading h2 {
+    margin: 7px 0 6px;
+    color: var(--admin-color-text-strong);
+}
 
+.loyalty-layout-heading p {
+    margin: 0;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-md);
+}
+
+
+/* ==========================================
+   ACCIONES DEL HEADER
+========================================== */
+
+.loyalty-layout-actions {
     display: flex;
     align-items: center;
-    gap: 11px;
-
-    border: 1px solid transparent;
-    border-radius: var(--admin-radius-md);
-    color: var(--admin-color-text);
-    text-decoration: none;
-
-    transition:
-        border-color 0.2s ease,
-        background 0.2s ease,
-        color 0.2s ease;
+    justify-content: flex-end;
+    gap: 9px;
+    flex-shrink: 0;
 }
 
-.loyalty-module-link:hover {
-    border-color: var(--admin-color-border);
-    background: var(--admin-color-canvas);
-    color: var(--admin-color-primary-strong);
-}
-
-.loyalty-module-link.active {
-    border-color: var(--admin-color-primary);
-    background: var(--admin-color-primary-soft);
-    color: var(--admin-color-primary-strong);
-}
-
-.loyalty-module-link-icon {
-    width: 36px;
-    height: 36px;
+.loyalty-layout-actions button {
+    min-height: var(--admin-control-height);
+    padding: 9px 15px;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 36px;
+    gap: 8px;
 
-    border-radius: var(--admin-radius-feedback);
-    background: var(--admin-color-surface-muted);
-    color: var(--admin-color-text);
+    border-radius: var(--admin-radius-control);
+
+    font: inherit;
+    font-size: var(--admin-font-md);
+    font-weight: 600;
+
+    cursor: pointer;
 }
 
-.loyalty-module-link.active .loyalty-module-link-icon {
+.loyalty-layout-actions .primary {
+    border: none;
     background: var(--admin-color-primary);
     color: var(--admin-color-white);
 }
 
-.loyalty-module-link-copy {
+.loyalty-layout-actions .secondary {
+    border: 1px solid var(--admin-color-control-border);
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary);
+}
+
+.loyalty-layout-actions .primary:hover:not(:disabled) {
+    background: var(--admin-color-primary-strong);
+}
+
+.loyalty-layout-actions .secondary:hover:not(:disabled) {
+    background: var(--admin-color-surface-muted);
+}
+
+.loyalty-layout-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+
+/* ==========================================
+   PESTAÑAS
+========================================== */
+
+.loyalty-module-nav {
+    --admin-tabs-count: 2;
+
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
+
+    margin-bottom: 18px;
+}
+
+.loyalty-module-link {
+    min-width: 0;
+
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    color: inherit;
+    text-decoration: none;
 }
 
-.loyalty-module-link-copy strong,
-.loyalty-module-link-copy small {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.loyalty-module-link svg {
+    flex-shrink: 0;
 }
 
-.loyalty-module-link-copy strong {
-    font-size: var(--admin-font-md);
+
+/* ==========================================
+   CONTENIDO
+========================================== */
+
+.loyalty-module-content {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
 }
 
-.loyalty-module-link-copy small {
-    color: var(--admin-color-text-subtle);
-    font-size: var(--admin-font-2xs);
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 850px) {
+    .loyalty-layout-heading {
+        padding: 20px;
+
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .loyalty-layout-actions {
+        width: 100%;
+    }
+
+    .loyalty-layout-actions button {
+        flex: 1;
+    }
 }
 
 @media (max-width: 600px) {
+    .loyalty-layout-heading {
+        padding: 17px;
+    }
+
+    .loyalty-layout-actions {
+        flex-direction: column;
+    }
+
+    .loyalty-layout-actions button {
+        width: 100%;
+    }
+
     .loyalty-module-nav {
         grid-template-columns: 1fr;
     }

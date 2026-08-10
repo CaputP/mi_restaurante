@@ -3,7 +3,23 @@
     gap: var(--admin-space-6);
 }
 
-.roles-heading,
+.roles-heading {
+    width: 100%;
+    min-width: 0;
+
+    margin-bottom: 0;
+    padding: 24px 26px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-card);
+    background: var(--admin-color-white);
+}
+
 .roles-permissions-card > header,
 .roles-permissions-card > footer,
 .roles-list > header,
@@ -14,14 +30,21 @@
     gap: var(--admin-space-5);
 }
 
-.roles-heading h1,
+.roles-heading h2 {
+    margin: 7px 0 6px;
+}
 .roles-permissions-card h2,
 .roles-list h2 {
     margin: 0;
     color: var(--admin-color-primary);
 }
 
-.roles-heading p,
+.roles-heading p {
+    margin: 0;
+    color: var(--admin-color-text-muted);
+    font-size: var(--admin-font-md);
+    line-height: 1.55;
+}
 .roles-permissions-card p,
 .roles-permissions-card > footer p,
 .roles-confirm-dialog p {
@@ -30,7 +53,27 @@
     line-height: 1.55;
 }
 
-.roles-refresh-button,
+.roles-refresh-button {
+    min-height: var(--admin-control-height);
+    padding: 9px 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: 1px solid var(--admin-color-control-border);
+    border-radius: var(--admin-radius-control);
+
+    background: var(--admin-color-white);
+    color: var(--admin-color-primary);
+
+    font: inherit;
+    font-size: var(--admin-font-md);
+    font-weight: 600;
+
+    cursor: pointer;
+}
 .roles-permissions-card > footer button,
 .roles-confirm-dialog button {
     min-height: var(--admin-control-height);

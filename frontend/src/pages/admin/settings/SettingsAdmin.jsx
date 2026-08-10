@@ -24,7 +24,7 @@ import {
     FaSyncAlt,
     FaTimes,
     FaToggleOn,
-    FaHistory,  
+    FaHistory,
 } from "react-icons/fa";
 
 import {
@@ -215,7 +215,7 @@ function parseSettingValue(
         if (
             result === null ||
             typeof result !==
-                "object"
+            "object"
         ) {
             throw new Error(
                 "El valor JSON debe ser un objeto o una lista."
@@ -308,9 +308,9 @@ function formatSettingValue(
 
             return text.length > 100
                 ? `${text.slice(
-                      0,
-                      100
-                  )}...`
+                    0,
+                    100
+                )}...`
                 : text;
         } catch {
             return "JSON";
@@ -531,7 +531,7 @@ function SettingsAdmin() {
 
                 setBranchFilter(
                     result.sucursales.length ===
-                    1
+                        1
                         ? defaultBranchId
                         : ""
                 );
@@ -559,7 +559,7 @@ function SettingsAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar las opciones de configuración."
+                    "No se pudieron cargar las opciones de configuración."
                 );
             } finally {
                 if (
@@ -636,7 +636,7 @@ function SettingsAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar las configuraciones."
+                    "No se pudieron cargar las configuraciones."
                 );
             } finally {
                 if (
@@ -670,7 +670,7 @@ function SettingsAdmin() {
         if (
             !correlativeBranchId ||
             activeTab !==
-                "CORRELATIVOS"
+            "CORRELATIVOS"
         ) {
             // Evita mostrar correlativos de una sucursal o pestaña anterior.
             // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -737,7 +737,7 @@ function SettingsAdmin() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar los correlativos."
+                    "No se pudieron cargar los correlativos."
                 );
             } finally {
                 if (
@@ -872,14 +872,14 @@ function SettingsAdmin() {
 
                         sucursalId:
                             value ===
-                            "GLOBAL"
+                                "GLOBAL"
                                 ? ""
                                 : previous
-                                      .sucursalId ||
-                                  options
-                                      .sucursales[0]
-                                      ?.id ||
-                                  ""
+                                    .sucursalId ||
+                                options
+                                    .sucursales[0]
+                                    ?.id ||
+                                ""
                     };
                 }
 
@@ -911,7 +911,7 @@ function SettingsAdmin() {
 
         if (
             settingForm.alcance ===
-                "SUCURSAL" &&
+            "SUCURSAL" &&
             !settingForm.sucursalId
         ) {
             setError(
@@ -929,7 +929,7 @@ function SettingsAdmin() {
                     settingForm.tipoDato
                 );
         } catch (
-            validationError
+        validationError
         ) {
             setError(
                 validationError.message
@@ -966,10 +966,10 @@ function SettingsAdmin() {
                             sucursalId:
                                 settingForm
                                     .alcance ===
-                                "GLOBAL"
+                                    "GLOBAL"
                                     ? null
                                     : settingForm
-                                          .sucursalId,
+                                        .sucursalId,
 
                             clave:
                                 settingForm
@@ -1011,7 +1011,7 @@ function SettingsAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo guardar la configuración."
+                "No se pudo guardar la configuración."
             );
         } finally {
             setIsSaving(false);
@@ -1060,7 +1060,7 @@ function SettingsAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cambiar la editabilidad."
+                "No se pudo cambiar la editabilidad."
             );
         } finally {
             setIsSaving(false);
@@ -1090,7 +1090,7 @@ function SettingsAdmin() {
 
                 [documentType]: {
                     ...previous[
-                        documentType
+                    documentType
                     ],
 
                     [field]: value
@@ -1106,8 +1106,8 @@ function SettingsAdmin() {
 
         const draft =
             correlativeDrafts[
-                correlative
-                    .tipoDocumento
+            correlative
+                .tipoDocumento
             ];
 
         if (!draft) {
@@ -1215,7 +1215,7 @@ function SettingsAdmin() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo actualizar el correlativo."
+                "No se pudo actualizar el correlativo."
             );
         } finally {
             setSavingCorrelative("");
@@ -1252,41 +1252,37 @@ function SettingsAdmin() {
 
                 {activeTab ===
                     "PARAMETROS" && (
-                    <button
-                        type="button"
-                        onClick={
-                            openCreateSetting
-                        }
-                    >
-                        <FaPlus />
-                        Nueva configuración
-                    </button>
-                )}
+                        <button
+                            type="button"
+                            onClick={
+                                openCreateSetting
+                            }
+                        >
+                            <FaPlus />
+                            Nueva configuración
+                        </button>
+                    )}
 
                 {activeTab ===
                     "CORRELATIVOS" && (
-                    <button
-                        type="button"
-                        disabled={
-                            !correlativeBranchId ||
-                            isLoadingCorrelatives
-                        }
-                        onClick={() =>
-                            setReloadKey(
-                                (value) =>
-                                    value + 1
-                            )
-                        }
-                    >
-                        <FaSyncAlt />
-                        Actualizar
-                    </button>
-                )}
+                        <button
+                            type="button"
+                            disabled={
+                                !correlativeBranchId ||
+                                isLoadingCorrelatives
+                            }
+                            onClick={() =>
+                                setReloadKey(
+                                    (value) =>
+                                        value + 1
+                                )
+                            }
+                        >
+                            <FaSyncAlt />
+                            Actualizar
+                        </button>
+                    )}
 
-                {activeTab ===
-                    "AUDITORIA" && (
-                    <AuditPanel />
-                )}
             </header>
 
             {message && (
@@ -1321,7 +1317,7 @@ function SettingsAdmin() {
                     }
                     className={
                         activeTab ===
-                        "PARAMETROS"
+                            "PARAMETROS"
                             ? "admin-tab active"
                             : "admin-tab"
                     }
@@ -1344,7 +1340,7 @@ function SettingsAdmin() {
                     }
                     className={
                         activeTab ===
-                        "CORRELATIVOS"
+                            "CORRELATIVOS"
                             ? "admin-tab active"
                             : "admin-tab"
                     }
@@ -1367,7 +1363,7 @@ function SettingsAdmin() {
                     }
                     className={
                         activeTab ===
-                        "AUDITORIA"
+                            "AUDITORIA"
                             ? "admin-tab active"
                             : "admin-tab"
                     }
@@ -1385,151 +1381,113 @@ function SettingsAdmin() {
 
             {activeTab ===
                 "PARAMETROS" && (
-                <>
-                    <div className="setting-stat-grid admin-metric-grid">
-                        <article>
-                            <FaFileAlt />
+                    <>
+                        <div className="setting-stat-grid admin-metric-grid">
+                            <article>
+                                <FaFileAlt />
 
-                            <div>
-                                <span>
-                                    Configuraciones
-                                </span>
-
-                                <strong>
-                                    {
-                                        pagination.total
-                                    }
-                                </strong>
-                            </div>
-                        </article>
-
-                        <article>
-                            <FaGlobe />
-
-                            <div>
-                                <span>
-                                    Globales visibles
-                                </span>
-
-                                <strong>
-                                    {
-                                        visibleStatistics
-                                            .globales
-                                    }
-                                </strong>
-                            </div>
-                        </article>
-
-                        <article>
-                            <FaStore />
-
-                            <div>
-                                <span>
-                                    Por sucursal
-                                </span>
-
-                                <strong>
-                                    {
-                                        visibleStatistics
-                                            .sucursales
-                                    }
-                                </strong>
-                            </div>
-                        </article>
-
-                        <article>
-                            <FaLock />
-
-                            <div>
-                                <span>
-                                    Protegidas visibles
-                                </span>
-
-                                <strong>
-                                    {
-                                        visibleStatistics
-                                            .protegidas
-                                    }
-                                </strong>
-                            </div>
-                        </article>
-                    </div>
-
-                    {settingFormVisible && (
-                        <form
-                            className="setting-form-card"
-                            onSubmit={
-                                handleSettingSubmit
-                            }
-                        >
-                            <div className="settings-section-heading">
                                 <div>
-                                    <span className="admin-eyebrow">
-                                        {editingSetting
-                                            ? "EDITAR CONFIGURACIÓN"
-                                            : "NUEVA CONFIGURACIÓN"}
+                                    <span>
+                                        Configuraciones
                                     </span>
 
-                                    <h3>
-                                        {editingSetting
-                                            ? editingSetting.clave
-                                            : "Registrar parámetro"}
-                                    </h3>
+                                    <strong>
+                                        {
+                                            pagination.total
+                                        }
+                                    </strong>
                                 </div>
+                            </article>
 
-                                <button
-                                    type="button"
-                                    className="setting-close-button"
-                                    aria-label="Cerrar formulario de configuración"
-                                    onClick={
-                                        closeSettingForm
-                                    }
-                                >
-                                    <FaTimes />
-                                </button>
-                            </div>
+                            <article>
+                                <FaGlobe />
 
-                            <div className="setting-form-grid">
-                                <label>
-                                    Alcance *
+                                <div>
+                                    <span>
+                                        Globales visibles
+                                    </span>
 
-                                    <select
-                                        disabled={
-                                            Boolean(
-                                                editingSetting
-                                            )
+                                    <strong>
+                                        {
+                                            visibleStatistics
+                                                .globales
                                         }
-                                        value={
-                                            settingForm
-                                                .alcance
+                                    </strong>
+                                </div>
+                            </article>
+
+                            <article>
+                                <FaStore />
+
+                                <div>
+                                    <span>
+                                        Por sucursal
+                                    </span>
+
+                                    <strong>
+                                        {
+                                            visibleStatistics
+                                                .sucursales
                                         }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            handleSettingFieldChange(
-                                                "alcance",
-                                                event
-                                                    .target
-                                                    .value
-                                            )
+                                    </strong>
+                                </div>
+                            </article>
+
+                            <article>
+                                <FaLock />
+
+                                <div>
+                                    <span>
+                                        Protegidas visibles
+                                    </span>
+
+                                    <strong>
+                                        {
+                                            visibleStatistics
+                                                .protegidas
+                                        }
+                                    </strong>
+                                </div>
+                            </article>
+                        </div>
+
+                        {settingFormVisible && (
+                            <form
+                                className="setting-form-card"
+                                onSubmit={
+                                    handleSettingSubmit
+                                }
+                            >
+                                <div className="settings-section-heading">
+                                    <div>
+                                        <span className="admin-eyebrow">
+                                            {editingSetting
+                                                ? "EDITAR CONFIGURACIÓN"
+                                                : "NUEVA CONFIGURACIÓN"}
+                                        </span>
+
+                                        <h3>
+                                            {editingSetting
+                                                ? editingSetting.clave
+                                                : "Registrar parámetro"}
+                                        </h3>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="setting-close-button"
+                                        aria-label="Cerrar formulario de configuración"
+                                        onClick={
+                                            closeSettingForm
                                         }
                                     >
-                                        {options.puedeCrearGlobal && (
-                                            <option value="GLOBAL">
-                                                Global
-                                            </option>
-                                        )}
+                                        <FaTimes />
+                                    </button>
+                                </div>
 
-                                        <option value="SUCURSAL">
-                                            Por sucursal
-                                        </option>
-                                    </select>
-                                </label>
-
-                                {settingForm.alcance ===
-                                    "SUCURSAL" && (
+                                <div className="setting-form-grid">
                                     <label>
-                                        Sucursal *
+                                        Alcance *
 
                                         <select
                                             disabled={
@@ -1539,908 +1497,949 @@ function SettingsAdmin() {
                                             }
                                             value={
                                                 settingForm
-                                                    .sucursalId
+                                                    .alcance
                                             }
                                             onChange={(
                                                 event
                                             ) =>
                                                 handleSettingFieldChange(
-                                                    "sucursalId",
+                                                    "alcance",
                                                     event
                                                         .target
                                                         .value
                                                 )
                                             }
                                         >
-                                            <option value="">
-                                                Seleccionar
-                                            </option>
+                                            {options.puedeCrearGlobal && (
+                                                <option value="GLOBAL">
+                                                    Global
+                                                </option>
+                                            )}
 
-                                            {options.sucursales.map(
+                                            <option value="SUCURSAL">
+                                                Por sucursal
+                                            </option>
+                                        </select>
+                                    </label>
+
+                                    {settingForm.alcance ===
+                                        "SUCURSAL" && (
+                                            <label>
+                                                Sucursal *
+
+                                                <select
+                                                    disabled={
+                                                        Boolean(
+                                                            editingSetting
+                                                        )
+                                                    }
+                                                    value={
+                                                        settingForm
+                                                            .sucursalId
+                                                    }
+                                                    onChange={(
+                                                        event
+                                                    ) =>
+                                                        handleSettingFieldChange(
+                                                            "sucursalId",
+                                                            event
+                                                                .target
+                                                                .value
+                                                        )
+                                                    }
+                                                >
+                                                    <option value="">
+                                                        Seleccionar
+                                                    </option>
+
+                                                    {options.sucursales.map(
+                                                        (
+                                                            branch
+                                                        ) => (
+                                                            <option
+                                                                key={
+                                                                    branch.id
+                                                                }
+                                                                value={
+                                                                    branch.id
+                                                                }
+                                                            >
+                                                                {
+                                                                    branch.nombre
+                                                                }
+                                                            </option>
+                                                        )
+                                                    )}
+                                                </select>
+                                            </label>
+                                        )}
+
+                                    <label>
+                                        Clave *
+
+                                        <input
+                                            type="text"
+                                            maxLength="120"
+                                            disabled={
+                                                Boolean(
+                                                    editingSetting
+                                                )
+                                            }
+                                            placeholder="EJEMPLO.CONFIGURACION"
+                                            value={
+                                                settingForm
+                                                    .clave
+                                            }
+                                            onChange={(
+                                                event
+                                            ) =>
+                                                handleSettingFieldChange(
+                                                    "clave",
+                                                    event
+                                                        .target
+                                                        .value
+                                                )
+                                            }
+                                        />
+                                    </label>
+
+                                    <label>
+                                        Tipo de dato *
+
+                                        <select
+                                            disabled={
+                                                Boolean(
+                                                    editingSetting
+                                                )
+                                            }
+                                            value={
+                                                settingForm
+                                                    .tipoDato
+                                            }
+                                            onChange={(
+                                                event
+                                            ) =>
+                                                handleSettingFieldChange(
+                                                    "tipoDato",
+                                                    event
+                                                        .target
+                                                        .value
+                                                )
+                                            }
+                                        >
+                                            {options.tiposDato.map(
                                                 (
-                                                    branch
+                                                    dataType
                                                 ) => (
                                                     <option
                                                         key={
-                                                            branch.id
+                                                            dataType.codigo
                                                         }
                                                         value={
-                                                            branch.id
+                                                            dataType.codigo
                                                         }
                                                     >
                                                         {
-                                                            branch.nombre
+                                                            dataType.nombre
                                                         }
                                                     </option>
                                                 )
                                             )}
                                         </select>
                                     </label>
-                                )}
 
-                                <label>
-                                    Clave *
+                                    <label className="setting-field-full">
+                                        Valor *
 
-                                    <input
-                                        type="text"
-                                        maxLength="120"
-                                        disabled={
-                                            Boolean(
-                                                editingSetting
-                                            )
-                                        }
-                                        placeholder="EJEMPLO.CONFIGURACION"
-                                        value={
-                                            settingForm
-                                                .clave
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            handleSettingFieldChange(
-                                                "clave",
+                                        {settingForm.tipoDato ===
+                                            "BOOLEANO" ? (
+                                            <select
+                                                value={
+                                                    settingForm
+                                                        .valor
+                                                }
+                                                onChange={(
+                                                    event
+                                                ) =>
+                                                    handleSettingFieldChange(
+                                                        "valor",
+                                                        event
+                                                            .target
+                                                            .value
+                                                    )
+                                                }
+                                            >
+                                                <option value="true">
+                                                    Verdadero
+                                                </option>
+
+                                                <option value="false">
+                                                    Falso
+                                                </option>
+                                            </select>
+                                        ) : settingForm.tipoDato ===
+                                            "JSON" ? (
+                                            <textarea
+                                                rows="8"
+                                                spellCheck="false"
+                                                value={
+                                                    settingForm
+                                                        .valor
+                                                }
+                                                onChange={(
+                                                    event
+                                                ) =>
+                                                    handleSettingFieldChange(
+                                                        "valor",
+                                                        event
+                                                            .target
+                                                            .value
+                                                    )
+                                                }
+                                            />
+                                        ) : (
+                                            <input
+                                                type={
+                                                    settingForm.tipoDato ===
+                                                        "FECHA"
+                                                        ? "date"
+                                                        : settingForm.tipoDato ===
+                                                            "HORA"
+                                                            ? "time"
+                                                            : settingForm.tipoDato ===
+                                                                "ENTERO" ||
+                                                                settingForm.tipoDato ===
+                                                                "DECIMAL"
+                                                                ? "number"
+                                                                : "text"
+                                                }
+                                                step={
+                                                    settingForm.tipoDato ===
+                                                        "ENTERO"
+                                                        ? "1"
+                                                        : settingForm.tipoDato ===
+                                                            "DECIMAL"
+                                                            ? "any"
+                                                            : undefined
+                                                }
+                                                value={
+                                                    settingForm
+                                                        .valor
+                                                }
+                                                onChange={(
+                                                    event
+                                                ) =>
+                                                    handleSettingFieldChange(
+                                                        "valor",
+                                                        event
+                                                            .target
+                                                            .value
+                                                    )
+                                                }
+                                            />
+                                        )}
+                                    </label>
+
+                                    <label className="setting-field-full">
+                                        Descripción
+
+                                        <textarea
+                                            rows="3"
+                                            maxLength="1000"
+                                            value={
+                                                settingForm
+                                                    .descripcion
+                                            }
+                                            onChange={(
                                                 event
-                                                    .target
-                                                    .value
-                                            )
+                                            ) =>
+                                                handleSettingFieldChange(
+                                                    "descripcion",
+                                                    event
+                                                        .target
+                                                        .value
+                                                )
+                                            }
+                                        />
+                                    </label>
+
+                                    {!editingSetting &&
+                                        isGeneralAdmin && (
+                                            <label className="setting-checkbox-field setting-field-full">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        settingForm
+                                                            .editable
+                                                    }
+                                                    onChange={(
+                                                        event
+                                                    ) =>
+                                                        handleSettingFieldChange(
+                                                            "editable",
+                                                            event
+                                                                .target
+                                                                .checked
+                                                        )
+                                                    }
+                                                />
+
+                                                Permitir que esta configuración sea editada
+                                            </label>
+                                        )}
+                                </div>
+
+                                <div className="setting-form-actions">
+                                    <button
+                                        type="button"
+                                        className="secondary"
+                                        onClick={
+                                            closeSettingForm
                                         }
-                                    />
-                                </label>
+                                    >
+                                        Cancelar
+                                    </button>
 
-                                <label>
-                                    Tipo de dato *
-
-                                    <select
+                                    <button
+                                        type="submit"
+                                        className="primary"
                                         disabled={
-                                            Boolean(
-                                                editingSetting
-                                            )
-                                        }
-                                        value={
-                                            settingForm
-                                                .tipoDato
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            handleSettingFieldChange(
-                                                "tipoDato",
-                                                event
-                                                    .target
-                                                    .value
+                                            isSaving ||
+                                            (
+                                                editingSetting &&
+                                                !editingSetting
+                                                    .editable
                                             )
                                         }
                                     >
-                                        {options.tiposDato.map(
-                                            (
-                                                dataType
-                                            ) => (
-                                                <option
-                                                    key={
-                                                        dataType.codigo
-                                                    }
-                                                    value={
-                                                        dataType.codigo
-                                                    }
-                                                >
-                                                    {
-                                                        dataType.nombre
-                                                    }
-                                                </option>
-                                            )
-                                        )}
-                                    </select>
-                                </label>
+                                        <FaSave />
 
-                                <label className="setting-field-full">
-                                    Valor *
+                                        {isSaving
+                                            ? "Guardando..."
+                                            : "Guardar configuración"}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
 
-                                    {settingForm.tipoDato ===
-                                    "BOOLEANO" ? (
-                                        <select
-                                            value={
-                                                settingForm
-                                                    .valor
-                                            }
-                                            onChange={(
-                                                event
-                                            ) =>
-                                                handleSettingFieldChange(
-                                                    "valor",
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        >
-                                            <option value="true">
-                                                Verdadero
-                                            </option>
+                        <section className="settings-list-card">
+                            <form
+                                className="settings-filters admin-filter-bar"
+                                onSubmit={
+                                    handleSearch
+                                }
+                            >
+                                <div className="settings-search">
+                                    <FaSearch />
 
-                                            <option value="false">
-                                                Falso
-                                            </option>
-                                        </select>
-                                    ) : settingForm.tipoDato ===
-                                      "JSON" ? (
-                                        <textarea
-                                            rows="8"
-                                            spellCheck="false"
-                                            value={
-                                                settingForm
-                                                    .valor
-                                            }
-                                            onChange={(
-                                                event
-                                            ) =>
-                                                handleSettingFieldChange(
-                                                    "valor",
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        />
-                                    ) : (
-                                        <input
-                                            type={
-                                                settingForm.tipoDato ===
-                                                "FECHA"
-                                                    ? "date"
-                                                    : settingForm.tipoDato ===
-                                                      "HORA"
-                                                      ? "time"
-                                                      : settingForm.tipoDato ===
-                                                            "ENTERO" ||
-                                                        settingForm.tipoDato ===
-                                                            "DECIMAL"
-                                                        ? "number"
-                                                        : "text"
-                                            }
-                                            step={
-                                                settingForm.tipoDato ===
-                                                "ENTERO"
-                                                    ? "1"
-                                                    : settingForm.tipoDato ===
-                                                      "DECIMAL"
-                                                      ? "any"
-                                                      : undefined
-                                            }
-                                            value={
-                                                settingForm
-                                                    .valor
-                                            }
-                                            onChange={(
-                                                event
-                                            ) =>
-                                                handleSettingFieldChange(
-                                                    "valor",
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        />
-                                    )}
-                                </label>
-
-                                <label className="setting-field-full">
-                                    Descripción
-
-                                    <textarea
-                                        rows="3"
-                                        maxLength="1000"
+                                    <input
+                                        type="search"
+                                        placeholder="Clave, descripción o sucursal..."
                                         value={
-                                            settingForm
-                                                .descripcion
+                                            search
                                         }
                                         onChange={(
                                             event
                                         ) =>
-                                            handleSettingFieldChange(
-                                                "descripcion",
+                                            setSearch(
                                                 event
                                                     .target
                                                     .value
                                             )
                                         }
                                     />
-                                </label>
+                                </div>
 
-                                {!editingSetting &&
-                                    isGeneralAdmin && (
-                                    <label className="setting-checkbox-field setting-field-full">
-                                        <input
-                                            type="checkbox"
-                                            checked={
-                                                settingForm
-                                                    .editable
-                                            }
-                                            onChange={(
-                                                event
-                                            ) =>
-                                                handleSettingFieldChange(
-                                                    "editable",
-                                                    event
-                                                        .target
-                                                        .checked
-                                                )
-                                            }
-                                        />
-
-                                        Permitir que esta configuración sea editada
-                                    </label>
-                                )}
-                            </div>
-
-                            <div className="setting-form-actions">
-                                <button
-                                    type="button"
-                                    className="secondary"
-                                    onClick={
-                                        closeSettingForm
-                                    }
-                                >
-                                    Cancelar
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    className="primary"
-                                    disabled={
-                                        isSaving ||
-                                        (
-                                            editingSetting &&
-                                            !editingSetting
-                                                .editable
-                                        )
-                                    }
-                                >
-                                    <FaSave />
-
-                                    {isSaving
-                                        ? "Guardando..."
-                                        : "Guardar configuración"}
-                                </button>
-                            </div>
-                        </form>
-                    )}
-
-                    <section className="settings-list-card">
-                        <form
-                            className="settings-filters admin-filter-bar"
-                            onSubmit={
-                                handleSearch
-                            }
-                        >
-                            <div className="settings-search">
-                                <FaSearch />
-
-                                <input
-                                    type="search"
-                                    placeholder="Clave, descripción o sucursal..."
+                                <select
                                     value={
-                                        search
+                                        branchFilter
+                                    }
+                                    onChange={(
+                                        event
+                                    ) => {
+                                        setBranchFilter(
+                                            event
+                                                .target
+                                                .value
+                                        );
+
+                                        setPage(1);
+                                    }}
+                                >
+                                    <option value="">
+                                        Todas las sucursales
+                                    </option>
+
+                                    {options.sucursales.map(
+                                        (branch) => (
+                                            <option
+                                                key={
+                                                    branch.id
+                                                }
+                                                value={
+                                                    branch.id
+                                                }
+                                            >
+                                                {
+                                                    branch.nombre
+                                                }
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+
+                                <select
+                                    value={
+                                        scopeFilter
+                                    }
+                                    onChange={(
+                                        event
+                                    ) => {
+                                        setScopeFilter(
+                                            event
+                                                .target
+                                                .value
+                                        );
+
+                                        setPage(1);
+                                    }}
+                                >
+                                    <option value="TODOS">
+                                        Todos los alcances
+                                    </option>
+
+                                    <option value="GLOBAL">
+                                        Globales
+                                    </option>
+
+                                    <option value="SUCURSAL">
+                                        Por sucursal
+                                    </option>
+                                </select>
+
+                                <select
+                                    value={
+                                        typeFilter
+                                    }
+                                    onChange={(
+                                        event
+                                    ) => {
+                                        setTypeFilter(
+                                            event
+                                                .target
+                                                .value
+                                        );
+
+                                        setPage(1);
+                                    }}
+                                >
+                                    <option value="">
+                                        Todos los tipos
+                                    </option>
+
+                                    {options.tiposDato.map(
+                                        (
+                                            dataType
+                                        ) => (
+                                            <option
+                                                key={
+                                                    dataType.codigo
+                                                }
+                                                value={
+                                                    dataType.codigo
+                                                }
+                                            >
+                                                {
+                                                    dataType.nombre
+                                                }
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+
+                                <button type="submit">
+                                    Buscar
+                                </button>
+                            </form>
+
+                            {isLoadingSettings ? (
+                                <div className="settings-empty-state">
+                                    <FaCog />
+                                    Cargando configuraciones...
+                                </div>
+                            ) : settings.length ===
+                                0 ? (
+                                <div className="settings-empty-state">
+                                    <FaCog />
+
+                                    <strong>
+                                        No se encontraron configuraciones
+                                    </strong>
+                                </div>
+                            ) : (
+                                <div className="settings-table-wrapper admin-table-shell">
+                                    <table className="settings-table admin-data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Clave</th>
+                                                <th>Alcance</th>
+                                                <th>Tipo</th>
+                                                <th>Valor</th>
+                                                <th>Actualizado por</th>
+                                                <th>Editable</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {settings.map(
+                                                (
+                                                    setting
+                                                ) => (
+                                                    <tr
+                                                        key={
+                                                            setting.id
+                                                        }
+                                                    >
+                                                        <td>
+                                                            <div className="setting-key-cell">
+                                                                <FaKey />
+
+                                                                <div>
+                                                                    <strong>
+                                                                        {
+                                                                            setting.clave
+                                                                        }
+                                                                    </strong>
+
+                                                                    <small>
+                                                                        {setting.descripcion ??
+                                                                            "Sin descripción"}
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <span
+                                                                className={`setting-scope ${setting.alcance.toLowerCase()}`}
+                                                            >
+                                                                {setting.alcance ===
+                                                                    "GLOBAL"
+                                                                    ? "Global"
+                                                                    : setting
+                                                                        .sucursal
+                                                                        ?.nombre ??
+                                                                    "Sucursal"}
+                                                            </span>
+                                                        </td>
+
+                                                        <td>
+                                                            {formatLabel(
+                                                                setting.tipoDato
+                                                            )}
+                                                        </td>
+
+                                                        <td>
+                                                            <code className="setting-value">
+                                                                {formatSettingValue(
+                                                                    setting
+                                                                )}
+                                                            </code>
+                                                        </td>
+
+                                                        <td>
+                                                            <div className="setting-update-cell">
+                                                                <strong>
+                                                                    {
+                                                                        setting
+                                                                            .actualizadoPor
+                                                                            .nombreCompleto
+                                                                    }
+                                                                </strong>
+
+                                                                <small>
+                                                                    {formatDateTime(
+                                                                        setting.updatedAt
+                                                                    )}
+                                                                </small>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <span
+                                                                className={`setting-editable ${setting.editable ? "yes" : "no"}`}
+                                                            >
+                                                                {setting.editable ? (
+                                                                    <>
+                                                                        <FaCheck />
+                                                                        Sí
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <FaLock />
+                                                                        No
+                                                                    </>
+                                                                )}
+                                                            </span>
+                                                        </td>
+
+                                                        <td>
+                                                            <div className="setting-actions">
+                                                                <button
+                                                                    type="button"
+                                                                    title="Editar"
+                                                                    disabled={
+                                                                        !setting.editable
+                                                                    }
+                                                                    onClick={() =>
+                                                                        openEditSetting(
+                                                                            setting
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <FaEdit />
+                                                                </button>
+
+                                                                {isGeneralAdmin && (
+                                                                    <button
+                                                                        type="button"
+                                                                        title={
+                                                                            setting.editable
+                                                                                ? "Proteger"
+                                                                                : "Permitir edición"
+                                                                        }
+                                                                        disabled={
+                                                                            isSaving
+                                                                        }
+                                                                        onClick={() =>
+                                                                            handleEditabilityChange(
+                                                                                setting
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {setting.editable ? (
+                                                                            <FaBan />
+                                                                        ) : (
+                                                                            <FaToggleOn />
+                                                                        )}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            <div className="settings-pagination admin-pagination">
+                                <span>
+                                    Página{" "}
+                                    {pagination.page} de{" "}
+                                    {
+                                        pagination.totalPages
+                                    }
+                                </span>
+
+                                <div>
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            page <= 1
+                                        }
+                                        onClick={() =>
+                                            setPage(
+                                                (value) =>
+                                                    Math.max(
+                                                        1,
+                                                        value -
+                                                        1
+                                                    )
+                                            )
+                                        }
+                                    >
+                                        <FaChevronLeft />
+                                        Anterior
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            page >=
+                                            pagination
+                                                .totalPages
+                                        }
+                                        onClick={() =>
+                                            setPage(
+                                                (value) =>
+                                                    value +
+                                                    1
+                                            )
+                                        }
+                                    >
+                                        Siguiente
+                                        <FaChevronRight />
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                    </>
+                )}
+
+            {activeTab ===
+                "CORRELATIVOS" && (
+                    <>
+                        <section className="correlative-branch-card">
+                            <label>
+                                <span>
+                                    <FaBuilding />
+                                    Sucursal
+                                </span>
+
+                                <select
+                                    value={
+                                        correlativeBranchId
                                     }
                                     onChange={(
                                         event
                                     ) =>
-                                        setSearch(
+                                        setCorrelativeBranchId(
                                             event
                                                 .target
                                                 .value
                                         )
                                     }
-                                />
-                            </div>
-
-                            <select
-                                value={
-                                    branchFilter
-                                }
-                                onChange={(
-                                    event
-                                ) => {
-                                    setBranchFilter(
-                                        event
-                                            .target
-                                            .value
-                                    );
-
-                                    setPage(1);
-                                }}
-                            >
-                                <option value="">
-                                    Todas las sucursales
-                                </option>
-
-                                {options.sucursales.map(
-                                    (branch) => (
-                                        <option
-                                            key={
-                                                branch.id
-                                            }
-                                            value={
-                                                branch.id
-                                            }
-                                        >
-                                            {
-                                                branch.nombre
-                                            }
-                                        </option>
-                                    )
-                                )}
-                            </select>
-
-                            <select
-                                value={
-                                    scopeFilter
-                                }
-                                onChange={(
-                                    event
-                                ) => {
-                                    setScopeFilter(
-                                        event
-                                            .target
-                                            .value
-                                    );
-
-                                    setPage(1);
-                                }}
-                            >
-                                <option value="TODOS">
-                                    Todos los alcances
-                                </option>
-
-                                <option value="GLOBAL">
-                                    Globales
-                                </option>
-
-                                <option value="SUCURSAL">
-                                    Por sucursal
-                                </option>
-                            </select>
-
-                            <select
-                                value={
-                                    typeFilter
-                                }
-                                onChange={(
-                                    event
-                                ) => {
-                                    setTypeFilter(
-                                        event
-                                            .target
-                                            .value
-                                    );
-
-                                    setPage(1);
-                                }}
-                            >
-                                <option value="">
-                                    Todos los tipos
-                                </option>
-
-                                {options.tiposDato.map(
-                                    (
-                                        dataType
-                                    ) => (
-                                        <option
-                                            key={
-                                                dataType.codigo
-                                            }
-                                            value={
-                                                dataType.codigo
-                                            }
-                                        >
-                                            {
-                                                dataType.nombre
-                                            }
-                                        </option>
-                                    )
-                                )}
-                            </select>
-
-                            <button type="submit">
-                                Buscar
-                            </button>
-                        </form>
-
-                        {isLoadingSettings ? (
-                            <div className="settings-empty-state">
-                                <FaCog />
-                                Cargando configuraciones...
-                            </div>
-                        ) : settings.length ===
-                          0 ? (
-                            <div className="settings-empty-state">
-                                <FaCog />
-
-                                <strong>
-                                    No se encontraron configuraciones
-                                </strong>
-                            </div>
-                        ) : (
-                            <div className="settings-table-wrapper admin-table-shell">
-                                <table className="settings-table admin-data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Clave</th>
-                                            <th>Alcance</th>
-                                            <th>Tipo</th>
-                                            <th>Valor</th>
-                                            <th>Actualizado por</th>
-                                            <th>Editable</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        {settings.map(
-                                            (
-                                                setting
-                                            ) => (
-                                                <tr
-                                                    key={
-                                                        setting.id
-                                                    }
-                                                >
-                                                    <td>
-                                                        <div className="setting-key-cell">
-                                                            <FaKey />
-
-                                                            <div>
-                                                                <strong>
-                                                                    {
-                                                                        setting.clave
-                                                                    }
-                                                                </strong>
-
-                                                                <small>
-                                                                    {setting.descripcion ??
-                                                                        "Sin descripción"}
-                                                                </small>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-
-                                                    <td>
-                                                        <span
-                                                            className={`setting-scope ${setting.alcance.toLowerCase()}`}
-                                                        >
-                                                            {setting.alcance ===
-                                                            "GLOBAL"
-                                                                ? "Global"
-                                                                : setting
-                                                                      .sucursal
-                                                                      ?.nombre ??
-                                                                  "Sucursal"}
-                                                        </span>
-                                                    </td>
-
-                                                    <td>
-                                                        {formatLabel(
-                                                            setting.tipoDato
-                                                        )}
-                                                    </td>
-
-                                                    <td>
-                                                        <code className="setting-value">
-                                                            {formatSettingValue(
-                                                                setting
-                                                            )}
-                                                        </code>
-                                                    </td>
-
-                                                    <td>
-                                                        <div className="setting-update-cell">
-                                                            <strong>
-                                                                {
-                                                                    setting
-                                                                        .actualizadoPor
-                                                                        .nombreCompleto
-                                                                }
-                                                            </strong>
-
-                                                            <small>
-                                                                {formatDateTime(
-                                                                    setting.updatedAt
-                                                                )}
-                                                            </small>
-                                                        </div>
-                                                    </td>
-
-                                                    <td>
-                                                        <span
-                                                            className={`setting-editable ${setting.editable ? "yes" : "no"}`}
-                                                        >
-                                                            {setting.editable ? (
-                                                                <>
-                                                                    <FaCheck />
-                                                                    Sí
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <FaLock />
-                                                                    No
-                                                                </>
-                                                            )}
-                                                        </span>
-                                                    </td>
-
-                                                    <td>
-                                                        <div className="setting-actions">
-                                                            <button
-                                                                type="button"
-                                                                title="Editar"
-                                                                disabled={
-                                                                    !setting.editable
-                                                                }
-                                                                onClick={() =>
-                                                                    openEditSetting(
-                                                                        setting
-                                                                    )
-                                                                }
-                                                            >
-                                                                <FaEdit />
-                                                            </button>
-
-                                                            {isGeneralAdmin && (
-                                                                <button
-                                                                    type="button"
-                                                                    title={
-                                                                        setting.editable
-                                                                            ? "Proteger"
-                                                                            : "Permitir edición"
-                                                                    }
-                                                                    disabled={
-                                                                        isSaving
-                                                                    }
-                                                                    onClick={() =>
-                                                                        handleEditabilityChange(
-                                                                            setting
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    {setting.editable ? (
-                                                                        <FaBan />
-                                                                    ) : (
-                                                                        <FaToggleOn />
-                                                                    )}
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-
-                        <div className="settings-pagination admin-pagination">
-                            <span>
-                                Página{" "}
-                                {pagination.page} de{" "}
-                                {
-                                    pagination.totalPages
-                                }
-                            </span>
-
-                            <div>
-                                <button
-                                    type="button"
-                                    disabled={
-                                        page <= 1
-                                    }
-                                    onClick={() =>
-                                        setPage(
-                                            (value) =>
-                                                Math.max(
-                                                    1,
-                                                    value -
-                                                        1
-                                                )
-                                        )
-                                    }
                                 >
-                                    <FaChevronLeft />
-                                    Anterior
-                                </button>
+                                    <option value="">
+                                        Seleccionar sucursal
+                                    </option>
 
-                                <button
-                                    type="button"
-                                    disabled={
-                                        page >=
-                                        pagination
-                                            .totalPages
-                                    }
-                                    onClick={() =>
-                                        setPage(
-                                            (value) =>
-                                                value +
-                                                1
-                                        )
-                                    }
-                                >
-                                    Siguiente
-                                    <FaChevronRight />
-                                </button>
-                            </div>
-                        </div>
-                    </section>
-                </>
-            )}
-
-            {activeTab ===
-                "CORRELATIVOS" && (
-                <>
-                    <section className="correlative-branch-card">
-                        <label>
-                            <span>
-                                <FaBuilding />
-                                Sucursal
-                            </span>
-
-                            <select
-                                value={
-                                    correlativeBranchId
-                                }
-                                onChange={(
-                                    event
-                                ) =>
-                                    setCorrelativeBranchId(
-                                        event
-                                            .target
-                                            .value
-                                    )
-                                }
-                            >
-                                <option value="">
-                                    Seleccionar sucursal
-                                </option>
-
-                                {options.sucursales.map(
-                                    (branch) => (
-                                        <option
-                                            key={
-                                                branch.id
-                                            }
-                                            value={
-                                                branch.id
-                                            }
-                                        >
-                                            {
-                                                branch.nombre
-                                            }
-                                        </option>
-                                    )
-                                )}
-                            </select>
-                        </label>
-
-                        <div>
-                            <FaHashtag />
-
-                            <p>
-                                El último número utilizado
-                                no se modifica desde esta
-                                pantalla. Solo se actualiza
-                                el prefijo y la longitud.
-                            </p>
-                        </div>
-                    </section>
-
-                    {!correlativeBranchId ? (
-                        <div className="settings-empty-state">
-                            <FaStore />
-
-                            <strong>
-                                Selecciona una sucursal
-                            </strong>
-                        </div>
-                    ) : isLoadingCorrelatives ? (
-                        <div className="settings-empty-state">
-                            <FaHashtag />
-                            Cargando correlativos...
-                        </div>
-                    ) : (
-                        <div className="correlative-grid">
-                            {correlatives.map(
-                                (
-                                    correlative
-                                ) => {
-                                    const draft =
-                                        correlativeDrafts[
-                                            correlative
-                                                .tipoDocumento
-                                        ] ?? {
-                                            prefijo:
-                                                correlative.prefijo,
-
-                                            longitudNumero:
-                                                String(
-                                                    correlative.longitudNumero
-                                                )
-                                        };
-
-                                    const isSavingCurrent =
-                                        savingCorrelative ===
-                                        correlative
-                                            .tipoDocumento;
-
-                                    return (
-                                        <article
-                                            key={
-                                                correlative.tipoDocumento
-                                            }
-                                            className="correlative-card"
-                                        >
-                                            <header>
-                                                <div className="correlative-icon">
-                                                    <FaFileAlt />
-                                                </div>
-
-                                                <div>
-                                                    <span>
-                                                        {
-                                                            correlative.tipoDocumento
-                                                        }
-                                                    </span>
-
-                                                    <h3>
-                                                        {
-                                                            correlative.nombre
-                                                        }
-                                                    </h3>
-                                                </div>
-
-                                                <span
-                                                    className={`admin-status-badge correlative-status ${
-                                                        correlative.configurado
-                                                            ? "configured"
-                                                            : "pending"
-                                                    }`}
-                                                >
-                                                    {correlative.configurado
-                                                        ? "Configurado"
-                                                        : "Pendiente"}
-                                                </span>
-                                            </header>
-
-                                            <div className="correlative-preview">
-                                                <span>
-                                                    Próximo número
-                                                </span>
-
-                                                <strong>
-                                                    {
-                                                        correlative.proximoNumero
-                                                    }
-                                                </strong>
-                                            </div>
-
-                                            <div className="correlative-data">
-                                                <div>
-                                                    <span>
-                                                        Último número
-                                                    </span>
-
-                                                    <strong>
-                                                        {
-                                                            correlative.ultimoNumero
-                                                        }
-                                                    </strong>
-                                                </div>
-
-                                                <div>
-                                                    <span>
-                                                        Longitud actual
-                                                    </span>
-
-                                                    <strong>
-                                                        {
-                                                            correlative.longitudNumero
-                                                        }
-                                                    </strong>
-                                                </div>
-                                            </div>
-
-                                            <label>
-                                                Prefijo
-
-                                                <input
-                                                    type="text"
-                                                    maxLength="15"
-                                                    value={
-                                                        draft.prefijo
-                                                    }
-                                                    onChange={(
-                                                        event
-                                                    ) =>
-                                                        handleCorrelativeDraft(
-                                                            correlative.tipoDocumento,
-                                                            "prefijo",
-                                                            event
-                                                                .target
-                                                                .value
-                                                                .toUpperCase()
-                                                        )
-                                                    }
-                                                />
-                                            </label>
-
-                                            <label>
-                                                Cantidad de dígitos
-
-                                                <input
-                                                    type="number"
-                                                    min="3"
-                                                    max="12"
-                                                    step="1"
-                                                    value={
-                                                        draft.longitudNumero
-                                                    }
-                                                    onChange={(
-                                                        event
-                                                    ) =>
-                                                        handleCorrelativeDraft(
-                                                            correlative.tipoDocumento,
-                                                            "longitudNumero",
-                                                            event
-                                                                .target
-                                                                .value
-                                                        )
-                                                    }
-                                                />
-                                            </label>
-
-                                            <button
-                                                type="button"
-                                                disabled={
-                                                    isSavingCurrent
+                                    {options.sucursales.map(
+                                        (branch) => (
+                                            <option
+                                                key={
+                                                    branch.id
                                                 }
-                                                onClick={() =>
-                                                    handleSaveCorrelative(
-                                                        correlative
-                                                    )
+                                                value={
+                                                    branch.id
                                                 }
                                             >
-                                                <FaSave />
+                                                {
+                                                    branch.nombre
+                                                }
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </label>
 
-                                                {isSavingCurrent
-                                                    ? "Guardando..."
-                                                    : "Guardar correlativo"}
-                                            </button>
-                                        </article>
-                                    );
-                                }
-                            )}
-                        </div>
-                    )}
-                </>
-            )}
+                            <div>
+                                <FaHashtag />
+
+                                <p>
+                                    El último número utilizado
+                                    no se modifica desde esta
+                                    pantalla. Solo se actualiza
+                                    el prefijo y la longitud.
+                                </p>
+                            </div>
+                        </section>
+
+                        {!correlativeBranchId ? (
+                            <div className="settings-empty-state">
+                                <FaStore />
+
+                                <strong>
+                                    Selecciona una sucursal
+                                </strong>
+                            </div>
+                        ) : isLoadingCorrelatives ? (
+                            <div className="settings-empty-state">
+                                <FaHashtag />
+                                Cargando correlativos...
+                            </div>
+                        ) : (
+                            <div className="correlative-grid">
+                                {correlatives.map(
+                                    (
+                                        correlative
+                                    ) => {
+                                        const draft =
+                                            correlativeDrafts[
+                                            correlative
+                                                .tipoDocumento
+                                            ] ?? {
+                                                prefijo:
+                                                    correlative.prefijo,
+
+                                                longitudNumero:
+                                                    String(
+                                                        correlative.longitudNumero
+                                                    )
+                                            };
+
+                                        const isSavingCurrent =
+                                            savingCorrelative ===
+                                            correlative
+                                                .tipoDocumento;
+
+                                        return (
+                                            <article
+                                                key={
+                                                    correlative.tipoDocumento
+                                                }
+                                                className="correlative-card"
+                                            >
+                                                <header>
+                                                    <div className="correlative-icon">
+                                                        <FaFileAlt />
+                                                    </div>
+
+                                                    <div>
+                                                        <span>
+                                                            {
+                                                                correlative.tipoDocumento
+                                                            }
+                                                        </span>
+
+                                                        <h3>
+                                                            {
+                                                                correlative.nombre
+                                                            }
+                                                        </h3>
+                                                    </div>
+
+                                                    <span
+                                                        className={`admin-status-badge correlative-status ${correlative.configurado
+                                                                ? "configured"
+                                                                : "pending"
+                                                            }`}
+                                                    >
+                                                        {correlative.configurado
+                                                            ? "Configurado"
+                                                            : "Pendiente"}
+                                                    </span>
+                                                </header>
+
+                                                <div className="correlative-preview">
+                                                    <span>
+                                                        Próximo número
+                                                    </span>
+
+                                                    <strong>
+                                                        {
+                                                            correlative.proximoNumero
+                                                        }
+                                                    </strong>
+                                                </div>
+
+                                                <div className="correlative-data">
+                                                    <div>
+                                                        <span>
+                                                            Último número
+                                                        </span>
+
+                                                        <strong>
+                                                            {
+                                                                correlative.ultimoNumero
+                                                            }
+                                                        </strong>
+                                                    </div>
+
+                                                    <div>
+                                                        <span>
+                                                            Longitud actual
+                                                        </span>
+
+                                                        <strong>
+                                                            {
+                                                                correlative.longitudNumero
+                                                            }
+                                                        </strong>
+                                                    </div>
+                                                </div>
+
+                                                <label>
+                                                    Prefijo
+
+                                                    <input
+                                                        type="text"
+                                                        maxLength="15"
+                                                        value={
+                                                            draft.prefijo
+                                                        }
+                                                        onChange={(
+                                                            event
+                                                        ) =>
+                                                            handleCorrelativeDraft(
+                                                                correlative.tipoDocumento,
+                                                                "prefijo",
+                                                                event
+                                                                    .target
+                                                                    .value
+                                                                    .toUpperCase()
+                                                            )
+                                                        }
+                                                    />
+                                                </label>
+
+                                                <label>
+                                                    Cantidad de dígitos
+
+                                                    <input
+                                                        type="number"
+                                                        min="3"
+                                                        max="12"
+                                                        step="1"
+                                                        value={
+                                                            draft.longitudNumero
+                                                        }
+                                                        onChange={(
+                                                            event
+                                                        ) =>
+                                                            handleCorrelativeDraft(
+                                                                correlative.tipoDocumento,
+                                                                "longitudNumero",
+                                                                event
+                                                                    .target
+                                                                    .value
+                                                            )
+                                                        }
+                                                    />
+                                                </label>
+
+                                                <button
+                                                    type="button"
+                                                    disabled={
+                                                        isSavingCurrent
+                                                    }
+                                                    onClick={() =>
+                                                        handleSaveCorrelative(
+                                                            correlative
+                                                        )
+                                                    }
+                                                >
+                                                    <FaSave />
+
+                                                    {isSavingCurrent
+                                                        ? "Guardando..."
+                                                        : "Guardar correlativo"}
+                                                </button>
+                                            </article>
+                                        );
+                                    }
+                                )}
+                            </div>
+                        )}
+                    </>
+                )}
+            {activeTab ===
+                "AUDITORIA" && (
+                    <AuditPanel />
+                )}
         </section>
     );
 }

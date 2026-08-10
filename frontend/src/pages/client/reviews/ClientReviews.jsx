@@ -213,6 +213,7 @@ function ClientReviews() {
                     </div>
                     <button
                         type="button"
+                        className="client-reviews-refresh-button"
                         onClick={() => {
                             setIsLoading(true);
                             void loadSales();

@@ -416,7 +416,8 @@
 
 .report-daily-chart {
     width: 100%;
-    min-width: 620px;
+    min-width: 0;
+    max-width: 100%;
     height: auto;
     display: block;
 }
@@ -1230,5 +1231,207 @@
     .report-details-dialog-footer > div,
     .report-details-dialog-footer button {
         width: 100%;
+    }
+}
+
+/* ==========================================
+   RESPONSIVE FINAL - REPORTES
+========================================== */
+
+@media (max-width: 850px) {
+    .reports-admin {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
+    }
+
+    .reports-heading,
+    .reports-filter-card,
+    .report-card,
+    .report-period {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    /* HEADER */
+    .reports-heading {
+        padding: 18px;
+    }
+
+    .reports-heading-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .reports-heading-actions button,
+    .reports-refresh-button,
+    .reports-export-button {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* FILTROS */
+    .reports-filter-card {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .reports-filter-card label,
+    .reports-filter-card input,
+    .reports-filter-card select {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .reports-filter-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .reports-filter-actions button {
+        width: 100%;
+    }
+
+    /* MÉTRICAS */
+    .report-metric-grid,
+    .report-metric-grid.secondary,
+    .report-cash-grid,
+    .report-dashboard-grid,
+    .report-content-grid,
+    .report-status-columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .report-metric-card {
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* GRÁFICOS */
+    .report-chart-container {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
+    }
+
+    .report-daily-chart {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .report-chart-legend {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    /* PRODUCTOS */
+    .report-product-list > article,
+    .report-product-list > button {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .report-product-data {
+        width: 100%;
+        min-width: 0;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .report-product-data > span {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    /* FILAS FLEX */
+    .report-payment-total,
+    .report-detail-status-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    /* MODAL */
+    .report-details-dialog {
+        width: calc(100% - 20px);
+        max-width: calc(100% - 20px);
+        margin: 10px;
+        box-sizing: border-box;
+    }
+
+    .report-detail-record > summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .report-detail-record-total {
+        width: 100%;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    /* TABLAS: aquí sí mantenemos scroll */
+    .report-detail-table-wrap {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 520px) {
+    .reports-heading {
+        padding: 15px;
+    }
+
+    .reports-filter-card {
+        padding: 13px;
+    }
+
+    .report-card {
+        padding: 15px;
+    }
+
+    .report-period {
+        padding: 12px 13px;
+    }
+
+    .report-metric-card {
+        padding: 13px;
+        align-items: flex-start;
+    }
+
+    .report-metric-icon {
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+    }
+
+    .report-metric-content > strong {
+        font-size: 1.05rem;
+    }
+
+    .report-details-dialog-header,
+    .report-details-dialog-body,
+    .report-details-dialog-footer {
+        padding-left: 13px;
+        padding-right: 13px;
+    }
+
+    .report-product-list > article,
+    .report-product-list > button {
+        grid-template-columns: 30px minmax(0, 1fr);
+    }
+
+    .report-product-position {
+        width: 28px;
+        height: 28px;
     }
 }

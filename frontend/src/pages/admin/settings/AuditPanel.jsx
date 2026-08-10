@@ -334,11 +334,11 @@ function AuditPanel() {
                         .sucursales
                         .length === 1
                         ? result
-                              .sucursalSeleccionadaId ??
-                          result
-                              .sucursales[0]
-                              ?.id ??
-                          ""
+                            .sucursalSeleccionadaId ??
+                        result
+                            .sucursales[0]
+                            ?.id ??
+                        ""
                         : "";
 
                 const initialFilters = {
@@ -368,7 +368,7 @@ function AuditPanel() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudieron cargar las opciones de auditoría."
+                    "No se pudieron cargar las opciones de auditoría."
                 );
             } finally {
                 if (
@@ -435,7 +435,7 @@ function AuditPanel() {
                     getErrorMessage(
                         requestError
                     ) ??
-                        "No se pudo cargar el historial de auditoría."
+                    "No se pudo cargar el historial de auditoría."
                 );
             } finally {
                 if (
@@ -481,7 +481,7 @@ function AuditPanel() {
             filters.fechaDesde &&
             filters.fechaHasta &&
             filters.fechaDesde >
-                filters.fechaHasta
+            filters.fechaHasta
         ) {
             setError(
                 "La fecha inicial no puede ser posterior a la fecha final."
@@ -508,11 +508,11 @@ function AuditPanel() {
                 options.sucursales
                     .length === 1
                     ? options
-                          .sucursalSeleccionadaId ??
-                      options
-                          .sucursales[0]
-                          ?.id ??
-                      ""
+                        .sucursalSeleccionadaId ??
+                    options
+                        .sucursales[0]
+                        ?.id ??
+                    ""
                     : ""
         };
 
@@ -550,7 +550,7 @@ function AuditPanel() {
                 getErrorMessage(
                     requestError
                 ) ??
-                    "No se pudo cargar el detalle de auditoría."
+                "No se pudo cargar el detalle de auditoría."
             );
         } finally {
             setIsLoadingDetail(false);
@@ -568,15 +568,15 @@ function AuditPanel() {
 
     return (
         <section className="audit-panel">
-            <header className="audit-heading">
+            <header className="audit-heading admin-page-header">
                 <div>
                     <span className="admin-eyebrow">
                         AUDITORÍA
                     </span>
 
-                    <h3>
+                    <h2>
                         Historial de operaciones
-                    </h3>
+                    </h2>
 
                     <p>
                         Revisa las acciones realizadas
@@ -1014,9 +1014,9 @@ function AuditPanel() {
                                                     <small>
                                                         {audit.entidadId
                                                             ? audit.entidadId.slice(
-                                                                  0,
-                                                                  8
-                                                              )
+                                                                0,
+                                                                8
+                                                            )
                                                             : "-"}
                                                     </small>
                                                 </div>
