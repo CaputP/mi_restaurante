@@ -1,4 +1,5 @@
 import {
+    useCallback,
     useEffect,
     useState
 } from "react";
@@ -85,6 +86,14 @@ function CategoriesAdmin({
     const [reloadKey, setReloadKey] =
         useState(0);
 
+    const openCreateForm = useCallback(() => {
+        setEditingCategory(null);
+        setForm(initialForm);
+        setMessage("");
+        setError("");
+        setFormVisible(true);
+    }, []);
+
     useEffect(() => {
         setHeaderAction({
             label: "Nueva categoría",
@@ -94,7 +103,8 @@ function CategoriesAdmin({
         });
     }, [
         setHeaderAction,
-        isSaving
+        isSaving,
+        openCreateForm
     ]);
 
     useEffect(() => {
@@ -171,14 +181,6 @@ function CategoriesAdmin({
         reloadKey,
         realtimeVersion
     ]);
-
-    function openCreateForm() {
-        setEditingCategory(null);
-        setForm(initialForm);
-        setMessage("");
-        setError("");
-        setFormVisible(true);
-    }
 
     function openEditForm(category) {
         setEditingCategory(category);

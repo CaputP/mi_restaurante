@@ -94,7 +94,6 @@ function LoyaltyLayout() {
             {/* PESTAÑAS */}
             <nav
                 className="loyalty-module-nav admin-tabs"
-                role="tablist"
                 aria-label="Secciones de fidelización"
             >
                 {LOYALTY_SECTIONS.map(
@@ -111,7 +110,6 @@ function LoyaltyLayout() {
                                     section.path
                                 }
                                 end
-                                role="tab"
                                 className={({
                                     isActive
                                 }) =>

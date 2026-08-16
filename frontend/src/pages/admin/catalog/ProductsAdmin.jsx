@@ -1,4 +1,5 @@
 import {
+    useCallback,
     useEffect,
     useState
 } from "react";
@@ -375,7 +376,7 @@ function ProductsAdmin({
         realtimeVersion
     ]);
 
-    function openCreateForm() {
+    const openCreateForm = useCallback(() => {
         setEditingProduct(null);
 
         setForm(
@@ -387,7 +388,7 @@ function ProductsAdmin({
         setMessage("");
         setError("");
         setFormVisible(true);
-    }
+    }, [options.sucursales]);
 
     useEffect(() => {
         setHeaderAction({
@@ -398,7 +399,8 @@ function ProductsAdmin({
         });
     }, [
         setHeaderAction,
-        optionsLoading
+        optionsLoading,
+        openCreateForm
     ]);
 
     function openEditForm(product) {

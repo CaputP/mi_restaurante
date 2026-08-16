@@ -39,6 +39,7 @@
 .complaint-privacy { padding: 1rem; border: 1px solid #dce5da; border-radius: 12px; background: #f7faf6; font-weight: 500; line-height: 1.5; }
 .legal-form-message { margin-top: 1rem; padding: .8rem 1rem; border-radius: 9px; background: #fff0ef; color: #8a2c24; }
 .receipt-code { font-size: 1.15rem; }
+.receipt-provider { padding: .9rem 1rem; border: 1px solid #dce5da; border-radius: 12px; background: #f7faf6; }
 .receipt-status { display: inline-flex; padding: .45rem .7rem; border-radius: 999px; background: #e5f1e6; color: #285d38; font-weight: 850; }
 .receipt-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin: 1.5rem 0; }
 .receipt-grid div { padding: .8rem; border: 1px solid #e0e7df; border-radius: 10px; }

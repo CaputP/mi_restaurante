@@ -23,7 +23,7 @@ function LegalDocumentPage({ documentKey }) {
                 <header>
                     <span className="legal-eyebrow">Información legal</span>
                     <h1>{document.title}</h1>
-                    <p><strong>Versión:</strong> {document.version} · <strong>Vigente desde:</strong> 8 de agosto de 2026</p>
+                    <p><strong>Versión:</strong> {document.version} · <strong>Vigente desde:</strong> {document.effectiveDate}</p>
                     <p>{document.intro}</p>
                 </header>
 

@@ -1386,7 +1386,7 @@
     }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 600px) {
     .reports-heading {
         padding: 15px;
     }
@@ -1415,7 +1415,7 @@
     }
 
     .report-metric-content > strong {
-        font-size: 1.05rem;
+        font-size: var(--admin-font-xl);
     }
 
     .report-details-dialog-header,

@@ -2,8 +2,9 @@ import "./footer.css";
 // Importamos el logo
 import logo from "../../assets/images/logo.webp";
 // Importamos los iconos de react-icons
-import { FaMapMarkerAlt, FaPhoneAlt, FaClock, FaWhatsapp, FaGithub } from "react-icons/fa";
+import { FaMapMarkerAlt, FaPhoneAlt, FaClock, FaWhatsapp, FaGithub, FaEnvelope } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { LEGAL_PROVIDER } from "../../config/legal.config";
 
 function Footer() {
     return (
@@ -46,18 +47,40 @@ function Footer() {
                             <FaMapMarkerAlt className="footer-icon" />
                             <div>
                                 <strong>Dirección</strong>
-                                <p>Chocco, Santiago - Cusco</p>
+                                <p>{LEGAL_PROVIDER.address}</p>
                             </div>
                         </a>
 
                         <a
                             className="contact-item"
-                            href="tel:+51994744356"
+                            href={`tel:${LEGAL_PROVIDER.phoneHref}`}
                         >
                             <FaPhoneAlt className="footer-icon" />
                             <div>
                                 <strong>Teléfono</strong>
-                                <p>+51 994 744 356</p>
+                                <p>{LEGAL_PROVIDER.phone}</p>
+                            </div>
+                        </a>
+
+                        <a
+                            className="contact-item"
+                            href={`tel:${LEGAL_PROVIDER.secondaryPhoneHref}`}
+                        >
+                            <FaPhoneAlt className="footer-icon" />
+                            <div>
+                                <strong>Teléfono alternativo</strong>
+                                <p>{LEGAL_PROVIDER.secondaryPhone}</p>
+                            </div>
+                        </a>
+
+                        <a
+                            className="contact-item"
+                            href={`mailto:${LEGAL_PROVIDER.email}`}
+                        >
+                            <FaEnvelope className="footer-icon" />
+                            <div>
+                                <strong>Correo</strong>
+                                <p>{LEGAL_PROVIDER.email}</p>
                             </div>
                         </a>
 
@@ -71,14 +94,14 @@ function Footer() {
 
                         <a
                             className="contact-item"
-                            href="https://wa.me/51994744356"
+                            href={`https://wa.me/${LEGAL_PROVIDER.whatsappHref}`}
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             <FaWhatsapp className="footer-icon" />
                             <div>
                                 <strong>WhatsApp</strong>
-                                <p>+51 994 744 356</p>
+                                <p>{LEGAL_PROVIDER.whatsapp}</p>
                             </div>
                         </a>
                     </div>
@@ -90,7 +113,8 @@ function Footer() {
                         <Link to="/legal/cookies">Política de Cookies</Link>
                         <Link to="/legal/reservas-cancelaciones">Reservas y cancelaciones</Link>
                         <Link className="complaint-book-link" to="/libro-de-reclamaciones">
-                            Libro de Reclamaciones
+                            <strong>Libro de Reclamaciones</strong>
+                            <span>Registra aquí tu reclamo o queja</span>
                         </Link>
                     </div>
                 </div>
@@ -100,6 +124,7 @@ function Footer() {
             <div className="footer-bottom">
                 <div className="footer-bottom-container">
                     <p>© 2026 El Vallecito de Chocco. Todos los derechos reservados.</p>
+                    <p className="alcohol-warning">Prohibida la venta de bebidas alcohólicas a menores de 18 años. Si has ingerido bebidas alcohólicas, no manejes.</p>
                     <p>Desarrollado por <strong>CaputDEV</strong></p>
                     <button
                         type="button"

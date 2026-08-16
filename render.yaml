@@ -1,0 +1,69 @@
+services:
+  - type: web
+    name: el-vallecito-api-demo
+    runtime: docker
+    plan: free
+    region: oregon
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: sh -c "npm run prisma:migrate:deploy && npm run prisma:seed && npm start"
+    healthCheckPath: /api/v1/ready
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AUTH_COOKIE_SECURE
+        value: "true"
+      - key: AUTH_COOKIE_SAME_SITE
+        value: lax
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: EMAIL_MODE
+        value: smtp
+      - key: MAIL_FROM
+        value: El Vallecito de Chocco <elvallecitodechocco@gmail.com>
+      - key: SMTP_HOST
+        value: smtp-relay.brevo.com
+      - key: SMTP_PORT
+        value: "2525"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: LEGAL_CONTACT_EMAIL
+        value: elvallecitodechocco@gmail.com
+      - key: CONSUMER_CLAIMS_NOTIFICATION_EMAIL
+        value: elvallecitodechocco@gmail.com
+      - key: RESERVATION_CLIENT_CANCELLATION_HOURS
+        value: "1"
+      - key: BACKUP_ENABLED
+        value: "true"
+      - key: BACKUP_DIRECTORY
+        value: /app/backups
+      - key: BACKUP_INTERVAL_HOURS
+        value: "24"
+      - key: BACKUP_RETENTION_DAYS
+        value: "7"
+      - key: PG_DUMP_PATH
+        value: pg_dump
+      - key: TRUST_PROXY_HOPS
+        value: "2"
+      - key: LOG_LEVEL
+        value: info
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NOMBRES
+        sync: false
+      - key: ADMIN_APELLIDOS
+        sync: false

@@ -90,8 +90,24 @@ export async function createConsumerClaim(input: CreateConsumerClaimInput) {
   }
 
   const token = randomBytes(32).toString("base64url");
-  const date = new Date().toISOString().slice(0, 10).replaceAll("-", "");
-  const codigo = `LR-${date}-${randomBytes(4).toString("hex").toUpperCase()}`;
+  const sequenceResult = await prisma.$queryRaw<Array<{ numero: bigint }>>`
+    SELECT nextval('reclamo_consumidor_numero_seq') AS numero
+  `;
+  const sequenceNumber = sequenceResult[0]?.numero;
+
+  if (sequenceNumber === undefined) {
+    throw new AppError(
+      500,
+      "No se pudo asignar la numeración del Libro de Reclamaciones.",
+      "NUMERACION_RECLAMO_NO_DISPONIBLE",
+    );
+  }
+
+  const year = new Intl.DateTimeFormat("en", {
+    timeZone: "America/Lima",
+    year: "numeric",
+  }).format(new Date());
+  const codigo = `LR-${year}-${sequenceNumber.toString().padStart(8, "0")}`;
   const record = await prisma.reclamoConsumidor.create({
     data: {
       codigo,
@@ -122,8 +138,21 @@ export async function createConsumerClaim(input: CreateConsumerClaimInput) {
   void notifySafely({
     to: input.correo,
     subject: `Constancia del Libro de Reclamaciones ${codigo}`,
-    text: `Hemos recibido tu ${input.tipo.toLowerCase()} con código ${codigo}. Conserva esta constancia: ${receiptUrl}`,
-    html: `<p>Hemos recibido tu ${escapeHtml(input.tipo.toLowerCase())}.</p><p><strong>Código:</strong> ${escapeHtml(codigo)}</p><p><a href="${escapeHtml(receiptUrl)}">Consultar e imprimir constancia</a></p>`,
+    text: `El Vallecito de Chocco ha recibido tu ${input.tipo.toLowerCase()} con código ${codigo}. Conserva esta constancia: ${receiptUrl}`,
+    html: `<p><strong>El Vallecito de Chocco</strong> ha recibido tu ${escapeHtml(input.tipo.toLowerCase())}.</p><p><strong>Código:</strong> ${escapeHtml(codigo)}</p><p><a href="${escapeHtml(receiptUrl)}">Consultar e imprimir constancia</a></p><p>El plazo máximo de respuesta es de 15 días hábiles.</p>`,
+  }, codigo);
+
+  void notifySafely({
+    to: env.CONSUMER_CLAIMS_NOTIFICATION_EMAIL,
+    subject: `Nuevo ${input.tipo.toLowerCase()} ${codigo}`,
+    text: [
+      `Se registró el ${input.tipo.toLowerCase()} ${codigo}.`,
+      `Consumidor: ${input.nombreCompleto}`,
+      `Correo: ${input.correo}`,
+      `Detalle: ${input.detalle}`,
+      `Gestionar: ${env.FRONTEND_URL}/admin/reclamaciones`,
+    ].join("\n"),
+    html: `<p>Se registró el <strong>${escapeHtml(input.tipo.toLowerCase())} ${escapeHtml(codigo)}</strong>.</p><p><strong>Consumidor:</strong> ${escapeHtml(input.nombreCompleto)}<br><strong>Correo:</strong> ${escapeHtml(input.correo)}</p><p><strong>Detalle:</strong> ${escapeHtml(input.detalle)}</p><p><a href="${escapeHtml(`${env.FRONTEND_URL}/admin/reclamaciones`)}">Abrir bandeja de atención</a></p>`,
   }, codigo);
 
   return { reclamo: record, tokenConsulta: token, urlConstancia: receiptUrl };

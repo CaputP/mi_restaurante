@@ -13,6 +13,8 @@ Sistema web para la operación de restaurante: autenticación, sucursales, catá
 - `docs/REFACTORING_REPORT.md`: inventario completo de seguridad, refactorización, UI/UX y preparación para producción.
 - `docs/REQUIREMENTS_TRACEABILITY.md`: ruta entre los requisitos originales y los módulos implementados.
 - `docs/BACKUP_AND_RECOVERY.md`: procedimiento verificable de respaldo, restauración y recuperación.
+- `docs/DEPLOYMENT_FREE_DEMO.md`: publicación gratuita temporal en Vercel, Render, Supabase y Brevo.
+- `docs/PROTECCION_DATOS_ANPD.md`: inventario legal-técnico y pendientes externos de protección de datos.
 
 La API está organizada por módulos de negocio. Las operaciones de dinero críticas utilizan transacciones serializables, bloqueos de fila y bloqueo asesor por número de operación para impedir pagos duplicados o sobrepagos concurrentes.
 
@@ -114,4 +116,4 @@ El repositorio incluye una base sólida para producción: validación estricta d
 
 Todavía deben decidirse para el entorno real: proveedor de hosting, dominios, TLS, SMTP, almacenamiento de respaldos, monitoreo/alertas y si habrá múltiples réplicas. Esas decisiones son infraestructura y no deben quedar codificadas con valores ficticios.
 
-La configuración legal, las políticas, la evidencia de aceptación y el procedimiento del Libro de Reclamaciones se documentan en `docs/CUMPLIMIENTO_LEGAL.md`.
+La configuración legal, las políticas, la evidencia de aceptación y el procedimiento del Libro de Reclamaciones se documentan en `docs/CUMPLIMIENTO_LEGAL.md`. La alternativa gratuita de demostración se describe en `docs/DEPLOYMENT_FREE_DEMO.md`; no debe usarse con operaciones reales.

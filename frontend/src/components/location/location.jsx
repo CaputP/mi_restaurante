@@ -36,7 +36,7 @@ function Location({ titulo }) {
                                 <FaMapMarkerAlt className="info-icon" />
                                 <h3>Dirección</h3>
                             </div>
-                            <p>Cc. Chocco, Santiago 08000</p>
+                            <p>Comunidad Chocco Kuychiro s/n, Santiago, Cusco</p>
                             <p>Cusco, Perú</p>
                         </a>
 

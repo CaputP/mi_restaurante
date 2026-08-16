@@ -109,8 +109,15 @@ function ClientReviews() {
 
     useEffect(() => {
         const controller = new AbortController();
-        void loadSales(controller.signal);
-        return () => controller.abort();
+        const timeoutId = globalThis.setTimeout(
+            () => void loadSales(controller.signal),
+            0
+        );
+
+        return () => {
+            globalThis.clearTimeout(timeoutId);
+            controller.abort();
+        };
     }, [loadSales, realtimeVersion]);
 
     const metrics = useMemo(

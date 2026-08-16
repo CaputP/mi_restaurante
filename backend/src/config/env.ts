@@ -130,7 +130,19 @@ const envSchema = z.object({
     .int()
     .min(0)
     .max(720)
-    .default(24),
+    .default(1),
+
+  LEGAL_CONTACT_EMAIL: z
+    .string()
+    .trim()
+    .email("LEGAL_CONTACT_EMAIL debe ser un correo válido.")
+    .default("elvallecitodechocco@gmail.com"),
+
+  CONSUMER_CLAIMS_NOTIFICATION_EMAIL: z
+    .string()
+    .trim()
+    .email("CONSUMER_CLAIMS_NOTIFICATION_EMAIL debe ser un correo válido.")
+    .default("elvallecitodechocco@gmail.com"),
 
   BACKUP_ENABLED: z
     .enum(["true", "false"])

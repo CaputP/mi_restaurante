@@ -123,7 +123,7 @@ describe("ReservationForm", () => {
                     observaciones: null,
                     aceptaPoliticaReserva: true,
                     versionPoliticaReserva:
-                        "1.0-2026-08-08",
+                        "1.1-2026-08-15",
                     detalles: []
                 });
         });

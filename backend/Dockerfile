@@ -26,6 +26,9 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=build --chown=nodeapp:nodeapp /app/dist ./dist
+COPY --from=build --chown=nodeapp:nodeapp /app/src/generated ./src/generated
+COPY --chown=nodeapp:nodeapp prisma.config.ts ./prisma.config.ts
+COPY --chown=nodeapp:nodeapp prisma ./prisma
 COPY --chown=nodeapp:nodeapp scripts ./scripts
 
 RUN mkdir -p /app/backups && chown -R nodeapp:nodeapp /app/backups

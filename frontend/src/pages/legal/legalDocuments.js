@@ -1,114 +1,177 @@
-import { LEGAL_PROVIDER, LEGAL_VERSIONS } from "../../config/legal.config";
+import {
+    LEGAL_EFFECTIVE_DATES,
+    LEGAL_PROVIDER,
+    LEGAL_VERSIONS
+} from "../../config/legal.config";
 
-const provider = `${LEGAL_PROVIDER.legalName}, RUC ${LEGAL_PROVIDER.ruc}, con domicilio en ${LEGAL_PROVIDER.address}`;
+const provider = `${LEGAL_PROVIDER.legalName}, ${LEGAL_PROVIDER.providerType}, RUC ${LEGAL_PROVIDER.ruc}, con establecimiento en ${LEGAL_PROVIDER.address}`;
+const dataBankRegistration = LEGAL_PROVIDER.dataBankRegistration
+    ? ` Inscripción registral: ${LEGAL_PROVIDER.dataBankRegistration}.`
+    : " La referencia registral se publicará cuando concluya la evaluación y el trámite que correspondan ante la autoridad.";
 
 export const legalDocuments = {
     terms: {
         title: "Términos y Condiciones de Uso",
         version: LEGAL_VERSIONS.terms,
-        intro: `Estos términos regulan el acceso y uso del sitio y del sistema de ${LEGAL_PROVIDER.tradeName}, operado por ${provider}.`,
+        effectiveDate: LEGAL_EFFECTIVE_DATES.terms,
+        intro: `Estos términos regulan el sitio y el sistema de ${LEGAL_PROVIDER.tradeName}, operado por ${provider}.`,
         sections: [
             {
                 title: "1. Alcance y aceptación",
-                paragraphs: ["Al crear una cuenta o utilizar funciones transaccionales declaras haber leído y aceptado estos términos. Si actúas en representación de otra persona, declaras contar con autorización suficiente."]
+                paragraphs: [
+                    "Al crear una cuenta o realizar una operación declaras haber leído y aceptado las condiciones vigentes que se muestran antes de confirmar. Ninguna disposición limita los derechos irrenunciables reconocidos al consumidor por la legislación peruana.",
+                    "Las reservas de eventos pueden tener condiciones particulares informadas y aceptadas antes del pago; esas condiciones complementan este documento."
+                ]
             },
             {
                 title: "2. Cuenta y seguridad",
                 bullets: [
                     "Debes proporcionar información verdadera, actual y suficiente.",
-                    "Eres responsable de proteger tus credenciales y de avisar cualquier uso no autorizado.",
-                    "Podemos bloquear temporalmente accesos cuando existan indicios razonables de fraude, abuso o riesgo para el sistema."
+                    "Eres responsable de proteger tus credenciales y comunicar cualquier uso no autorizado.",
+                    "Podemos bloquear temporalmente un acceso ante indicios razonables de fraude, suplantación, abuso o riesgo para el sistema."
                 ]
             },
             {
                 title: "3. Reservas, pedidos y pagos",
-                paragraphs: ["Las solicitudes están sujetas a disponibilidad y confirmación. Los precios, adelantos, medios de pago y condiciones aplicables se muestran antes de confirmar cada operación. Una constancia de envío no reemplaza la confirmación de la reserva ni el comprobante de pago."],
+                paragraphs: [
+                    "Las solicitudes están sujetas a horario, disponibilidad, aforo, stock y confirmación del establecimiento. Los importes, adelantos y condiciones aplicables se presentan antes de confirmar.",
+                    "Los pagos informados por transferencia, Yape, Plin u otro medio sujeto a verificación no se consideran confirmados hasta su validación. El sistema no almacena datos completos de tarjetas."
+                ],
                 bullets: [
-                    "No almacenamos datos completos de tarjetas en este sistema.",
-                    "Los pagos informados por transferencia, Yape o Plin requieren validación cuando así se indique.",
-                    "Las cancelaciones y devoluciones se rigen por la Política de Reservas y Cancelaciones."
+                    "Las cancelaciones, devoluciones y no asistencias se rigen por la Política de Reservas, Cancelaciones y Reembolsos.",
+                    "Una captura o constancia de envío de dinero no sustituye la validación del pago.",
+                    "Los pedidos no avanzan cuando el sistema detecta stock insuficiente."
                 ]
             },
             {
-                title: "4. Uso permitido",
-                paragraphs: ["No puedes intentar vulnerar controles de seguridad, suplantar identidades, automatizar tráfico abusivo, alterar registros ni usar el servicio para fines ilícitos. El contenido, diseño, marcas y software pertenecen a sus respectivos titulares."]
+                title: "4. Boletas y constancias internas",
+                paragraphs: [
+                    `${LEGAL_PROVIDER.tradeName} entrega actualmente ${LEGAL_PROVIDER.receiptMode.toLowerCase()}. La nota de pedido, ticket interno o constancia generada por el ERP sirve para trazabilidad operativa y no reemplaza por sí sola el comprobante de pago regulado por SUNAT.`,
+                    "El número de la boleta física podrá asociarse a la venta dentro del sistema para facilitar su consulta y auditoría."
+                ]
             },
             {
-                title: "5. Disponibilidad y responsabilidad",
-                paragraphs: ["Aplicamos medidas razonables de continuidad y seguridad, pero pueden existir mantenimientos o interrupciones fuera de nuestro control. Nada en estos términos limita los derechos irrenunciables reconocidos al consumidor por la legislación peruana."]
+                title: "5. Bebidas alcohólicas",
+                bullets: [
+                    "Está prohibida la venta, suministro y entrega de bebidas alcohólicas a menores de 18 años.",
+                    "El establecimiento puede solicitar un documento de identidad antes de vender o entregar una bebida alcohólica.",
+                    "Si has ingerido bebidas alcohólicas, no manejes."
+                ]
             },
             {
-                title: "6. Cambios, contacto y controversias",
-                paragraphs: [`Publicaremos la versión y fecha de cada actualización. Los cambios sustanciales requerirán una nueva aceptación cuando corresponda. Puedes contactarnos en ${LEGAL_PROVIDER.email} o ${LEGAL_PROVIDER.phone}, usar el Libro de Reclamaciones y acudir a las autoridades competentes.`]
+                title: "6. Fidelización, premios y reseñas",
+                paragraphs: [
+                    "Los beneficios de fidelización se asignan conforme al programa vigente mostrado en la cuenta. Una misma persona registra como máximo una visita computable por día, aunque realice más de un pedido.",
+                    "Los premios están sujetos a vigencia, requisitos y disponibilidad. Las operaciones anuladas o fraudulentas no generan beneficios.",
+                    "Las reseñas públicas se vinculan a una experiencia verificada, pueden moderarse por contenido ilícito, ofensivo, irrelevante o que exponga datos personales, y el autor puede solicitar su retiro."
+                ]
+            },
+            {
+                title: "7. Uso permitido",
+                paragraphs: [
+                    "No puedes vulnerar controles de seguridad, suplantar identidades, automatizar tráfico abusivo, manipular pagos, alterar registros ni usar el servicio para fines ilícitos. El contenido, diseño, marcas y software pertenecen a sus respectivos titulares."
+                ]
+            },
+            {
+                title: "8. Disponibilidad y responsabilidad",
+                paragraphs: [
+                    "Aplicamos medidas razonables de continuidad y seguridad, pero pueden existir mantenimientos o interrupciones fuera de nuestro control. Informaremos los cambios que afecten una operación confirmada y ofreceremos las alternativas que correspondan."
+                ]
+            },
+            {
+                title: "9. Cambios, contacto y reclamos",
+                paragraphs: [
+                    `Los cambios sustanciales se versionan y requieren una nueva aceptación cuando corresponda. Puedes contactarnos en ${LEGAL_PROVIDER.email}, llamar al ${LEGAL_PROVIDER.phone}, escribir al WhatsApp ${LEGAL_PROVIDER.whatsapp} o utilizar el Libro de Reclamaciones. También puedes acudir a Indecopi u otra autoridad competente.`
+                ]
             }
         ]
     },
     privacy: {
         title: "Política de Privacidad y Protección de Datos",
         version: LEGAL_VERSIONS.privacy,
-        intro: `${LEGAL_PROVIDER.legalName} informa cómo trata los datos personales de clientes, usuarios y personas que presentan consultas o reclamos.`,
+        effectiveDate: LEGAL_EFFECTIVE_DATES.privacy,
+        intro: `${LEGAL_PROVIDER.legalName} informa cómo trata los datos personales de clientes, usuarios, trabajadores autorizados y personas que presentan consultas o reclamos.`,
         sections: [
             {
                 title: "1. Responsable y banco de datos",
-                paragraphs: [`Responsable: ${provider}. Correo para privacidad: ${LEGAL_PROVIDER.email}. Inscripción o código del banco de datos personales: ${LEGAL_PROVIDER.dataBankRegistration}.`]
+                paragraphs: [
+                    `Responsable: ${provider}. Correo para privacidad y derechos de las personas: ${LEGAL_PROVIDER.email}. Banco de datos: ${LEGAL_PROVIDER.dataBankName}.${dataBankRegistration}`
+                ]
             },
             {
                 title: "2. Datos que tratamos",
                 bullets: [
                     "Identificación y contacto: nombres, apellidos, documento, correo, teléfono y domicilio cuando sea necesario.",
-                    "Cuenta y seguridad: proveedor de acceso, verificaciones, sesiones, dirección IP, registros técnicos y auditoría.",
-                    "Operaciones: reservas, pedidos, pagos declarados, comprobantes, preferencias y reclamos.",
-                    "Información enviada voluntariamente en observaciones, consultas o solicitudes."
+                    "Cuenta y seguridad: proveedor de acceso, verificaciones, sesiones, dirección IP, eventos técnicos y auditoría.",
+                    "Operaciones: reservas, pedidos, productos, pagos declarados, boletas asociadas, preferencias, fidelización y reclamos.",
+                    "Contenido voluntario: observaciones, comprobantes enviados, reseñas y solicitudes de atención."
                 ]
             },
             {
-                title: "3. Finalidades y base del tratamiento",
+                title: "3. Finalidades y legitimación",
                 bullets: [
-                    "Crear y proteger la cuenta, gestionar reservas, pedidos, pagos, comprobantes y atención al cliente.",
-                    "Cumplir obligaciones legales, tributarias, de seguridad y de protección al consumidor.",
-                    "Prevenir fraude, investigar incidentes y mantener trazabilidad operativa.",
-                    "Enviar promociones solo cuando exista una autorización válida y separada, que podrá retirarse."
+                    "Crear y proteger la cuenta; gestionar reservas, pedidos, pagos, boletas, beneficios y atención al cliente.",
+                    "Ejecutar las condiciones solicitadas o aceptadas por la persona usuaria.",
+                    "Cumplir obligaciones tributarias, de seguridad, protección al consumidor y atención de derechos.",
+                    "Prevenir fraude, investigar incidentes y conservar trazabilidad operativa.",
+                    "Enviar publicidad únicamente con autorización separada y revocable."
                 ]
             },
             {
-                title: "4. Destinatarios y transferencias",
-                paragraphs: ["Podemos usar proveedores de alojamiento, correo, respaldo y autenticación únicamente para prestar el servicio y bajo obligaciones de seguridad y confidencialidad. El acceso con Google es opcional y puede implicar tratamiento por Google conforme a sus propias condiciones. No vendemos datos personales."]
+                title: "4. Proveedores, destinatarios y transferencias",
+                paragraphs: [
+                    "Para la etapa provisional podemos utilizar Vercel para el frontend, Render para la API, Supabase para PostgreSQL, Google para autenticación y Brevo para correo transaccional. Estos proveedores actúan como encargados tecnológicos conforme a sus condiciones y pueden tratar información fuera del Perú.",
+                    "Las transferencias y encargos aplicables se inventarían, documentan y registran cuando corresponda. No vendemos datos personales. Solo comunicamos información a autoridades cuando existe obligación legal."
+                ]
             },
             {
-                title: "5. Conservación y seguridad",
-                paragraphs: ["Conservamos la información durante la relación y los plazos necesarios para atender responsabilidades legales, contables, contractuales y de seguridad. Luego se elimina o anonimiza de forma segura. Aplicamos control de acceso, cifrado en tránsito, registros de auditoría, copias de respaldo y revisión de privilegios; ningún sistema es absolutamente infalible."]
+                title: "5. Conservación",
+                paragraphs: [
+                    "Conservamos la información durante la relación y durante los plazos necesarios para atender responsabilidades tributarias, contractuales, de consumo, seguridad y defensa frente a reclamaciones. Al vencer el plazo aplicable, la información se elimina, bloquea o anonimiza de forma segura."
+                ]
             },
             {
-                title: "6. Derechos de la persona titular",
-                paragraphs: [`Puedes solicitar información, acceso, actualización, inclusión, rectificación, supresión, oposición y revocación del consentimiento escribiendo a ${LEGAL_PROVIDER.email}. Incluye tu identidad, el derecho solicitado y un medio de respuesta. También puedes acudir a la Autoridad Nacional de Protección de Datos Personales.`]
+                title: "6. Seguridad e incidentes",
+                paragraphs: [
+                    "Aplicamos controles de acceso por rol, cifrado en tránsito, cookies seguras, registros de auditoría, copias de respaldo y revisión de privilegios. Ante un incidente se limitará el acceso afectado, se preservará evidencia y se realizarán las comunicaciones exigibles. Ningún sistema puede garantizar riesgo cero."
+                ]
             },
             {
-                title: "7. Menores y cambios",
-                paragraphs: ["El registro autónomo está dirigido a personas con capacidad legal. Cuando se traten datos de menores, debe intervenir su representante conforme a ley. Los cambios relevantes serán comunicados y, si requieren consentimiento, se solicitará una nueva decisión."]
+                title: "7. Derechos de la persona titular",
+                paragraphs: [
+                    `Puedes solicitar información, acceso, actualización, inclusión, rectificación, supresión, oposición o revocación escribiendo a ${LEGAL_PROVIDER.email}. Indica tu identidad, el derecho que deseas ejercer y un medio de respuesta. También puedes acudir a la Autoridad Nacional de Protección de Datos Personales.`
+                ]
+            },
+            {
+                title: "8. Menores y cambios",
+                paragraphs: [
+                    "El registro autónomo está dirigido a personas con capacidad legal. Cuando corresponda tratar datos de una persona menor de edad, debe intervenir su padre, madre o representante conforme a ley. Los cambios relevantes se comunicarán y se solicitará una nueva decisión cuando sea necesario."
+                ]
             }
         ]
     },
     cookies: {
         title: "Política de Cookies",
         version: LEGAL_VERSIONS.cookies,
-        intro: "Esta política explica las tecnologías locales usadas por el sitio y te permite controlar las funciones opcionales.",
+        effectiveDate: LEGAL_EFFECTIVE_DATES.cookies,
+        intro: "Esta política explica las tecnologías locales usadas por el sitio y permite controlar las funciones opcionales.",
         sections: [
             {
                 title: "1. Cookies necesarias",
                 bullets: [
                     "vallecito_session: cookie HttpOnly de sesión y autenticación.",
                     "vallecito_csrf: evita el envío no autorizado de formularios.",
-                    "vallecito_cookie_preferences_v1: almacenamiento local de tu decisión de privacidad."
+                    "vallecito_cookie_preferences_v1: almacenamiento local de la decisión de privacidad."
                 ],
                 paragraphs: ["Estas tecnologías son indispensables para el servicio solicitado y no se usan con fines publicitarios."]
             },
             {
                 title: "2. Función opcional de Google",
-                paragraphs: ["El script de Google Identity Services solo se carga después de autorizar “Acceso con Google”. Google puede recibir datos técnicos como la dirección IP y el navegador. Puedes usar correo y contraseña sin habilitar esta función."]
+                paragraphs: ["Google Identity Services solo se carga después de autorizar Acceso con Google. Google puede recibir datos técnicos como la dirección IP y el navegador. Puedes usar correo y contraseña sin habilitar esta función."]
             },
             {
                 title: "3. Gestión y revocación",
-                paragraphs: ["Puedes cambiar tu decisión en cualquier momento. Revocar una función opcional evita cargas futuras, aunque también puedes borrar cookies y almacenamiento desde el navegador."],
+                paragraphs: ["Puedes cambiar tu decisión en cualquier momento. Revocar una función opcional evita cargas futuras; también puedes borrar cookies y almacenamiento desde el navegador."],
                 action: "cookies"
             }
         ]
@@ -116,31 +179,48 @@ export const legalDocuments = {
     reservations: {
         title: "Política de Reservas, Cancelaciones y Reembolsos",
         version: LEGAL_VERSIONS.reservations,
-        intro: "Lee estas condiciones antes de solicitar una reserva. La pantalla de confirmación mostrará los importes y requisitos concretos de tu operación.",
+        effectiveDate: LEGAL_EFFECTIVE_DATES.reservations,
+        intro: "Estas condiciones se muestran antes de solicitar una reserva y distinguen las reservas regulares de comida de los eventos.",
         sections: [
             {
                 title: "1. Solicitud y confirmación",
-                paragraphs: ["Enviar una solicitud no garantiza disponibilidad. La reserva queda confirmada cuando el establecimiento la aprueba y, si corresponde, valida el adelanto requerido. Las solicitudes de productos también están sujetas a disponibilidad y cantidades aprobadas."]
-            },
-            {
-                title: "2. Adelantos y saldo",
-                paragraphs: ["El importe, plazo y medio de pago se informan en el detalle de la reserva. Los pagos declarados pasan a validación y no se consideran recibidos hasta ser confirmados. El saldo se paga según lo informado para la reserva."]
-            },
-            {
-                title: "3. Cancelación y reprogramación",
-                bullets: [
-                    "El cliente puede cancelar o solicitar reprogramación desde el sistema dentro del plazo que muestre su reserva.",
-                    "La configuración operativa actual exige, como regla general, al menos 24 horas de anticipación para cancelar en línea.",
-                    "Fuera de ese plazo debes contactar al establecimiento; la evaluación considera servicios ya preparados, compras especiales y condiciones informadas antes del pago."
+                paragraphs: [
+                    "Enviar una solicitud no garantiza disponibilidad. La reserva queda confirmada cuando el establecimiento la aprueba y, si corresponde, valida el adelanto requerido.",
+                    "Las cantidades y productos solicitados están sujetos a disponibilidad y stock."
                 ]
             },
             {
-                title: "4. Reembolsos y no asistencia",
-                paragraphs: ["Cuando corresponda un reembolso, se informará el monto, medio y plazo antes de procesarlo. Una retención o penalidad solo se aplicará si fue informada de forma clara, resulta proporcional y respeta los derechos del consumidor. La no asistencia puede cerrar la reserva y afectar la devolución de costos efectivamente incurridos."]
+                title: "2. Adelantos y saldo",
+                paragraphs: [
+                    "El importe, plazo y medio de pago aparecen en el detalle de la reserva. Un pago declarado permanece pendiente hasta su validación. El saldo se paga según las condiciones informadas para la reserva."
+                ]
             },
             {
-                title: "5. Cambios por el establecimiento",
-                paragraphs: ["Si el establecimiento no puede prestar el servicio confirmado, ofrecerá reprogramación o devolución según corresponda. Para ayuda, utiliza los canales de contacto o el Libro de Reclamaciones."]
+                title: "3. Reserva regular de comida",
+                bullets: [
+                    "La cancelación realizada al menos una hora antes del inicio permite devolver el 100 % del adelanto confirmado.",
+                    "Dentro de la última hora, la cancelación en línea se cierra y el cliente debe comunicarse con el establecimiento.",
+                    "En una cancelación tardía o si el cliente no se presenta, se devuelve el 50 % del adelanto y se retiene el 50 % por la preparación y capacidad reservada.",
+                    "La reprogramación debe solicitarse antes del límite de cancelación y está sujeta a disponibilidad."
+                ]
+            },
+            {
+                title: "4. Reservas de eventos",
+                paragraphs: [
+                    `Las fechas, productos, aforo, adelanto, cancelación y devolución de un evento se coordinan directamente mediante ${LEGAL_PROVIDER.phone} o WhatsApp ${LEGAL_PROVIDER.whatsapp}. Las condiciones particulares deben quedar informadas y aceptadas antes de solicitar el pago.`
+                ]
+            },
+            {
+                title: "5. Procesamiento de devoluciones",
+                paragraphs: [
+                    "El sistema registra el monto que corresponde devolver y conserva la trazabilidad del pago. La entrega efectiva se coordina por el medio original cuando sea posible o por otro medio acordado, dejando constancia de la operación."
+                ]
+            },
+            {
+                title: "6. Cambios por el establecimiento",
+                paragraphs: [
+                    "Si el establecimiento no puede prestar el servicio confirmado, ofrecerá reprogramación o devolución total del importe recibido. Para ayuda utiliza los canales de contacto o el Libro de Reclamaciones."
+                ]
             }
         ]
     }

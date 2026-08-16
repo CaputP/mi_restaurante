@@ -17,7 +17,7 @@ const validReservation = {
   horaReserva: "12:30",
   aceptaPoliticaReserva: true,
   versionPoliticaReserva:
-    "1.0-2026-08-08",
+    "1.1-2026-08-15",
   duracionMinutos: 120,
   cantidadPersonas: 8,
   tipoReserva: "EVENTO" as const,

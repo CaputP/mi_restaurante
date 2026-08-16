@@ -83,12 +83,26 @@
 }
 
 .legal-column .complaint-book-link {
+    display: grid;
+    gap: .2rem;
     margin-top: .35rem;
     padding: .65rem .8rem;
     border: 1px solid rgba(255, 215, 0, .55);
     border-radius: 8px;
     color: #ffd700;
     font-weight: 800;
+}
+
+.legal-column .complaint-book-link span {
+    color: #e2e8f0;
+    font-size: .78rem;
+    font-weight: 500;
+}
+
+.alcohol-warning {
+    max-width: 32rem;
+    color: #e2e8f0 !important;
+    font-weight: 700;
 }
 
 .footer-cookie-settings {

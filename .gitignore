@@ -33,6 +33,7 @@ backend/.agents/
 /archivos_no_github/
 /entregables/
 /.deliverable-build/
+/tmp/
 
 # Archivos del sistema
 .DS_Store

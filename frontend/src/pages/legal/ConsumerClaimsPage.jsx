@@ -95,6 +95,11 @@ function ConsumerClaimsPage() {
                     <nav className="legal-back"><Link to="/">← Volver al inicio</Link></nav>
                     <span className="legal-eyebrow">Constancia electrónica</span>
                     <h1>Libro de Reclamaciones</h1>
+                    <p className="receipt-provider">
+                        <strong>{LEGAL_PROVIDER.tradeName}</strong><br />
+                        {LEGAL_PROVIDER.legalName} · RUC {LEGAL_PROVIDER.ruc}<br />
+                        {LEGAL_PROVIDER.address}
+                    </p>
                     <p className="receipt-code">Código: <strong>{receipt.codigo}</strong></p>
                     <div className="receipt-status">Estado: {receipt.estado.replaceAll("_", " ")}</div>
                     <dl className="receipt-grid">
@@ -127,6 +132,7 @@ function ConsumerClaimsPage() {
                     <span className="legal-eyebrow">Atención al consumidor</span>
                     <h1>Libro de Reclamaciones</h1>
                     <p>Proveedor: {LEGAL_PROVIDER.legalName} · RUC {LEGAL_PROVIDER.ruc} · {LEGAL_PROVIDER.address}</p>
+                    <p>Contacto: {LEGAL_PROVIDER.email} · {LEGAL_PROVIDER.phone}</p>
                     <p><strong>Reclamo:</strong> disconformidad con un producto o servicio. <strong>Queja:</strong> malestar respecto de la atención.</p>
                 </header>
 
@@ -166,6 +172,7 @@ function ConsumerClaimsPage() {
                         <span>Declaro haber leído la <Link to="/legal/privacidad" target="_blank">Política de Privacidad</Link> aplicable a la gestión de esta comunicación.</span>
                     </label>
                     <p className="receipt-note">El proveedor debe responder en un máximo de 15 días hábiles. El registro no limita otros derechos del consumidor.</p>
+                    <p className="receipt-note">Si el canal virtual no se encuentra disponible, solicita el Libro de Reclamaciones físico de respaldo en el establecimiento.</p>
                     <button type="submit" className="legal-action" disabled={isSubmitting}>{isSubmitting ? "Registrando..." : "Registrar y generar constancia"}</button>
                 </form>
             </article>
