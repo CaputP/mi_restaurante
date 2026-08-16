@@ -7,7 +7,6 @@ services:
     rootDir: backend
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    dockerCommand: sh -c "npm run prisma:migrate:deploy && npm run prisma:seed && npm start"
     healthCheckPath: /api/v1/ready
     autoDeployTrigger: checksPass
     envVars:

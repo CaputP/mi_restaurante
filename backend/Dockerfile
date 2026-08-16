@@ -31,9 +31,12 @@ COPY --chown=nodeapp:nodeapp prisma.config.ts ./prisma.config.ts
 COPY --chown=nodeapp:nodeapp prisma ./prisma
 COPY --chown=nodeapp:nodeapp scripts ./scripts
 
-RUN mkdir -p /app/backups && chown -R nodeapp:nodeapp /app/backups
+RUN mkdir -p /app/backups \
+    && chmod +x /app/scripts/docker-entrypoint.sh \
+    && chown -R nodeapp:nodeapp /app/backups /app/scripts
 
 USER nodeapp
 EXPOSE 3000
 
+ENTRYPOINT ["/app/scripts/docker-entrypoint.sh"]
 CMD ["node", "dist/server.js"]
