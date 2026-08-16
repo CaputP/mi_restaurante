@@ -49,6 +49,7 @@ El archivo `render.yaml` define el servicio. En Render:
 | --- | --- |
 | `DATABASE_URL` | Session pooler de Supabase, puerto `5432` |
 | `FRONTEND_URL` | Ya configurada como `https://mi-restaurante-psi.vercel.app` |
+| `JWT_SECRET` | Secreto aleatorio de 64 o más caracteres, exclusivo del backend |
 | `GOOGLE_CLIENT_ID` | ID OAuth Web ya utilizado por el sistema |
 | `SMTP_USER` | Login SMTP de Brevo |
 | `SMTP_PASSWORD` | Clave SMTP de Brevo |
@@ -58,7 +59,7 @@ El archivo `render.yaml` define el servicio. En Render:
 | `ADMIN_APELLIDOS` | Apellidos del administrador |
 | `ADMIN_TELEFONO` | Teléfono del administrador, opcional |
 
-`JWT_SECRET` lo genera Render y no debe copiarse al frontend. En cada arranque se aplican migraciones, se sincronizan los datos estructurales y finalmente se inicia la API. El proceso es idempotente y no elimina operaciones existentes.
+`JWT_SECRET` debe generarse y guardarse como secreto únicamente en Render; nunca debe copiarse al frontend ni versionarse en GitHub. En cada arranque se aplican migraciones, se sincronizan los datos estructurales y finalmente se inicia la API. El proceso es idempotente y no elimina operaciones existentes.
 
 Al terminar, verificar:
 
