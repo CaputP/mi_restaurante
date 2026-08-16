@@ -577,22 +577,38 @@ async function assertProducts(
           estado:
             "ACTIVO",
 
-          ...(branchId
-            ? {
-                sucursales: {
-                  some: {
+          categoria: {
+            estado:
+              "ACTIVO",
+
+            deletedAt:
+              null,
+          },
+
+          sucursales: {
+            some: {
+              ...(branchId
+                ? {
                     sucursalId:
                       branchId,
+                  }
+                : {
+                    sucursal: {
+                      estado:
+                        "ACTIVO",
 
-                    estado:
-                      "ACTIVO",
+                      deletedAt:
+                        null,
+                    },
+                  }),
 
-                    disponibleVenta:
-                      true,
-                  },
-                },
-              }
-            : {}),
+              estado:
+                "ACTIVO",
+
+              disponibleVenta:
+                true,
+            },
+          },
         },
 
         select: {

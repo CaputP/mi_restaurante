@@ -136,6 +136,7 @@ describe("ReservationDetailDialog", () => {
                 }
             )
         ).not.toBeInTheDocument();
+
     });
 
     it("descuenta pagos pendientes y evita informar más que el saldo", () => {
@@ -215,6 +216,18 @@ describe("ReservationDetailDialog", () => {
                 }
             )
         ).not.toBeInTheDocument();
+
+        expect(
+            screen.getByRole(
+                "link",
+                {
+                    name: "Constancia"
+                }
+            )
+        ).toHaveAttribute(
+            "href",
+            "/reservations/reserva-1/payments/pago-confirmado/receipt"
+        );
     });
 
     it("muestra la confirmación dentro de la ventana", () => {

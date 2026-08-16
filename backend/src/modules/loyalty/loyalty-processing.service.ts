@@ -11,6 +11,12 @@ import {
   resolveDailyVisitIncrement,
 } from "./loyalty-visit-policy.js";
 import {
+  buildLoyaltyRewardAvailabilityWhere,
+} from "./loyalty-availability.policy.js";
+import {
+  lockLoyaltyProgramRules,
+} from "./loyalty-program-lock.js";
+import {
   createUserNotification,
 } from "../notifications/notification-generator.service.js";
 
@@ -59,6 +65,85 @@ type LoyaltyProgramForProcessing = {
     nombre: string;
   } | null;
 };
+
+const loyaltyProgramProcessingSelect = {
+  id: true,
+  tipo: true,
+  visitasRequeridas: true,
+  montoRequerido: true,
+  tipoRecompensa: true,
+  productoPremioId: true,
+  cantidadPremio: true,
+  montoDescuento: true,
+  porcentajeDescuento: true,
+  descripcionBeneficio: true,
+  vigenciaDiasPremio: true,
+  automatico: true,
+
+  productoPremio: {
+    select: {
+      nombre:
+        true,
+    },
+  },
+} satisfies Prisma.ProgramaFidelizacionSelect;
+
+function buildProcessingProgramWhere(
+  saleDate: Date,
+  branchId: string,
+): Prisma.ProgramaFidelizacionWhereInput {
+  return {
+    activo:
+      true,
+
+    fechaInicio: {
+      lte:
+        saleDate,
+    },
+
+    AND: [
+      {
+        OR: [
+          {
+            fechaFin:
+              null,
+          },
+          {
+            fechaFin: {
+              gte:
+                saleDate,
+            },
+          },
+        ],
+      },
+      {
+        OR: [
+          {
+            sucursalId:
+              null,
+          },
+          {
+            sucursal: {
+              is: {
+                id:
+                  branchId,
+
+                estado:
+                  "ACTIVO",
+
+                deletedAt:
+                  null,
+              },
+            },
+          },
+        ],
+      },
+      buildLoyaltyRewardAvailabilityWhere(
+        branchId,
+      ),
+    ],
+  };
+}
 
 function addDays(
   date: Date,
@@ -303,89 +388,14 @@ export async function applySaleLoyalty(
     await transaction
       .programaFidelizacion
       .findMany({
-        where: {
-          activo:
-            true,
+        where:
+          buildProcessingProgramWhere(
+            saleDate,
+            sale.sucursalId,
+          ),
 
-          fechaInicio: {
-            lte:
-              saleDate,
-          },
-
-          AND: [
-            {
-              OR: [
-                {
-                  fechaFin:
-                    null,
-                },
-                {
-                  fechaFin: {
-                    gte:
-                      saleDate,
-                  },
-                },
-              ],
-            },
-            {
-              OR: [
-                {
-                  sucursalId:
-                    null,
-                },
-                {
-                  sucursalId:
-                    sale.sucursalId,
-                },
-              ],
-            },
-          ],
-        },
-
-        select: {
-          id:
-            true,
-
-          tipo:
-            true,
-
-          visitasRequeridas:
-            true,
-
-          montoRequerido:
-            true,
-
-          tipoRecompensa:
-            true,
-
-          productoPremioId:
-            true,
-
-          cantidadPremio:
-            true,
-
-          montoDescuento:
-            true,
-
-          porcentajeDescuento:
-            true,
-
-          descripcionBeneficio:
-            true,
-
-          vigenciaDiasPremio:
-            true,
-
-          automatico:
-            true,
-
-          productoPremio: {
-            select: {
-              nombre:
-                true,
-            },
-          },
-        },
+        select:
+          loyaltyProgramProcessingSelect,
 
         orderBy: {
           createdAt:
@@ -400,7 +410,7 @@ export async function applySaleLoyalty(
     0;
 
   for (
-    const program
+    const listedProgram
     of programs
   ) {
     const existingMovement =
@@ -413,7 +423,7 @@ export async function applySaleLoyalty(
                 sale.id,
 
               programaId:
-                program.id,
+                listedProgram.id,
             },
           },
 
@@ -430,6 +440,37 @@ export async function applySaleLoyalty(
     if (
       existingMovement
     ) {
+      continue;
+    }
+
+    await lockLoyaltyProgramRules(
+      transaction,
+      listedProgram.id,
+    );
+
+    /*
+     * Se relee después del bloqueo: si un administrador terminó de editar
+     * las reglas mientras se cobraba, esta venta usa la versión confirmada.
+     */
+    const program =
+      await transaction
+        .programaFidelizacion
+        .findFirst({
+          where: {
+            ...buildProcessingProgramWhere(
+              saleDate,
+              sale.sucursalId,
+            ),
+
+            id:
+              listedProgram.id,
+          },
+
+          select:
+            loyaltyProgramProcessingSelect,
+        });
+
+    if (!program) {
       continue;
     }
 

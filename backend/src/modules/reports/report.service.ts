@@ -1199,6 +1199,7 @@ export async function getReportDetails(
           monto: true,
           metodoPago: true,
           numeroOperacion: true,
+          numeroConstancia: true,
           fechaPago: true,
           fechaConfirmacion: true,
           reserva: {
@@ -1223,6 +1224,7 @@ export async function getReportDetails(
           },
           registradoPor: { select: { nombres: true, apellidos: true } },
           confirmadoPor: { select: { nombres: true, apellidos: true } },
+          caja: { select: { codigo: true } },
         },
       }),
     ]);
@@ -1240,6 +1242,8 @@ export async function getReportDetails(
         sucursal: payment.reserva.sucursal.nombre,
         datos: {
           numeroOperacion: payment.numeroOperacion,
+          numeroConstancia: payment.numeroConstancia,
+          caja: payment.caja?.codigo ?? null,
           fechaReserva: payment.reserva.fechaReserva.toISOString().slice(0, 10),
           totalEstimado: Number(payment.reserva.totalEstimado),
           adelantoRequerido: Number(payment.reserva.adelantoRequerido),
@@ -1260,6 +1264,8 @@ export async function getReportDetails(
           metodoPago: payment.metodoPago,
           monto: Number(payment.monto),
           numeroOperacion: payment.numeroOperacion,
+          numeroConstancia: payment.numeroConstancia,
+          caja: payment.caja?.codigo ?? null,
         }],
       })),
       pagination: pagination(total),
@@ -1310,6 +1316,7 @@ export async function getReportDetails(
         take: query.page * query.limit,
         select: {
           id: true, metodoPago: true, monto: true, numeroOperacion: true,
+          numeroConstancia: true,
           fechaPago: true, fechaConfirmacion: true,
           reserva: {
             select: {
@@ -1329,6 +1336,7 @@ export async function getReportDetails(
             },
           },
           confirmadoPor: { select: { nombres: true, apellidos: true } },
+          caja: { select: { codigo: true } },
         },
       }),
     ]);
@@ -1360,7 +1368,12 @@ export async function getReportDetails(
         descripcion: `Adelanto de reserva - ${payment.metodoPago}`,
         importe: Number(payment.monto), cliente: personName(payment.reserva.cliente),
         responsable: personName(payment.confirmadoPor), sucursal: payment.reserva.sucursal.nombre,
-        datos: { numeroOperacion: payment.numeroOperacion, origen: "RESERVA" },
+        datos: {
+          numeroOperacion: payment.numeroOperacion,
+          numeroConstancia: payment.numeroConstancia,
+          caja: payment.caja?.codigo ?? null,
+          origen: "RESERVA",
+        },
         productos: payment.reserva.detalles.map((detail) => ({
           id: detail.id,
           nombre: detail.nombreProducto,
@@ -1377,6 +1390,8 @@ export async function getReportDetails(
           metodoPago: payment.metodoPago,
           monto: Number(payment.monto),
           numeroOperacion: payment.numeroOperacion,
+          numeroConstancia: payment.numeroConstancia,
+          caja: payment.caja?.codigo ?? null,
         }],
       })),
     ].sort((a, b) => b.fecha.localeCompare(a.fecha));
@@ -1498,7 +1513,14 @@ export async function getReportDetails(
           },
           pagos: {
             where: { estado: "CONFIRMADO" },
-            select: { id: true, metodoPago: true, monto: true, numeroOperacion: true },
+            select: {
+              id: true,
+              metodoPago: true,
+              monto: true,
+              numeroOperacion: true,
+              numeroConstancia: true,
+              caja: { select: { codigo: true } },
+            },
           },
         },
       }),
@@ -1520,7 +1542,12 @@ export async function getReportDetails(
           precioUnitario: Number(detail.precioReservado), subtotal: Number(detail.subtotal),
         })),
         pagos: reservation.pagos.map((payment) => ({
-          id: payment.id, metodoPago: payment.metodoPago, monto: Number(payment.monto), numeroOperacion: payment.numeroOperacion,
+          id: payment.id,
+          metodoPago: payment.metodoPago,
+          monto: Number(payment.monto),
+          numeroOperacion: payment.numeroOperacion,
+          numeroConstancia: payment.numeroConstancia,
+          caja: payment.caja?.codigo ?? null,
         })),
       })),
       pagination: pagination(total),
@@ -1548,7 +1575,7 @@ export async function getReportDetails(
         orderBy: { fechaApertura: "desc" },
         select: {
           id: true, codigo: true, estado: true, fechaApertura: true, fechaCierre: true,
-          montoInicial: true, totalVentas: true, totalGastosCaja: true, efectivoEsperado: true, efectivoContado: true, diferencia: true,
+          montoInicial: true, totalVentas: true, totalAdelantos: true, totalGastosCaja: true, efectivoEsperado: true, efectivoContado: true, diferencia: true,
           sucursal: { select: { nombre: true } },
           vendedor: { select: { nombres: true, apellidos: true } },
         },
@@ -1563,7 +1590,9 @@ export async function getReportDetails(
           ? Number(cash.diferencia ?? 0)
           : Number(cash.totalVentas), cliente: "-", responsable: personName(cash.vendedor), sucursal: cash.sucursal.nombre,
         datos: {
-          montoInicial: Number(cash.montoInicial), totalGastos: Number(cash.totalGastosCaja),
+          montoInicial: Number(cash.montoInicial),
+          totalAdelantos: Number(cash.totalAdelantos),
+          totalGastos: Number(cash.totalGastosCaja),
           efectivoEsperado: Number(cash.efectivoEsperado),
           efectivoContado: cash.efectivoContado !== null ? Number(cash.efectivoContado) : null,
           diferencia: cash.diferencia !== null ? Number(cash.diferencia) : null,

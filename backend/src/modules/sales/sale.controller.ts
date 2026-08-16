@@ -7,6 +7,14 @@ import type {
 import { AppError } from "../../shared/errors/app-error.js";
 
 import {
+  appendRealtimeResources,
+} from "../../middlewares/realtime.middleware.js";
+
+import {
+  publishRealtimeChange,
+} from "../realtime/realtime-broker.js";
+
+import {
   createSaleSchema,
   listSalesQuerySchema,
   saleIdSchema,
@@ -139,11 +147,36 @@ export async function createSaleController(
         request.body,
       );
 
-    const sale =
+    const result =
       await createSale(
         getRequestAuth(request),
         input,
       );
+
+    const {
+      realtimePromocionDisponibilidadCambiada,
+      ...sale
+    } = result;
+
+    if (
+      realtimePromocionDisponibilidadCambiada
+    ) {
+      appendRealtimeResources(
+        response,
+        "PROMOTIONS",
+      );
+    }
+
+    if (sale.cliente?.id) {
+      await publishRealtimeChange(
+        [
+          "LOYALTY",
+        ],
+        [
+          sale.cliente.id,
+        ],
+      );
+    }
 
     response.status(201).json({
       success: true,

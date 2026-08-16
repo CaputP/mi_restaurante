@@ -24,6 +24,9 @@ import {
     useAuth
 } from "../../../context/AuthContext";
 import {
+    useLocation
+} from "react-router-dom";
+import {
     useRealtimeVersion
 } from "../../../context/RealtimeContext";
 
@@ -221,6 +224,8 @@ function formatLabel(value) {
 }
 
 function OrdersAdmin() {
+    const location =
+        useLocation();
     const {
         token,
         usuario
@@ -1101,6 +1106,56 @@ function OrdersAdmin() {
             setIsLoadingDetail(false);
         }
     }
+
+    useEffect(() => {
+        const orderId =
+            location.state?.orderId;
+
+        if (!orderId) {
+            return;
+        }
+
+        const controller =
+            new AbortController();
+
+        async function loadNavigatedOrder() {
+            try {
+                const order =
+                    await getOrderByIdRequest(
+                        token,
+                        orderId,
+                        controller.signal
+                    );
+
+                setSelectedOrder(order);
+            } catch (requestError) {
+                if (
+                    requestError?.name !==
+                    "AbortError"
+                ) {
+                    setError(
+                        getApiErrorMessage(
+                            requestError
+                        ) ??
+                        "No se pudo cargar el pedido generado."
+                    );
+                }
+            }
+        }
+
+        void loadNavigatedOrder();
+
+        window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+        );
+
+        return () => controller.abort();
+    }, [
+        location.state?.orderId,
+        token
+    ]);
 
     async function openEditForm() {
         if (!selectedOrder) {

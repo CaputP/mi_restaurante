@@ -5,8 +5,13 @@ import {
 } from "vitest";
 
 import {
+  appendRealtimeResources,
   getRealtimeResources,
 } from "../src/middlewares/realtime.middleware.js";
+
+import type {
+  Response,
+} from "express";
 
 describe("enrutamiento de eventos en tiempo real", () => {
   it("propaga un cambio de reserva a sus módulos dependientes", () => {
@@ -25,7 +30,7 @@ describe("enrutamiento de eventos en tiempo real", () => {
     );
   });
 
-  it("propaga una venta hacia caja, stock, reportes y fidelización", () => {
+  it("propaga una venta a módulos operativos sin invalidar fidelización global", () => {
     expect(
       getRealtimeResources(
         "/api/v1/sales/venta-1/void",
@@ -36,9 +41,60 @@ describe("enrutamiento de eventos en tiempo real", () => {
         "CASH",
         "INVENTORY",
         "REPORTS",
-        "LOYALTY",
       ]),
     );
+
+    expect(
+      getRealtimeResources(
+        "/api/v1/sales/venta-1/void",
+      ),
+    ).not.toContain(
+      "LOYALTY",
+    );
+  });
+
+  it("actualiza los catálogos cliente cuando cambia catálogo o sucursal", () => {
+    expect(
+      getRealtimeResources(
+        "/api/v1/catalog/products/producto-1",
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        "LOYALTY",
+        "PROMOTIONS",
+      ]),
+    );
+
+    expect(
+      getRealtimeResources(
+        "/api/v1/branches/sucursal-1",
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        "LOYALTY",
+        "PROMOTIONS",
+      ]),
+    );
+  });
+
+  it("agrega recursos condicionales sin duplicarlos", () => {
+    const response = {
+      locals:
+        {},
+    } as Response;
+
+    appendRealtimeResources(
+      response,
+      "PROMOTIONS",
+      "PROMOTIONS",
+    );
+
+    expect(
+      response.locals
+        .realtimeResources,
+    ).toEqual([
+      "PROMOTIONS",
+    ]);
   });
 
   it("reconoce rutas sin versión y omite autenticación", () => {

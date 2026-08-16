@@ -5,6 +5,8 @@ import {
 } from "vitest";
 
 import {
+  attendReservationSchema,
+  confirmReservationPaymentSchema,
   createClientReservationSchema,
 } from "../src/modules/reservations/reservation.schema.js";
 
@@ -81,5 +83,33 @@ describe("esquema de reservas del cliente", () => {
       });
 
     expect(result.success).toBe(false);
+  });
+});
+
+describe("operaciones administrativas de reservas", () => {
+  it("exige una caja válida al confirmar un adelanto", () => {
+    expect(
+      confirmReservationPaymentSchema.safeParse({}).success,
+    ).toBe(false);
+
+    expect(
+      confirmReservationPaymentSchema.safeParse({
+        cajaId: "44444444-4444-4444-8444-444444444444",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("normaliza las asignaciones opcionales al generar el pedido", () => {
+    const result = attendReservationSchema.parse({
+      vendedorId: "",
+      mozoId: null,
+      observaciones: "",
+    });
+
+    expect(result).toEqual({
+      vendedorId: null,
+      mozoId: null,
+      observaciones: null,
+    });
   });
 });

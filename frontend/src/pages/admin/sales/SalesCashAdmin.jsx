@@ -4191,6 +4191,19 @@ function SalesCashAdmin() {
 
                                     <article>
                                         <span>
+                                            Adelantos recibidos
+                                        </span>
+
+                                        <strong>
+                                            {formatMoney(
+                                                currentCash
+                                                    .totalAdelantos
+                                            )}
+                                        </strong>
+                                    </article>
+
+                                    <article>
+                                        <span>
                                             Efectivo esperado
                                         </span>
 
@@ -4492,6 +4505,7 @@ function SalesCashAdmin() {
                                         <th>Responsable</th>
                                         <th>Apertura</th>
                                         <th>Ventas</th>
+                                        <th>Adelantos</th>
                                         <th>Esperado</th>
                                         <th>Diferencia</th>
                                         <th>Estado</th>
@@ -4536,6 +4550,13 @@ function SalesCashAdmin() {
                                                     {formatMoney(
                                                         cash
                                                             .totalVentas
+                                                    )}
+                                                </td>
+
+                                                <td>
+                                                    {formatMoney(
+                                                        cash
+                                                            .totalAdelantos
                                                     )}
                                                 </td>
 
@@ -6462,6 +6483,19 @@ function SalesCashAdmin() {
 
                         <article>
                             <span>
+                                Adelantos recibidos
+                            </span>
+
+                            <strong>
+                                {formatMoney(
+                                    selectedCashDetail
+                                        .totalAdelantos
+                                )}
+                            </strong>
+                        </article>
+
+                        <article>
+                            <span>
                                 Efectivo esperado
                             </span>
 
@@ -6520,6 +6554,46 @@ function SalesCashAdmin() {
                             </strong>
                         </article>
                     </div>
+
+                    <section className="cash-advance-section">
+                        <div className="sales-section-heading">
+                            <div>
+                                <h4>Adelantos de reservas</h4>
+                                <p>
+                                    {(selectedCashDetail.adelantos ?? []).length} pago(s) confirmado(s) en esta caja.
+                                </p>
+                            </div>
+                        </div>
+
+                        {(selectedCashDetail.adelantos ?? []).length === 0 ? (
+                            <div className="sales-empty-state">
+                                Esta caja no recibió adelantos de reservas.
+                            </div>
+                        ) : (
+                            <div className="cash-advance-list">
+                                {selectedCashDetail.adelantos.map(
+                                    (advance) => (
+                                        <article key={advance.id}>
+                                            <div>
+                                                <strong>
+                                                    {advance.numeroConstancia ?? "Registro histórico"}
+                                                </strong>
+                                                <span>
+                                                    Reserva {advance.reserva.codigo} · {advance.reserva.cliente.nombreCompleto}
+                                                </span>
+                                                <small>
+                                                    {formatLabel(advance.metodoPago)} · {formatDateTime(advance.fechaConfirmacion)}
+                                                </small>
+                                            </div>
+                                            <strong>
+                                                {formatMoney(advance.monto)}
+                                            </strong>
+                                        </article>
+                                    )
+                                )}
+                            </div>
+                        )}
+                    </section>
 
                     {selectedCashDetail.estado === "CERRADA" &&
                         [

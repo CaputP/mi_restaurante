@@ -59,6 +59,11 @@ const DOCUMENT_TYPES = [
     prefijoSugerido: "R",
   },
   {
+    codigo: "CONSTANCIA_RESERVA",
+    nombre: "Constancia de adelanto",
+    prefijoSugerido: "AR",
+  },
+  {
     codigo: "PEDIDO",
     nombre: "Pedido",
     prefijoSugerido: "P",

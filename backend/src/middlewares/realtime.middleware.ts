@@ -20,6 +20,34 @@ const MUTATION_METHODS =
     "DELETE",
   ]);
 
+const REALTIME_RESOURCES_LOCAL =
+  "realtimeResources";
+
+export function appendRealtimeResources(
+  response: Response,
+  ...resources: RealtimeResource[]
+): void {
+  const current =
+    response.locals[
+      REALTIME_RESOURCES_LOCAL
+    ];
+
+  const currentResources:
+    RealtimeResource[] =
+    Array.isArray(current)
+      ? current
+      : [];
+
+  response.locals[
+    REALTIME_RESOURCES_LOCAL
+  ] = [
+    ...new Set([
+      ...currentResources,
+      ...resources,
+    ]),
+  ];
+}
+
 const RESOURCE_DEPENDENCIES: Record<
   string,
   RealtimeResource[]
@@ -63,7 +91,6 @@ const RESOURCE_DEPENDENCIES: Record<
     "ORDERS",
     "INVENTORY",
     "REPORTS",
-    "LOYALTY",
     "NOTIFICATIONS",
   ],
   expenses: [
@@ -79,6 +106,8 @@ const RESOURCE_DEPENDENCIES: Record<
   catalog: [
     "CATALOG",
     "INVENTORY",
+    "LOYALTY",
+    "PROMOTIONS",
   ],
   loyalty: [
     "LOYALTY",
@@ -111,6 +140,8 @@ const RESOURCE_DEPENDENCIES: Record<
     "BRANCHES",
     "CATALOG",
     "RESERVATIONS",
+    "LOYALTY",
+    "PROMOTIONS",
   ],
   settings: [
     "SETTINGS",
@@ -197,9 +228,19 @@ export function realtimeMutationMiddleware(
           request.originalUrl,
         );
 
+      const extraResources =
+        response.locals[
+          REALTIME_RESOURCES_LOCAL
+        ];
+
       void publishRealtimeChange(
         [
           ...resources,
+          ...(Array.isArray(
+            extraResources,
+          )
+            ? extraResources as RealtimeResource[]
+            : []),
           "AUDIT",
         ],
       ).catch(

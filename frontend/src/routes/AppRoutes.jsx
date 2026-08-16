@@ -17,8 +17,20 @@ const Login = lazy(() =>
 const Reservations = lazy(() =>
     import("../pages/reservations/reservations")
 );
+const ReservationPaymentReceiptPage = lazy(() =>
+    import("../pages/reservations/ReservationPaymentReceiptPage")
+);
 const ClientLoyalty = lazy(() =>
     import("../pages/client/loyalty/ClientLoyalty")
+);
+const ClientLoyaltyLayout = lazy(() =>
+    import("../pages/client/loyalty/ClientLoyaltyLayout")
+);
+const ClientLoyaltyPrograms = lazy(() =>
+    import("../pages/client/loyalty/ClientLoyaltyPrograms")
+);
+const ClientPromotions = lazy(() =>
+    import("../pages/client/loyalty/ClientPromotions")
 );
 const ClientReviews = lazy(() =>
     import("../pages/client/reviews/ClientReviews")
@@ -179,12 +191,34 @@ const routes = [
         )
     },
     {
+        path: "/reservations/:reservationId/payments/:paymentId/receipt",
+        element: protect(
+            <ReservationPaymentReceiptPage />,
+            ["CLIENTE"],
+            ["CLIENTE_HISTORIAL_VER"]
+        )
+    },
+    {
         path: "/fidelizacion",
         element: protect(
-            <ClientLoyalty />,
+            <ClientLoyaltyLayout />,
             ["CLIENTE"],
             ["CLIENTE_PREMIOS_VER"]
-        )
+        ),
+        children: [
+            {
+                index: true,
+                element: <ClientLoyalty />
+            },
+            {
+                path: "programas",
+                element: <ClientLoyaltyPrograms />
+            },
+            {
+                path: "promociones",
+                element: <ClientPromotions />
+            }
+        ]
     },
     {
         path: "/opiniones",
@@ -249,6 +283,14 @@ const routes = [
                 path: "reservas",
                 element: protect(
                     <ReservationsAdmin />,
+                    ADMIN_ROLES,
+                    ["RESERVA_CREAR"]
+                )
+            },
+            {
+                path: "reservas/:reservationId/pagos/:paymentId/constancia",
+                element: protect(
+                    <ReservationPaymentReceiptPage />,
                     ADMIN_ROLES,
                     ["RESERVA_CREAR"]
                 )

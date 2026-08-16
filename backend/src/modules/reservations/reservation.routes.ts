@@ -21,6 +21,8 @@ import {
   cancelClientReservationController,
   createClientReservationController,
   rescheduleReservationController,
+  attendReservationController,
+  getReservationPaymentReceiptController,
 } from "./reservation.controller.js";
 
 export const reservationRouter =
@@ -94,6 +96,18 @@ reservationRouter.patch(
   confirmReservationPaymentController,
 );
 
+reservationRouter.get(
+  "/:id/payments/:paymentId/receipt",
+  requirePermissions("RESERVA_CREAR"),
+  getReservationPaymentReceiptController,
+);
+
+reservationRouter.post(
+  "/:id/attend",
+  requirePermissions("RESERVA_APROBAR", "PEDIDO_CREAR"),
+  attendReservationController,
+);
+
 reservationRouter.patch(
   "/:id/cancel",
   requirePermissions("RESERVA_CANCELAR"),
@@ -148,6 +162,12 @@ clientReservationRouter.post(
   "/:id/payments",
   requirePermissions("RESERVA_CREAR"),
   registerReservationPaymentController,
+);
+
+clientReservationRouter.get(
+  "/:id/payments/:paymentId/receipt",
+  requirePermissions("CLIENTE_HISTORIAL_VER"),
+  getReservationPaymentReceiptController,
 );
 
 clientReservationRouter.patch(

@@ -79,6 +79,7 @@ const settingDataTypeSchema =
 const documentTypeSchema =
   z.enum([
     "RESERVA",
+    "CONSTANCIA_RESERVA",
     "PEDIDO",
     "COMANDA",
     "TICKET",

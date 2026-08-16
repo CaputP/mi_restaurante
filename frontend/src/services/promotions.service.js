@@ -169,3 +169,19 @@ export async function previewAutomaticPromotionsRequest(
 
     return response.data;
 }
+
+export async function listAvailablePromotionsRequest(
+    token,
+    signal
+) {
+    const response =
+        await apiRequest(
+            "/promotions/available",
+            {
+                token,
+                signal
+            }
+        );
+
+    return response.data;
+}

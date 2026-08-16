@@ -280,6 +280,9 @@ export async function voidSale(
               sucursalId:
                 true,
 
+              clienteId:
+                true,
+
               cajaId:
                 true,
 
@@ -341,6 +344,16 @@ export async function voidSale(
                     true,
 
                   monto:
+                    true,
+                },
+              },
+
+              promocionesAplicadas: {
+                take:
+                  1,
+
+                select: {
+                  id:
                     true,
                 },
               },
@@ -494,10 +507,11 @@ export async function voidSale(
         },
       );
 
-      await revertSalePromotions(
-        transaction,
-        sale.id,
-      );
+      const promotionReversion =
+        await revertSalePromotions(
+          transaction,
+          sale.id,
+        );
 
       let cashAmount =
         new Prisma.Decimal(0);
@@ -896,6 +910,13 @@ export async function voidSale(
       });
 
       return {
+        realtimeClienteId:
+          sale.clienteId,
+
+        realtimePromocionCambiada:
+          promotionReversion
+            .disponibilidadPublicaCambiada,
+
         id:
           sale.id,
 

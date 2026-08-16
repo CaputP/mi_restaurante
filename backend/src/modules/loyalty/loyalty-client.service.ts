@@ -10,6 +10,23 @@ import {
   AppError,
 } from "../../shared/errors/app-error.js";
 
+import {
+  calculateLoyaltyProgress,
+} from "./loyalty-progress.policy.js";
+
+import {
+  getLoyaltyOperationalDay,
+} from "./loyalty-visit-policy.js";
+
+import {
+  getClientLoyaltySummary,
+} from "./loyalty-summary.service.js";
+
+import {
+  buildAvailableLoyaltyProgramWhere,
+  isLoyaltyProgramDeliverable,
+} from "./loyalty-availability.policy.js";
+
 function roundMoney(
   value: Prisma.Decimal | number,
 ): number {
@@ -20,101 +37,6 @@ function roundMoney(
       2,
     ),
   );
-}
-
-function calculateProgress(
-  input: {
-    tipo:
-      | "VISITAS"
-      | "MONTO_CONSUMIDO"
-      | "AMBOS";
-
-    visitasAcumuladas:
-      number;
-
-    montoAcumulado:
-      number;
-
-    visitasRequeridas:
-      number | null;
-
-    montoRequerido:
-      number | null;
-  },
-) {
-  const visitProgress =
-    input.visitasRequeridas &&
-    input.visitasRequeridas > 0
-      ? Math.min(
-          100,
-          (
-            input.visitasAcumuladas /
-            input.visitasRequeridas
-          ) *
-            100,
-        )
-      : null;
-
-  const amountProgress =
-    input.montoRequerido &&
-    input.montoRequerido > 0
-      ? Math.min(
-          100,
-          (
-            input.montoAcumulado /
-            input.montoRequerido
-          ) *
-            100,
-        )
-      : null;
-
-  let percentage =
-    0;
-
-  switch (
-    input.tipo
-  ) {
-    case "VISITAS":
-      percentage =
-        visitProgress ?? 0;
-      break;
-
-    case "MONTO_CONSUMIDO":
-      percentage =
-        amountProgress ?? 0;
-      break;
-
-    case "AMBOS":
-      percentage =
-        Math.min(
-          visitProgress ?? 0,
-          amountProgress ?? 0,
-        );
-      break;
-  }
-
-  return {
-    porcentaje:
-      roundMoney(
-        percentage,
-      ),
-
-    porcentajeVisitas:
-      visitProgress ===
-      null
-        ? null
-        : roundMoney(
-            visitProgress,
-          ),
-
-    porcentajeMonto:
-      amountProgress ===
-      null
-        ? null
-        : roundMoney(
-            amountProgress,
-          ),
-  };
 }
 
 function rewardEffectiveState(
@@ -141,11 +63,192 @@ function rewardEffectiveState(
   return reward.estado;
 }
 
+const clientRewardSelect = {
+  id: true,
+  descripcion: true,
+  tipoRecompensaSnapshot: true,
+  cantidadProducto: true,
+  valorReferencia: true,
+  montoAplicado: true,
+  estado: true,
+  fechaObtencion: true,
+  fechaVencimiento: true,
+  fechaCanje: true,
+  motivoAnulacion: true,
+
+  productoPremio: {
+    select: {
+      id: true,
+      codigo: true,
+      nombre: true,
+    },
+  },
+
+  programa: {
+    select: {
+      id: true,
+      nombre: true,
+      tipoRecompensa: true,
+
+      sucursal: {
+        select: {
+          id: true,
+          codigo: true,
+          nombre: true,
+        },
+      },
+    },
+  },
+
+  ventaCanje: {
+    select: {
+      id: true,
+      numeroTicket: true,
+      createdAt: true,
+      estado: true,
+    },
+  },
+} satisfies Prisma.PremioClienteSelect;
+
+type ClientRewardRecord =
+  Prisma.PremioClienteGetPayload<{
+    select: typeof clientRewardSelect;
+  }>;
+
+function mapClientReward(
+  reward: ClientRewardRecord,
+) {
+  return {
+    id:
+      reward.id,
+
+    descripcion:
+      reward.descripcion,
+
+    tipoRecompensa:
+      reward
+        .tipoRecompensaSnapshot ??
+      reward
+        .programa
+        .tipoRecompensa,
+
+    cantidadProducto:
+      reward
+        .cantidadProducto ===
+      null
+        ? null
+        : Number(
+            reward
+              .cantidadProducto,
+          ),
+
+    valorReferencia:
+      reward
+        .valorReferencia ===
+      null
+        ? null
+        : Number(
+            reward
+              .valorReferencia,
+          ),
+
+    montoAplicado:
+      reward
+        .montoAplicado ===
+      null
+        ? null
+        : Number(
+            reward
+              .montoAplicado,
+          ),
+
+    estado:
+      rewardEffectiveState(
+        reward,
+      ),
+
+    estadoRegistrado:
+      reward.estado,
+
+    fechaObtencion:
+      reward
+        .fechaObtencion
+        .toISOString(),
+
+    fechaVencimiento:
+      reward
+        .fechaVencimiento
+        .toISOString(),
+
+    fechaCanje:
+      reward
+        .fechaCanje
+        ?.toISOString() ??
+      null,
+
+    motivoAnulacion:
+      reward
+        .motivoAnulacion,
+
+    productoPremio:
+      reward
+        .productoPremio,
+
+    programa: {
+      id:
+        reward
+          .programa
+          .id,
+
+      nombre:
+        reward
+          .programa
+          .nombre,
+
+      sucursal:
+        reward
+          .programa
+          .sucursal,
+    },
+
+    ventaCanje:
+      reward
+        .ventaCanje
+        ? {
+            ...reward
+              .ventaCanje,
+
+            createdAt:
+              reward
+                .ventaCanje
+                .createdAt
+                .toISOString(),
+          }
+        : null,
+  };
+}
+
 export async function getClientLoyaltyProfile(
   userId: string,
 ) {
-  const customer =
-    await prisma.usuario
+  const referenceDate =
+    new Date();
+
+  const operationalDate =
+    getLoyaltyOperationalDay(
+      referenceDate,
+    ).dateOnly;
+
+  const [
+    customer,
+    loyaltySummary,
+    totalRewards,
+    availableRewardsCount,
+    availableRewardRecords,
+    redemptionSummary,
+  ] =
+    await Promise.all([
+      prisma.usuario
       .findUnique({
         where: {
           id:
@@ -169,6 +272,13 @@ export async function getClientLoyaltyProfile(
           },
 
           progresosFidelizacion: {
+            where: {
+              programa:
+                buildAvailableLoyaltyProgramWhere(
+                  operationalDate,
+                ),
+            },
+
             orderBy: {
               updatedAt:
                 "desc",
@@ -195,6 +305,7 @@ export async function getClientLoyaltyProfile(
               programa: {
                 select: {
                   id: true,
+                  sucursalId: true,
                   nombre: true,
                   descripcion: true,
 
@@ -253,6 +364,36 @@ export async function getClientLoyaltyProfile(
                       id: true,
                       codigo: true,
                       nombre: true,
+
+                      sucursales: {
+                        where: {
+                          estado:
+                            "ACTIVO",
+
+                          disponibleVenta:
+                            true,
+
+                          sucursal: {
+                            estado:
+                              "ACTIVO",
+
+                            deletedAt:
+                              null,
+                          },
+                        },
+
+                        select: {
+                          sucursalId:
+                            true,
+
+                          sucursal: {
+                            select: {
+                              nombre:
+                                true,
+                            },
+                          },
+                        },
+                      },
                     },
                   },
                 },
@@ -272,76 +413,11 @@ export async function getClientLoyaltyProfile(
               },
             ],
 
-            select: {
-              id: true,
+            take:
+              100,
 
-              descripcion:
-                true,
-
-              tipoRecompensaSnapshot:
-                true,
-
-              cantidadProducto:
-                true,
-
-              valorReferencia:
-                true,
-
-              montoAplicado:
-                true,
-
-              estado:
-                true,
-
-              fechaObtencion:
-                true,
-
-              fechaVencimiento:
-                true,
-
-              fechaCanje:
-                true,
-
-              motivoAnulacion:
-                true,
-
-              productoPremio: {
-                select: {
-                  id: true,
-                  codigo: true,
-                  nombre: true,
-                },
-              },
-
-              programa: {
-                select: {
-                  id: true,
-                  nombre: true,
-                  tipoRecompensa:
-                    true,
-
-                  sucursal: {
-                    select: {
-                      id: true,
-                      codigo: true,
-                      nombre: true,
-                    },
-                  },
-                },
-              },
-
-              ventaCanje: {
-                select: {
-                  id: true,
-                  numeroTicket:
-                    true,
-                  createdAt:
-                    true,
-                  estado:
-                    true,
-                },
-              },
-            },
+            select:
+              clientRewardSelect,
           },
 
           canjesPremioCliente: {
@@ -409,7 +485,84 @@ export async function getClientLoyaltyProfile(
             },
           },
         },
-      });
+      }),
+
+      getClientLoyaltySummary(
+        userId,
+      ),
+
+      prisma.premioCliente
+        .count({
+          where: {
+            clienteId:
+              userId,
+          },
+        }),
+
+      prisma.premioCliente
+        .count({
+          where: {
+            clienteId:
+              userId,
+
+            estado:
+              "DISPONIBLE",
+
+            fechaVencimiento: {
+              gte:
+                referenceDate,
+            },
+          },
+        }),
+
+      prisma.premioCliente
+        .findMany({
+          where: {
+            clienteId:
+              userId,
+
+            estado:
+              "DISPONIBLE",
+
+            fechaVencimiento: {
+              gte:
+                referenceDate,
+            },
+          },
+
+          orderBy: {
+            fechaVencimiento:
+              "asc",
+          },
+
+          take:
+            100,
+
+          select:
+            clientRewardSelect,
+        }),
+
+      prisma.canjePremioCliente
+        .aggregate({
+          where: {
+            clienteId:
+              userId,
+
+            estado:
+              "APLICADO",
+          },
+
+          _count: {
+            _all:
+              true,
+          },
+
+          _sum: {
+            montoAplicado:
+              true,
+          },
+        }),
+    ]);
 
   if (!customer) {
     throw new AppError(
@@ -439,6 +592,13 @@ export async function getClientLoyaltyProfile(
   const progresses =
     customer
       .progresosFidelizacion
+      .filter(
+        (progress) =>
+          isLoyaltyProgramDeliverable(
+            progress
+              .programa,
+          ),
+      )
       .map(
         (
           progress,
@@ -471,7 +631,7 @@ export async function getClientLoyaltyProfile(
                 );
 
           const progressCalculation =
-            calculateProgress({
+            calculateLoyaltyProgress({
               tipo:
                 progress
                   .programa
@@ -482,6 +642,10 @@ export async function getClientLoyaltyProfile(
 
               montoAcumulado:
                 amount,
+
+              ciclosCompletados:
+                progress
+                  .ciclosCompletados,
 
               visitasRequeridas:
                 requiredVisits,
@@ -517,6 +681,14 @@ export async function getClientLoyaltyProfile(
             porcentajeMonto:
               progressCalculation
                 .porcentajeMonto,
+
+            visitasCicloActual:
+              progressCalculation
+                .visitasCicloActual,
+
+            montoCicloActual:
+              progressCalculation
+                .montoCicloActual,
 
             updatedAt:
               progress
@@ -632,7 +804,27 @@ export async function getClientLoyaltyProfile(
               productoPremio:
                 progress
                   .programa
-                  .productoPremio,
+                  .productoPremio
+                  ? {
+                      id:
+                        progress
+                          .programa
+                          .productoPremio
+                          .id,
+
+                      codigo:
+                        progress
+                          .programa
+                          .productoPremio
+                          .codigo,
+
+                      nombre:
+                        progress
+                          .programa
+                          .productoPremio
+                          .nombre,
+                    }
+                  : null,
             },
           };
         },
@@ -642,116 +834,7 @@ export async function getClientLoyaltyProfile(
     customer
       .premiosObtenidos
       .map(
-        (
-          reward,
-        ) => ({
-          id:
-            reward.id,
-
-          descripcion:
-            reward.descripcion,
-
-          tipoRecompensa:
-            reward
-              .tipoRecompensaSnapshot ??
-            reward
-              .programa
-              .tipoRecompensa,
-
-          cantidadProducto:
-            reward
-              .cantidadProducto ===
-            null
-              ? null
-              : Number(
-                  reward
-                    .cantidadProducto,
-                ),
-
-          valorReferencia:
-            reward
-              .valorReferencia ===
-            null
-              ? null
-              : Number(
-                  reward
-                    .valorReferencia,
-                ),
-
-          montoAplicado:
-            reward
-              .montoAplicado ===
-            null
-              ? null
-              : Number(
-                  reward
-                    .montoAplicado,
-                ),
-
-          estado:
-            rewardEffectiveState(
-              reward,
-            ),
-
-          estadoRegistrado:
-            reward.estado,
-
-          fechaObtencion:
-            reward
-              .fechaObtencion
-              .toISOString(),
-
-          fechaVencimiento:
-            reward
-              .fechaVencimiento
-              .toISOString(),
-
-          fechaCanje:
-            reward
-              .fechaCanje
-              ?.toISOString() ??
-            null,
-
-          motivoAnulacion:
-            reward
-              .motivoAnulacion,
-
-          productoPremio:
-            reward
-              .productoPremio,
-
-          programa: {
-            id:
-              reward
-                .programa
-                .id,
-
-            nombre:
-              reward
-                .programa
-                .nombre,
-
-            sucursal:
-              reward
-                .programa
-                .sucursal,
-          },
-
-          ventaCanje:
-            reward
-              .ventaCanje
-              ? {
-                  ...reward
-                    .ventaCanje,
-
-                  createdAt:
-                    reward
-                      .ventaCanje
-                      .createdAt
-                      .toISOString(),
-                }
-              : null,
-        }),
+        mapClientReward,
       );
 
   const redemptions =
@@ -847,52 +930,9 @@ export async function getClientLoyaltyProfile(
       );
 
   const availableRewards =
-    rewards.filter(
-      (reward) =>
-        reward.estado ===
-        "DISPONIBLE",
-    );
-
-  const totalVisits =
-    progresses.reduce(
-      (
-        total,
-        progress,
-      ) =>
-        total +
-        progress
-          .visitasAcumuladas,
-      0,
-    );
-
-  const totalAccumulatedAmount =
-    progresses.reduce(
-      (
-        total,
-        progress,
-      ) =>
-        total +
-        progress
-          .montoAcumulado,
-      0,
-    );
-
-  const totalRewardSavings =
-    redemptions
-      .filter(
-        (redemption) =>
-          redemption.estado ===
-          "APLICADO",
-      )
-      .reduce(
-        (
-          total,
-          redemption,
-        ) =>
-          total +
-          redemption
-            .montoAplicado,
-        0,
+    availableRewardRecords
+      .map(
+        mapClientReward,
       );
 
   return {
@@ -922,29 +962,32 @@ export async function getClientLoyaltyProfile(
         progresses.length,
 
       visitasAcumuladas:
-        totalVisits,
+        loyaltySummary
+          .visitasAcumuladas,
 
       montoAcumulado:
         roundMoney(
-          totalAccumulatedAmount,
+          loyaltySummary
+            .montoAcumulado,
         ),
 
       premiosDisponibles:
-        availableRewards.length,
+        availableRewardsCount,
 
       premiosTotales:
-        rewards.length,
+        totalRewards,
 
       canjesRealizados:
-        redemptions.filter(
-          (redemption) =>
-            redemption.estado ===
-            "APLICADO",
-        ).length,
+        redemptionSummary
+          ._count
+          ._all,
 
       ahorroPorPremios:
         roundMoney(
-          totalRewardSavings,
+          redemptionSummary
+            ._sum
+            .montoAplicado ??
+          0,
         ),
     },
 

@@ -16,6 +16,14 @@ import type {
   UpdateLoyaltyProgramInput,
 } from "./loyalty.schema.js";
 
+import {
+  loyaltyStructuralRulesChanged,
+} from "./loyalty-program-version.policy.js";
+
+import {
+  lockLoyaltyProgramRules,
+} from "./loyalty-program-lock.js";
+
 type LoyaltyAuth = {
   usuarioId: string;
   rol: string;
@@ -88,6 +96,33 @@ const programSelect = {
   },
 } satisfies
   Prisma.ProgramaFidelizacionSelect;
+
+const programRuleVersionSelect = {
+  id: true,
+  sucursalId: true,
+  tipo: true,
+  visitasRequeridas: true,
+  montoRequerido: true,
+  tipoRecompensa: true,
+  productoPremioId: true,
+  cantidadPremio: true,
+  montoDescuento: true,
+  porcentajeDescuento: true,
+  descripcionBeneficio: true,
+  vigenciaDiasPremio: true,
+  automatico: true,
+  fechaInicio: true,
+
+  _count: {
+    select: {
+      progresos:
+        true,
+
+      movimientos:
+        true,
+    },
+  },
+} satisfies Prisma.ProgramaFidelizacionSelect;
 
 type ProgramRecord =
   Prisma.ProgramaFidelizacionGetPayload<{
@@ -303,12 +338,17 @@ function mapProgram(
 
 async function getAuthorizedBranches(
   auth: LoyaltyAuth,
+  database: Pick<
+    Prisma.TransactionClient,
+    "sucursal" |
+    "usuarioSucursal"
+  > = prisma,
 ) {
   if (
     auth.rol ===
     "ADMINISTRADOR_GENERAL"
   ) {
-    return prisma.sucursal
+    return database.sucursal
       .findMany({
         where: {
           deletedAt:
@@ -338,7 +378,7 @@ async function getAuthorizedBranches(
     getOperationalDate();
 
   const assignments =
-    await prisma
+    await database
       .usuarioSucursal
       .findMany({
         where: {
@@ -398,6 +438,11 @@ async function getAuthorizedBranches(
 async function assertWriteAccess(
   auth: LoyaltyAuth,
   branchId: string | null,
+  database: Pick<
+    Prisma.TransactionClient,
+    "sucursal" |
+    "usuarioSucursal"
+  > = prisma,
 ): Promise<void> {
   if (
     auth.rol ===
@@ -408,7 +453,7 @@ async function assertWriteAccess(
     }
 
     const branch =
-      await prisma.sucursal
+      await database.sucursal
         .findFirst({
           where: {
             id:
@@ -450,6 +495,7 @@ async function assertWriteAccess(
   const branches =
     await getAuthorizedBranches(
       auth,
+      database,
     );
 
   const hasAccess =
@@ -516,22 +562,38 @@ async function assertRewardProduct(
           estado:
             "ACTIVO",
 
-          ...(branchId
-            ? {
-                sucursales: {
-                  some: {
+          categoria: {
+            estado:
+              "ACTIVO",
+
+            deletedAt:
+              null,
+          },
+
+          sucursales: {
+            some: {
+              ...(branchId
+                ? {
                     sucursalId:
                       branchId,
+                  }
+                : {
+                    sucursal: {
+                      estado:
+                        "ACTIVO",
 
-                    estado:
-                      "ACTIVO",
+                      deletedAt:
+                        null,
+                    },
+                  }),
 
-                    disponibleVenta:
-                      true,
-                  },
-                },
-              }
-            : {}),
+              estado:
+                "ACTIVO",
+
+              disponibleVenta:
+                true,
+            },
+          },
         },
 
         select: {
@@ -1081,28 +1143,90 @@ export async function updateLoyaltyProgram(
     input.sucursalId,
   );
 
+  const nextProgramData =
+    buildProgramData(
+      input,
+    );
+
   await assertRewardProduct(
     input.productoPremioId,
     input.sucursalId,
   );
 
   const program =
-    await prisma
-      .programaFidelizacion
-      .update({
-        where: {
-          id:
-            programId,
-        },
+    await prisma.$transaction(
+      async (transaction) => {
+        await lockLoyaltyProgramRules(
+          transaction,
+          programId,
+        );
 
-        data:
-          buildProgramData(
-            input,
-          ),
+        const lockedProgram =
+          await transaction
+            .programaFidelizacion
+            .findUnique({
+              where: {
+                id:
+                  programId,
+              },
 
-        select:
-          programSelect,
-      });
+              select:
+                programRuleVersionSelect,
+            });
+
+        if (!lockedProgram) {
+          throw new AppError(
+            404,
+            "El programa de fidelización no existe.",
+            "PROGRAMA_NO_ENCONTRADO",
+          );
+        }
+
+        await assertWriteAccess(
+          auth,
+          lockedProgram
+            .sucursalId,
+          transaction,
+        );
+
+        const hasActivity =
+          lockedProgram
+            ._count
+            .progresos > 0 ||
+          lockedProgram
+            ._count
+            .movimientos > 0;
+
+        if (
+          hasActivity &&
+          loyaltyStructuralRulesChanged(
+            lockedProgram,
+            nextProgramData,
+          )
+        ) {
+          throw new AppError(
+            409,
+            "Las reglas de un programa con actividad no pueden modificarse. Cierra este programa y crea uno nuevo para conservar el historial de los clientes.",
+            "REGLAS_PROGRAMA_INMUTABLES",
+          );
+        }
+
+        return transaction
+          .programaFidelizacion
+          .update({
+            where: {
+              id:
+                programId,
+            },
+
+            data:
+              nextProgramData,
+
+            select:
+              programSelect,
+          });
+      },
+    );
 
   return mapProgram(
     program,

@@ -2718,11 +2718,12 @@ export async function createSale(
         /*
          * Guarda VentaPromocion e incrementa usosActuales.
          */
-        await persistAutomaticPromotions(
-          transaction,
-          sale.id,
-          promotionCalculation,
-        );
+        const promotionAvailabilityChanged =
+          await persistAutomaticPromotions(
+            transaction,
+            sale.id,
+            promotionCalculation,
+          );
 
         await persistRedeemedRewards(
           transaction,
@@ -2884,12 +2885,26 @@ export async function createSale(
             });
         }
 
-        return sale;
+        return {
+          ...sale,
+
+          realtimePromocionDisponibilidadCambiada:
+            promotionAvailabilityChanged,
+        };
       },
     );
 
-  return getSaleById(
-    auth,
-    createdSale.id,
-  );
+  const sale =
+    await getSaleById(
+      auth,
+      createdSale.id,
+    );
+
+  return {
+    ...sale,
+
+    realtimePromocionDisponibilidadCambiada:
+      createdSale
+        .realtimePromocionDisponibilidadCambiada,
+  };
 }

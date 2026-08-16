@@ -12,6 +12,11 @@ import {
 import {
   isOrderPayable,
 } from "../../shared/orders/order-payment-policy.js";
+import {
+  buildPromotionProductAvailabilityWhere,
+  promotionClaimChangesPublicAvailability,
+  promotionReversalChangesPublicAvailability,
+} from "./promotion-availability.policy.js";
 
 type PromotionCalculationAuth = {
   usuarioId: string;
@@ -915,7 +920,21 @@ export async function calculateAutomaticPromotions(
           usosActuales:
             true,
 
+          _count: {
+            select: {
+              productos:
+                true,
+            },
+          },
+
           productos: {
+            where: {
+              producto:
+                buildPromotionProductAvailabilityWhere(
+                  order.sucursalId,
+                ),
+            },
+
             select: {
               productoId:
                 true,
@@ -948,6 +967,49 @@ export async function calculateAutomaticPromotions(
         null &&
       promotion.usosActuales >=
         promotion.maximoUsos
+    ) {
+      continue;
+    }
+
+    const configuredProductCount =
+      promotion
+        ._count
+        .productos;
+
+    const availableProductCount =
+      promotion
+        .productos
+        .length;
+
+    if (
+      (
+        [
+          "PRODUCTO_GRATIS",
+          "COMBO",
+        ].includes(
+          promotion.tipo,
+        ) &&
+        configuredProductCount ===
+          0
+      ) ||
+      (
+        configuredProductCount > 0 &&
+        availableProductCount === 0
+      ) ||
+      (
+        promotion.tipo ===
+          "COMBO" &&
+        availableProductCount !==
+          configuredProductCount
+      ) ||
+      (
+        promotion.tipo ===
+          "PRODUCTO_GRATIS" &&
+        promotion
+          .valor
+          .floor()
+          .lessThan(1)
+      )
     ) {
       continue;
     }
@@ -1192,16 +1254,19 @@ export async function persistAutomaticPromotions(
   saleId: string,
   calculation:
     PromotionCalculationResult,
-): Promise<void> {
+): Promise<boolean> {
   if (
     calculation.promociones
       .length === 0
   ) {
-    return;
+    return false;
   }
 
   const now =
     new Date();
+
+  let publicAvailabilityChanged =
+    false;
 
   for (
     const appliedPromotion
@@ -1335,6 +1400,18 @@ export async function persistAutomaticPromotions(
       );
     }
 
+    if (
+      promotionClaimChangesPublicAvailability(
+        currentPromotion
+          .maximoUsos,
+        currentPromotion
+          .usosActuales,
+      )
+    ) {
+      publicAvailabilityChanged =
+        true;
+    }
+
     await transaction
       .ventaPromocion
       .create({
@@ -1357,6 +1434,8 @@ export async function persistAutomaticPromotions(
         },
       });
   }
+
+  return publicAvailabilityChanged;
 }
 
 export async function revertSalePromotions(
@@ -1376,11 +1455,39 @@ export async function revertSalePromotions(
         select: {
           promocionId:
             true,
+
+          promocion: {
+            select: {
+              estado:
+                true,
+
+              automatica:
+                true,
+
+              fechaInicio:
+                true,
+
+              fechaFin:
+                true,
+
+              maximoUsos:
+                true,
+
+              usosActuales:
+                true,
+            },
+          },
         },
       });
 
   let revertedPromotions =
     0;
+
+  let publicAvailabilityChanged =
+    false;
+
+  const now =
+    new Date();
 
   for (
     const appliedPromotion
@@ -1411,10 +1518,37 @@ export async function revertSalePromotions(
 
     revertedPromotions +=
       reverted.count;
+
+    const promotion =
+      appliedPromotion
+        .promocion;
+
+    if (
+      reverted.count === 1 &&
+      promotion.estado ===
+        "ACTIVA" &&
+      promotion.automatica &&
+      promotion.fechaInicio <=
+        now &&
+      promotion.fechaFin >=
+        now &&
+      promotionReversalChangesPublicAvailability(
+        promotion
+          .maximoUsos,
+        promotion
+          .usosActuales,
+      )
+    ) {
+      publicAvailabilityChanged =
+        true;
+    }
   }
 
   return {
     promocionesRevertidas:
       revertedPromotions,
+
+    disponibilidadPublicaCambiada:
+      publicAvailabilityChanged,
   };
 }

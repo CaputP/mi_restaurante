@@ -181,8 +181,34 @@ export const registerReservationPaymentSchema =
 
 export const confirmReservationPaymentSchema =
   z.object({
+    cajaId: uuidSchema,
+
     observacion:
       optionalText(1000),
+  });
+
+export const attendReservationSchema =
+  z.object({
+    vendedorId: z
+      .union([
+        uuidSchema,
+        z.literal(""),
+        z.null(),
+      ])
+      .optional()
+      .transform((value) => value || null),
+
+    mozoId: z
+      .union([
+        uuidSchema,
+        z.literal(""),
+        z.null(),
+      ])
+      .optional()
+      .transform((value) => value || null),
+
+    observaciones:
+      optionalText(2000),
   });
 
 export const cancelReservationSchema =
@@ -577,6 +603,11 @@ export type RegisterReservationPaymentInput =
 export type ConfirmReservationPaymentInput =
   z.infer<
     typeof confirmReservationPaymentSchema
+  >;
+
+export type AttendReservationInput =
+  z.infer<
+    typeof attendReservationSchema
   >;
 
 export type CancelReservationInput =

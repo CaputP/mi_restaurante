@@ -583,6 +583,7 @@ function mapCashRegister(
     codigo: string;
     montoInicial: Prisma.Decimal;
     totalVentas: Prisma.Decimal;
+    totalAdelantos: Prisma.Decimal;
     totalEfectivo: Prisma.Decimal;
     totalYape: Prisma.Decimal;
     totalPlin: Prisma.Decimal;
@@ -623,6 +624,7 @@ function mapCashRegister(
     _count?: {
       ventas: number;
       gastos: number;
+      pagosReserva: number;
     };
   },
 ) {
@@ -637,6 +639,11 @@ function mapCashRegister(
     totalVentas:
       Number(
         cash.totalVentas,
+      ),
+
+    totalAdelantos:
+      Number(
+        cash.totalAdelantos,
       ),
 
     totalEfectivo:
@@ -814,6 +821,7 @@ export async function getCurrentCashRegister(
         codigo: true,
         montoInicial: true,
         totalVentas: true,
+        totalAdelantos: true,
         totalEfectivo: true,
         totalYape: true,
         totalPlin: true,
@@ -871,6 +879,7 @@ export async function getCurrentCashRegister(
           select: {
             ventas: true,
             gastos: true,
+            pagosReserva: true,
           },
         },
       },
@@ -1044,6 +1053,7 @@ export async function listCashRegisters(
         codigo: true,
         montoInicial: true,
         totalVentas: true,
+        totalAdelantos: true,
         totalEfectivo: true,
         totalYape: true,
         totalPlin: true,
@@ -1100,6 +1110,7 @@ export async function listCashRegisters(
           select: {
             ventas: true,
             gastos: true,
+            pagosReserva: true,
           },
         },
       },
@@ -1165,6 +1176,7 @@ export async function getCashRegisterById(
         codigo: true,
         montoInicial: true,
         totalVentas: true,
+        totalAdelantos: true,
         totalEfectivo: true,
         totalYape: true,
         totalPlin: true,
@@ -1257,10 +1269,38 @@ export async function getCashRegisterById(
           },
         },
 
+        pagosReserva: {
+          where: { estado: "CONFIRMADO" },
+          orderBy: { fechaConfirmacion: "desc" },
+          take: 100,
+          select: {
+            id: true,
+            numeroConstancia: true,
+            metodoPago: true,
+            monto: true,
+            numeroOperacion: true,
+            fechaConfirmacion: true,
+            reserva: {
+              select: {
+                id: true,
+                codigo: true,
+                cliente: {
+                  select: {
+                    id: true,
+                    nombres: true,
+                    apellidos: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+
         _count: {
           select: {
             ventas: true,
             gastos: true,
+            pagosReserva: true,
           },
         },
       },
@@ -1276,6 +1316,7 @@ export async function getCashRegisterById(
 
   const {
     ventas,
+    pagosReserva,
     ...cashData
   } = cash;
 
@@ -1338,6 +1379,20 @@ export async function getCashRegisterById(
               : null,
         }),
       ),
+
+    adelantos: pagosReserva.map((payment) => ({
+      ...payment,
+      monto: Number(payment.monto),
+      fechaConfirmacion: payment.fechaConfirmacion?.toISOString() ?? null,
+      reserva: {
+        id: payment.reserva.id,
+        codigo: payment.reserva.codigo,
+        cliente: {
+          id: payment.reserva.cliente.id,
+          nombreCompleto: userFullName(payment.reserva.cliente),
+        },
+      },
+    })),
   };
 }
 

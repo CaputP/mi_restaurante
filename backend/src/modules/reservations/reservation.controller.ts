@@ -22,6 +22,7 @@ import {
   cancelClientReservationSchema,
   createClientReservationSchema,
   rescheduleReservationSchema,
+  attendReservationSchema,
 } from "./reservation.schema.js";
 
 import {
@@ -35,10 +36,12 @@ import {
   rejectReservation,
   reviewReservation,
   rescheduleReservation,
+  attendReservation,
 } from "./reservation.service.js";
 
 import {
   confirmReservationPayment,
+  getReservationPaymentReceipt,
   registerReservationPayment,
 } from "./reservation-payment.service.js";
 
@@ -444,6 +447,56 @@ export async function rejectReservationController(
       data: {
         reserva:
           reservation,
+      },
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
+export async function getReservationPaymentReceiptController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { id, paymentId } = reservationPaymentIdSchema.parse(request.params);
+    const receipt = await getReservationPaymentReceipt(
+      getRequestAuth(request),
+      id,
+      paymentId,
+    );
+
+    response.status(200).json({
+      success: true,
+      message: "Constancia de adelanto obtenida correctamente.",
+      data: { constancia: receipt },
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
+export async function attendReservationController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { id } = reservationIdSchema.parse(request.params);
+    const input = attendReservationSchema.parse(request.body);
+    const result = await attendReservation(getRequestAuth(request), id, input);
+    const reservation = await getReservationById(getRequestAuth(request), id);
+
+    response.status(result.creado ? 201 : 200).json({
+      success: true,
+      message: result.creado
+        ? "Pedido generado desde la reserva. Ya puedes revisarlo y enviarlo a atención."
+        : "La reserva ya tenía un pedido asociado; se recuperó sin duplicarlo.",
+      data: {
+        reserva: reservation,
+        pedido: result.pedido,
+        creado: result.creado,
       },
     });
   } catch (error: unknown) {

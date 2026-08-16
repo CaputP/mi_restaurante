@@ -186,6 +186,26 @@ const promotionDataSchema =
       }
 
       if (
+        data.tipo ===
+          "PRODUCTO_GRATIS" &&
+        !Number.isInteger(
+          data.valor,
+        )
+      ) {
+        context.addIssue({
+          code:
+            z.ZodIssueCode.custom,
+
+          path: [
+            "valor",
+          ],
+
+          message:
+            "La cantidad de productos gratis debe ser un número entero.",
+        });
+      }
+
+      if (
         (
           data.tipo ===
             "PRODUCTO_GRATIS" ||

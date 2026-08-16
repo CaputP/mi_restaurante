@@ -9,6 +9,7 @@ import {
     FaClock,
     FaHistory,
     FaMapMarkerAlt,
+    FaReceipt,
     FaTimes,
     FaUsers
 } from "react-icons/fa";
@@ -274,6 +275,15 @@ function ReservationDetailDialog({
                                         <strong>
                                             {formatMoney(paymentItem.monto)}
                                         </strong>
+                                        {paymentItem.estado === "CONFIRMADO" && (
+                                            <a
+                                                className="client-button secondary"
+                                                href={`/reservations/${reservation.id}/payments/${paymentItem.id}/receipt`}
+                                            >
+                                                <FaReceipt />
+                                                Constancia
+                                            </a>
+                                        )}
                                     </div>
                                 )
                             )}

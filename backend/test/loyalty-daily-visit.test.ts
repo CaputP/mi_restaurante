@@ -218,14 +218,58 @@ describe("política de visita diaria de fidelización", () => {
             "movimiento-2",
         });
 
+    const program = {
+      id:
+        "programa-1",
+
+      tipo:
+        "VISITAS",
+
+      visitasRequeridas:
+        5,
+
+      montoRequerido:
+        null,
+
+      tipoRecompensa:
+        "BENEFICIO",
+
+      productoPremioId:
+        null,
+
+      cantidadPremio:
+        null,
+
+      montoDescuento:
+        null,
+
+      porcentajeDescuento:
+        null,
+
+      descripcionBeneficio:
+        "Beneficio de prueba",
+
+      vigenciaDiasPremio:
+        30,
+
+      automatico:
+        true,
+
+      productoPremio:
+        null,
+    };
+
+    const queryRaw =
+      vi.fn()
+        .mockResolvedValue([
+          {
+            locked: "",
+          },
+        ]);
+
     const transaction = {
       $queryRaw:
-        vi.fn()
-          .mockResolvedValue([
-            {
-              locked: "",
-            },
-          ]),
+        queryRaw,
 
       venta: {
         findUnique:
@@ -264,47 +308,14 @@ describe("política de visita diaria de fidelización", () => {
         findMany:
           vi.fn()
             .mockResolvedValue([
-              {
-                id:
-                  "programa-1",
-
-                tipo:
-                  "VISITAS",
-
-                visitasRequeridas:
-                  5,
-
-                montoRequerido:
-                  null,
-
-                tipoRecompensa:
-                  "BENEFICIO",
-
-                productoPremioId:
-                  null,
-
-                cantidadPremio:
-                  null,
-
-                montoDescuento:
-                  null,
-
-                porcentajeDescuento:
-                  null,
-
-                descripcionBeneficio:
-                  "Beneficio de prueba",
-
-                vigenciaDiasPremio:
-                  30,
-
-                automatico:
-                  true,
-
-                productoPremio:
-                  null,
-              },
+              program,
             ]),
+
+        findFirst:
+          vi.fn()
+            .mockResolvedValue(
+              program,
+            ),
       },
 
       movimientoFidelizacion: {
@@ -333,6 +344,19 @@ describe("política de visita diaria de fidelización", () => {
       transaction,
       "venta-2",
     );
+
+    expect(
+      queryRaw.mock
+        .calls
+        .map(
+          (call) =>
+            call[0]
+              .values[0],
+        ),
+    ).toEqual([
+      "loyalty-program-rules:programa-1",
+      "loyalty-daily-visit:cliente-1:programa-1:2026-08-08",
+    ]);
 
     const progressData =
       progressUpsert.mock

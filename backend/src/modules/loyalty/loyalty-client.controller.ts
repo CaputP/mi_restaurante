@@ -12,6 +12,46 @@ import {
   getClientLoyaltyProfile,
 } from "./loyalty-client.service.js";
 
+import {
+  listAvailableLoyaltyPrograms,
+} from "./loyalty-availability.service.js";
+
+export async function listAvailableLoyaltyProgramsController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    if (!request.auth) {
+      throw new AppError(
+        401,
+        "Debes iniciar sesión.",
+        "TOKEN_REQUERIDO",
+      );
+    }
+
+    const result =
+      await listAvailableLoyaltyPrograms(
+        request
+          .auth
+          .usuarioId,
+      );
+
+    response.status(200).json({
+      success:
+        true,
+
+      message:
+        "Programas disponibles obtenidos correctamente.",
+
+      data:
+        result,
+    });
+  } catch (error: unknown) {
+    next(error);
+  }
+}
+
 export async function getMyLoyaltyProfileController(
   request: Request,
   response: Response,

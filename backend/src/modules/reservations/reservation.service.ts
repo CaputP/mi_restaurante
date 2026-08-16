@@ -11,6 +11,7 @@ import { lockBranchAvailability } from "../../shared/availability/availability-l
 import {
   evaluateStockNotification,
 } from "../notifications/stock-notification.service.js";
+import { getOrderById } from "../orders/order.service.js";
 
 import {
   closeReservationConfirmedNotifications,
@@ -21,6 +22,7 @@ import {
 
 import type {
   ApproveReservationInput,
+  AttendReservationInput,
   CancelReservationInput,
   CreateReservationInput,
   ListReservationsQuery,
@@ -334,6 +336,9 @@ export async function getReservationOptions(
     zones,
     products,
     schedules,
+    sellers,
+    waiters,
+    openCashRegisters,
   ] = await Promise.all([
     prisma.usuario.findMany({
       where: {
@@ -483,6 +488,88 @@ export async function getReservationOptions(
           ],
         })
       : Promise.resolve([]),
+
+    selectedBranchId && !isClient(auth)
+      ? prisma.usuarioSucursal.findMany({
+        where: {
+          sucursalId: selectedBranchId,
+          activo: true,
+          fechaInicio: { lte: getOperationalDate() },
+          OR: [
+            { fechaFin: null },
+            { fechaFin: { gte: getOperationalDate() } },
+          ],
+          usuario: {
+            estado: "ACTIVO",
+            deletedAt: null,
+            rol: { codigo: "VENDEDOR", activo: true },
+          },
+        },
+        select: {
+          usuario: {
+            select: {
+              id: true,
+              nombres: true,
+              apellidos: true,
+              correo: true,
+            },
+          },
+        },
+        orderBy: { usuario: { nombres: "asc" } },
+      })
+      : Promise.resolve([]),
+
+    selectedBranchId && !isClient(auth)
+      ? prisma.usuarioSucursal.findMany({
+        where: {
+          sucursalId: selectedBranchId,
+          activo: true,
+          fechaInicio: { lte: getOperationalDate() },
+          OR: [
+            { fechaFin: null },
+            { fechaFin: { gte: getOperationalDate() } },
+          ],
+          usuario: {
+            estado: "ACTIVO",
+            deletedAt: null,
+            rol: { codigo: "MOZO", activo: true },
+          },
+        },
+        select: {
+          usuario: {
+            select: {
+              id: true,
+              nombres: true,
+              apellidos: true,
+              correo: true,
+            },
+          },
+        },
+        orderBy: { usuario: { nombres: "asc" } },
+      })
+      : Promise.resolve([]),
+
+    selectedBranchId && !isClient(auth)
+      ? prisma.caja.findMany({
+        where: {
+          sucursalId: selectedBranchId,
+          estado: "ABIERTA",
+        },
+        select: {
+          id: true,
+          codigo: true,
+          fechaApertura: true,
+          vendedor: {
+            select: {
+              id: true,
+              nombres: true,
+              apellidos: true,
+            },
+          },
+        },
+        orderBy: { fechaApertura: "desc" },
+      })
+      : Promise.resolve([]),
   ]);
 
   return {
@@ -537,6 +624,26 @@ export async function getReservationOptions(
             ),
         }),
       ),
+
+    vendedores: sellers.map(({ usuario }) => ({
+      ...usuario,
+      nombreCompleto: `${usuario.nombres} ${usuario.apellidos}`.trim(),
+    })),
+
+    mozos: waiters.map(({ usuario }) => ({
+      ...usuario,
+      nombreCompleto: `${usuario.nombres} ${usuario.apellidos}`.trim(),
+    })),
+
+    cajasAbiertas: openCashRegisters.map((cash) => ({
+      id: cash.id,
+      codigo: cash.codigo,
+      fechaApertura: cash.fechaApertura.toISOString(),
+      vendedor: {
+        id: cash.vendedor.id,
+        nombreCompleto: `${cash.vendedor.nombres} ${cash.vendedor.apellidos}`.trim(),
+      },
+    })),
 
     tiposReserva: [
       {
@@ -1143,6 +1250,22 @@ export async function listReservations(
           },
         },
 
+        pedido: {
+          select: {
+            id: true,
+            codigo: true,
+            estado: true,
+            enviadoAt: true,
+            pagadoAt: true,
+            venta: {
+              select: {
+                id: true,
+                numeroTicket: true,
+              },
+            },
+          },
+        },
+
         _count: {
           select: {
             detalles: true,
@@ -1325,6 +1448,22 @@ export async function getReservationById(
           },
         },
 
+        pedido: {
+          select: {
+            id: true,
+            codigo: true,
+            estado: true,
+            enviadoAt: true,
+            pagadoAt: true,
+            venta: {
+              select: {
+                id: true,
+                numeroTicket: true,
+              },
+            },
+          },
+        },
+
         detalles: {
           orderBy: {
             createdAt: "asc",
@@ -1379,11 +1518,20 @@ export async function getReservationById(
             monto: true,
             numeroOperacion:
               true,
+            numeroConstancia:
+              true,
             estado: true,
             fechaPago: true,
             fechaConfirmacion:
               true,
             observaciones: true,
+
+            caja: {
+              select: {
+                id: true,
+                codigo: true,
+              },
+            },
 
             registradoPor: {
               select: {
@@ -1611,6 +1759,218 @@ export async function getReservationById(
           },
         }),
       ),
+  };
+}
+
+async function validateReservationWorker(
+  transaction: Prisma.TransactionClient,
+  userId: string,
+  branchId: string,
+  roleCode: "VENDEDOR" | "MOZO",
+  label: string,
+): Promise<void> {
+  const assignment = await transaction.usuarioSucursal.findFirst({
+    where: {
+      usuarioId: userId,
+      sucursalId: branchId,
+      activo: true,
+      fechaInicio: { lte: getOperationalDate() },
+      OR: [
+        { fechaFin: null },
+        { fechaFin: { gte: getOperationalDate() } },
+      ],
+      usuario: {
+        estado: "ACTIVO",
+        deletedAt: null,
+        rol: { codigo: roleCode, activo: true },
+      },
+    },
+    select: { id: true },
+  });
+
+  if (!assignment) {
+    throw new AppError(
+      400,
+      `${label} no está activo o no pertenece a la sucursal.`,
+      "TRABAJADOR_RESERVA_INVALIDO",
+    );
+  }
+}
+
+export async function attendReservation(
+  auth: ReservationAuth,
+  reservationId: string,
+  input: AttendReservationInput,
+) {
+  await getReservationForOperation(auth, reservationId);
+
+  const result = await withSerializableTransaction(async (transaction) => {
+    const lockedRows = await transaction.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT "id"
+        FROM "reserva"
+        WHERE "id" = ${reservationId}::uuid
+        FOR UPDATE
+      `,
+    );
+
+    if (lockedRows.length !== 1) {
+      throw new AppError(404, "La reserva no existe.", "RESERVA_NO_ENCONTRADA");
+    }
+
+    const reservation = await transaction.reserva.findUnique({
+      where: { id: reservationId },
+      select: {
+        id: true,
+        codigo: true,
+        clienteId: true,
+        sucursalId: true,
+        zonaId: true,
+        tipoReserva: true,
+        fechaReserva: true,
+        estado: true,
+        observaciones: true,
+        pedido: { select: { id: true } },
+        detalles: {
+          where: {
+            cantidadAprobada: { gt: 0 },
+            estado: { in: ["APROBADO", "COMPROMETIDO"] },
+          },
+          orderBy: { createdAt: "asc" },
+          select: {
+            productoSucursalId: true,
+            nombreProducto: true,
+            cantidadAprobada: true,
+            precioReservado: true,
+            observaciones: true,
+          },
+        },
+      },
+    });
+
+    if (!reservation) {
+      throw new AppError(404, "La reserva no existe.", "RESERVA_NO_ENCONTRADA");
+    }
+
+    if (reservation.pedido) {
+      return { orderId: reservation.pedido.id, created: false };
+    }
+
+    if (reservation.estado !== "CONFIRMADA") {
+      throw new AppError(
+        409,
+        "Solo una reserva confirmada puede convertirse en pedido.",
+        "RESERVA_NO_ATENDIBLE",
+      );
+    }
+
+    if (
+      formatDateOnly(reservation.fechaReserva) !==
+      formatDateOnly(getOperationalDate())
+    ) {
+      throw new AppError(
+        409,
+        "La reserva solo puede atenderse en su fecha programada.",
+        "FECHA_ATENCION_RESERVA_INVALIDA",
+      );
+    }
+
+    if (reservation.detalles.length === 0) {
+      throw new AppError(
+        409,
+        "La reserva no tiene productos aprobados para generar un pedido.",
+        "RESERVA_SIN_PRODUCTOS_PARA_PEDIDO",
+      );
+    }
+
+    const sellerId = input.vendedorId ?? auth.usuarioId;
+    if (sellerId !== auth.usuarioId) {
+      await validateReservationWorker(
+        transaction,
+        sellerId,
+        reservation.sucursalId,
+        "VENDEDOR",
+        "El vendedor seleccionado",
+      );
+    }
+
+    if (input.mozoId) {
+      await validateReservationWorker(
+        transaction,
+        input.mozoId,
+        reservation.sucursalId,
+        "MOZO",
+        "El mozo seleccionado",
+      );
+    }
+
+    const correlativo = await transaction.correlativo.upsert({
+      where: {
+        sucursalId_tipoDocumento: {
+          sucursalId: reservation.sucursalId,
+          tipoDocumento: "PEDIDO",
+        },
+      },
+      update: { ultimoNumero: { increment: 1 } },
+      create: {
+        sucursalId: reservation.sucursalId,
+        tipoDocumento: "PEDIDO",
+        prefijo: "P",
+        ultimoNumero: 1n,
+        longitudNumero: 6,
+      },
+      select: {
+        prefijo: true,
+        ultimoNumero: true,
+        longitudNumero: true,
+      },
+    });
+
+    const code = `${correlativo.prefijo}-${correlativo.ultimoNumero
+      .toString()
+      .padStart(correlativo.longitudNumero, "0")}`;
+
+    const order = await transaction.pedido.create({
+      data: {
+        codigo: code,
+        sucursalId: reservation.sucursalId,
+        reservaId: reservation.id,
+        clienteId: reservation.clienteId,
+        vendedorId: sellerId,
+        mozoId: input.mozoId,
+        zonaId: reservation.zonaId,
+        tipoPedido: reservation.tipoReserva === "EVENTO" ? "EVENTO" : "RESERVA",
+        estado: "ABIERTO",
+        observaciones:
+          input.observaciones ??
+          `Pedido generado desde la reserva ${reservation.codigo}.`,
+        detalles: {
+          create: reservation.detalles.map((detail) => {
+            const quantity = Number(detail.cantidadAprobada);
+            const unitPrice = Number(detail.precioReservado);
+
+            return {
+              productoSucursalId: detail.productoSucursalId,
+              nombreProducto: detail.nombreProducto,
+              cantidad: quantity,
+              cantidadComprometida: 0,
+              precioUnitario: unitPrice,
+              subtotal: Number((quantity * unitPrice).toFixed(2)),
+              observaciones: detail.observaciones,
+              estado: "PENDIENTE",
+            };
+          }),
+        },
+      },
+      select: { id: true },
+    });
+
+    return { orderId: order.id, created: true };
+  });
+
+  return {
+    pedido: await getOrderById(auth, result.orderId),
+    creado: result.created,
   };
 }
 

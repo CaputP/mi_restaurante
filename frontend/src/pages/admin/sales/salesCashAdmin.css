@@ -662,6 +662,38 @@
     color: var(--admin-color-white);
 }
 
+.cash-advance-section {
+    margin-top: 24px;
+}
+
+.cash-advance-list {
+    display: grid;
+    gap: 10px;
+}
+
+.cash-advance-list article {
+    padding: 14px 16px;
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--admin-color-surface-subtle);
+}
+
+.cash-advance-list article > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.cash-advance-list span,
+.cash-advance-list small {
+    color: var(--admin-color-text-muted);
+}
+
 .receipt-print-preference {
     margin-top: 18px;
     padding: 13px 15px;

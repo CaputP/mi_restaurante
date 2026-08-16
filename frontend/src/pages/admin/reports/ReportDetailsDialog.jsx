@@ -65,6 +65,7 @@ const MONEY_FIELDS = new Set([
     "totalEstimado",
     "adelantoRequerido",
     "adelantoPagado",
+    "totalAdelantos",
     "montoInicial",
     "totalGastos",
     "efectivoEsperado",
@@ -203,6 +204,12 @@ function ReportRecord({ record }) {
                                             {payment.numeroOperacion
                                                 ? `Operación ${payment.numeroOperacion}`
                                                 : "Sin número de operación"}
+                                            {payment.numeroConstancia
+                                                ? ` · Constancia ${payment.numeroConstancia}`
+                                                : ""}
+                                            {payment.caja
+                                                ? ` · Caja ${payment.caja}`
+                                                : ""}
                                         </small>
                                     </div>
                                     <strong>{formatMoney(payment.monto)}</strong>

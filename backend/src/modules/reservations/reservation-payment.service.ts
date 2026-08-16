@@ -1,4 +1,5 @@
 import { Prisma } from "../../generated/prisma/client.js";
+import { prisma } from "../../lib/prisma.js";
 import { withSerializableTransaction } from "../../lib/transaction.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
@@ -175,21 +176,30 @@ export async function confirmReservationPayment(
     const reservation = await lockReservationPaymentState(transaction, reservationId);
     assertReservationAcceptsPayments(reservation.estado);
 
-    const paymentUpdate = await transaction.pagoReserva.updateMany({
+    await transaction.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT "id"
+        FROM "pago_reserva"
+        WHERE "id" = ${paymentId}::uuid
+          AND "reserva_id" = ${reservation.id}::uuid
+        FOR UPDATE
+      `,
+    );
+
+    const pendingPayment = await transaction.pagoReserva.findFirst({
       where: {
         id: paymentId,
         reservaId: reservation.id,
         estado: "PENDIENTE",
       },
-      data: {
-        estado: "CONFIRMADO",
-        confirmadoPorId: auth.usuarioId,
-        fechaConfirmacion: new Date(),
-        ...(input.observacion ? { observaciones: input.observacion } : {}),
+      select: {
+        id: true,
+        metodoPago: true,
+        monto: true,
       },
     });
 
-    if (paymentUpdate.count !== 1) {
+    if (!pendingPayment) {
       const existingPayment = await transaction.pagoReserva.findFirst({
         where: { id: paymentId, reservaId: reservation.id },
         select: { id: true },
@@ -202,8 +212,118 @@ export async function confirmReservationPayment(
           "PAGO_NO_ENCONTRADO",
         );
       }
+
       throw new AppError(409, "El pago ya fue procesado anteriormente.", "PAGO_YA_PROCESADO");
     }
+
+    const lockedCashRows = await transaction.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT "id"
+        FROM "caja"
+        WHERE "id" = ${input.cajaId}::uuid
+        FOR UPDATE
+      `,
+    );
+
+    const cash = lockedCashRows.length === 1
+      ? await transaction.caja.findUnique({
+        where: { id: input.cajaId },
+        select: {
+          id: true,
+          codigo: true,
+          sucursalId: true,
+          estado: true,
+        },
+      })
+      : null;
+
+    if (
+      !cash ||
+      cash.estado !== "ABIERTA" ||
+      cash.sucursalId !== reservation.sucursalId
+    ) {
+      throw new AppError(
+        409,
+        "La caja seleccionada no está abierta o no pertenece a la sucursal de la reserva.",
+        "CAJA_ADELANTO_INVALIDA",
+      );
+    }
+
+    const correlativo = await transaction.correlativo.upsert({
+      where: {
+        sucursalId_tipoDocumento: {
+          sucursalId: reservation.sucursalId,
+          tipoDocumento: "CONSTANCIA_RESERVA",
+        },
+      },
+      update: { ultimoNumero: { increment: 1 } },
+      create: {
+        sucursalId: reservation.sucursalId,
+        tipoDocumento: "CONSTANCIA_RESERVA",
+        prefijo: "AR",
+        ultimoNumero: 1n,
+        longitudNumero: 6,
+      },
+      select: {
+        prefijo: true,
+        ultimoNumero: true,
+        longitudNumero: true,
+      },
+    });
+
+    const receiptNumber = `${correlativo.prefijo}-${correlativo.ultimoNumero
+      .toString()
+      .padStart(correlativo.longitudNumero, "0")}`;
+    const confirmationDate = new Date();
+
+    const paymentUpdate = await transaction.pagoReserva.updateMany({
+      where: {
+        id: paymentId,
+        reservaId: reservation.id,
+        estado: "PENDIENTE",
+      },
+      data: {
+        estado: "CONFIRMADO",
+        confirmadoPorId: auth.usuarioId,
+        cajaId: cash.id,
+        numeroConstancia: receiptNumber,
+        fechaConfirmacion: confirmationDate,
+        ...(input.observacion ? { observaciones: input.observacion } : {}),
+      },
+    });
+
+    if (paymentUpdate.count !== 1) {
+      throw new AppError(409, "El pago ya fue procesado anteriormente.", "PAGO_YA_PROCESADO");
+    }
+
+    const amount = Number(pendingPayment.monto);
+    const cashUpdate: Prisma.CajaUpdateInput = {
+      totalAdelantos: { increment: amount },
+    };
+
+    switch (pendingPayment.metodoPago) {
+      case "EFECTIVO":
+        cashUpdate.totalEfectivo = { increment: amount };
+        cashUpdate.efectivoEsperado = { increment: amount };
+        break;
+      case "YAPE":
+        cashUpdate.totalYape = { increment: amount };
+        break;
+      case "PLIN":
+        cashUpdate.totalPlin = { increment: amount };
+        break;
+      case "TARJETA":
+        cashUpdate.totalTarjeta = { increment: amount };
+        break;
+      case "TRANSFERENCIA":
+        cashUpdate.totalTransferencia = { increment: amount };
+        break;
+    }
+
+    await transaction.caja.update({
+      where: { id: cash.id },
+      data: cashUpdate,
+    });
 
     const paymentTotal = await transaction.pagoReserva.aggregate({
       where: { reservaId: reservation.id, estado: "CONFIRMADO" },
@@ -273,4 +393,127 @@ export async function confirmReservationPayment(
   });
 
   return getReservationById(auth, reservationId);
+}
+
+export async function getReservationPaymentReceipt(
+  auth: ReservationAuth,
+  reservationId: string,
+  paymentId: string,
+) {
+  await getReservationForOperation(auth, reservationId);
+
+  const payment = await prisma.pagoReserva.findFirst({
+    where: {
+      id: paymentId,
+      reservaId: reservationId,
+      estado: "CONFIRMADO",
+    },
+    select: {
+      id: true,
+      metodoPago: true,
+      monto: true,
+      numeroOperacion: true,
+      numeroConstancia: true,
+      fechaPago: true,
+      fechaConfirmacion: true,
+      observaciones: true,
+      reserva: {
+        select: {
+          codigo: true,
+          tipoReserva: true,
+          fechaReserva: true,
+          horaReserva: true,
+          cantidadPersonas: true,
+          totalEstimado: true,
+          adelantoRequerido: true,
+          adelantoPagado: true,
+          saldoEstimado: true,
+          cliente: {
+            select: {
+              nombres: true,
+              apellidos: true,
+              correo: true,
+              telefono: true,
+            },
+          },
+          sucursal: {
+            select: {
+              codigo: true,
+              nombre: true,
+              razonSocial: true,
+              ruc: true,
+              direccion: true,
+              telefono: true,
+              correo: true,
+            },
+          },
+          zona: { select: { nombre: true } },
+          detalles: {
+            where: { cantidadAprobada: { gt: 0 } },
+            orderBy: { createdAt: "asc" },
+            select: {
+              id: true,
+              nombreProducto: true,
+              cantidadAprobada: true,
+              precioReservado: true,
+              subtotal: true,
+            },
+          },
+        },
+      },
+      caja: { select: { codigo: true } },
+      confirmadoPor: {
+        select: { nombres: true, apellidos: true },
+      },
+    },
+  });
+
+  if (!payment) {
+    throw new AppError(
+      404,
+      "La constancia de pago no existe o el adelanto aún no fue confirmado.",
+      "CONSTANCIA_RESERVA_NO_ENCONTRADA",
+    );
+  }
+
+  return {
+    id: payment.id,
+    numeroConstancia: payment.numeroConstancia ?? `LEGACY-${payment.id.slice(0, 8).toUpperCase()}`,
+    metodoPago: payment.metodoPago,
+    monto: Number(payment.monto),
+    numeroOperacion: payment.numeroOperacion,
+    fechaPago: payment.fechaPago.toISOString(),
+    fechaConfirmacion: payment.fechaConfirmacion?.toISOString() ?? null,
+    observaciones: payment.observaciones,
+    caja: payment.caja,
+    confirmadoPor: payment.confirmadoPor
+      ? `${payment.confirmadoPor.nombres} ${payment.confirmadoPor.apellidos}`.trim()
+      : null,
+    negocio: payment.reserva.sucursal,
+    reserva: {
+      codigo: payment.reserva.codigo,
+      tipoReserva: payment.reserva.tipoReserva,
+      fechaReserva: payment.reserva.fechaReserva.toISOString().slice(0, 10),
+      horaReserva: payment.reserva.horaReserva.toISOString().slice(11, 16),
+      cantidadPersonas: payment.reserva.cantidadPersonas,
+      totalEstimado: Number(payment.reserva.totalEstimado),
+      adelantoRequerido: Number(payment.reserva.adelantoRequerido),
+      adelantoPagado: Number(payment.reserva.adelantoPagado),
+      saldoEstimado: Number(payment.reserva.saldoEstimado),
+      zona: payment.reserva.zona,
+      cliente: {
+        ...payment.reserva.cliente,
+        nombreCompleto:
+          `${payment.reserva.cliente.nombres} ${payment.reserva.cliente.apellidos}`.trim(),
+      },
+      detalles: payment.reserva.detalles.map((detail) => ({
+        ...detail,
+        cantidadAprobada: Number(detail.cantidadAprobada),
+        precioReservado: Number(detail.precioReservado),
+        subtotal: Number(detail.subtotal),
+      })),
+    },
+    aviso:
+      "Constancia interna de adelanto de reserva. No reemplaza una boleta de venta ni otro comprobante de pago tributario.",
+  };
 }

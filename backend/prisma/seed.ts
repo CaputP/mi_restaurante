@@ -380,6 +380,7 @@ async function seedCatalogos(): Promise<void> {
 async function seedCorrelativos(sucursalId: string): Promise<void> {
   const correlativos = [
     [TipoDocumentoCorrelativo.RESERVA, "R"],
+    [TipoDocumentoCorrelativo.CONSTANCIA_RESERVA, "AR"],
     [TipoDocumentoCorrelativo.PEDIDO, "P"],
     [TipoDocumentoCorrelativo.COMANDA, "C"],
     [TipoDocumentoCorrelativo.TICKET, "T"],

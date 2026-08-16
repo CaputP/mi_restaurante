@@ -20,6 +20,7 @@ import {
 
 import {
   getMyLoyaltyProfileController,
+  listAvailableLoyaltyProgramsController,
 } from "./loyalty-client.controller.js";
 
 import {
@@ -50,6 +51,17 @@ loyaltyRouter.get(
     "CLIENTE_PREMIOS_VER",
   ),
   getMyLoyaltyProfileController,
+);
+
+loyaltyRouter.get(
+  "/programs/available",
+  requireRoles(
+    "CLIENTE",
+  ),
+  requirePermissions(
+    "CLIENTE_PREMIOS_VER",
+  ),
+  listAvailableLoyaltyProgramsController,
 );
 
 /*
@@ -84,6 +96,9 @@ loyaltyRouter.use(
   requireRoles(
     "ADMINISTRADOR_GENERAL",
     "ADMINISTRADOR_SUCURSAL",
+  ),
+  requirePermissions(
+    "FIDELIZACION_GESTIONAR",
   ),
 );
 
@@ -125,10 +140,4 @@ loyaltyRouter.patch(
 loyaltyRouter.patch(
   "/programs/:id/status",
   updateLoyaltyProgramStatusController,
-);
-
-loyaltyRouter.use(
-  requirePermissions(
-    "FIDELIZACION_GESTIONAR",
-  ),
 );

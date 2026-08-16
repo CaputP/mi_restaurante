@@ -389,6 +389,7 @@ export function subscribeRealtimeClient(
 export async function publishRealtimeChange(
   resources:
     RealtimeResource[],
+  userIds?: string[],
 ): Promise<void> {
   const uniqueResources =
     [...new Set(resources)];
@@ -412,6 +413,16 @@ export async function publishRealtimeChange(
     createdAt:
       new Date()
         .toISOString(),
+
+    ...(userIds?.length
+      ? {
+          userIds: [
+            ...new Set(
+              userIds,
+            ),
+          ],
+        }
+      : {}),
   };
 
   if (!listener) {

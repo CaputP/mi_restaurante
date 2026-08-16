@@ -13,6 +13,10 @@ import {
 } from "./promotions-calculation.controller.js";
 
 import {
+  listAvailablePromotionsController,
+} from "./promotions-client.controller.js";
+
+import {
   createPromotionController,
   getPromotionByIdController,
   getPromotionOptionsController,
@@ -43,6 +47,17 @@ promotionRouter.post(
   previewAutomaticPromotionsController,
 );
 
+promotionRouter.get(
+  "/available",
+  requireRoles(
+    "CLIENTE",
+  ),
+  requirePermissions(
+    "CLIENTE_PREMIOS_VER",
+  ),
+  listAvailablePromotionsController,
+);
+
 /*
  * La administración de promociones continúa
  * restringida a administradores.
@@ -51,6 +66,9 @@ promotionRouter.use(
   requireRoles(
     "ADMINISTRADOR_GENERAL",
     "ADMINISTRADOR_SUCURSAL",
+  ),
+  requirePermissions(
+    "PROMOCION_GESTIONAR",
   ),
 );
 
@@ -82,10 +100,4 @@ promotionRouter.patch(
 promotionRouter.patch(
   "/:id/status",
   updatePromotionStatusController,
-);
-
-promotionRouter.use(
-  requirePermissions(
-    "PROMOCION_GESTIONAR",
-  ),
 );

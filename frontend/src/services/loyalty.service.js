@@ -250,3 +250,19 @@ export async function getMyLoyaltyProfileRequest(
 
     return response.data;
 }
+
+export async function listAvailableLoyaltyProgramsRequest(
+    token,
+    signal
+) {
+    const response =
+        await apiRequest(
+            "/loyalty/programs/available",
+            {
+                token,
+                signal
+            }
+        );
+
+    return response.data;
+}

@@ -9,6 +9,14 @@ import {
 } from "../../shared/errors/app-error.js";
 
 import {
+  appendRealtimeResources,
+} from "../../middlewares/realtime.middleware.js";
+
+import {
+  publishRealtimeChange,
+} from "../realtime/realtime-broker.js";
+
+import {
   voidSaleParamsSchema,
   voidSaleSchema,
 } from "./sale-void.schema.js";
@@ -56,7 +64,7 @@ export async function voidSaleController(
         request.body,
       );
 
-    const sale =
+    const result =
       await voidSale(
         getRequestAuth(
           request,
@@ -64,6 +72,32 @@ export async function voidSaleController(
         id,
         input,
       );
+
+    const {
+      realtimeClienteId,
+      realtimePromocionCambiada,
+      ...sale
+    } = result;
+
+    if (
+      realtimePromocionCambiada
+    ) {
+      appendRealtimeResources(
+        response,
+        "PROMOTIONS",
+      );
+    }
+
+    if (realtimeClienteId) {
+      await publishRealtimeChange(
+        [
+          "LOYALTY",
+        ],
+        [
+          realtimeClienteId,
+        ],
+      );
+    }
 
     response.status(200).json({
       success:

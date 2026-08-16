@@ -5,7 +5,8 @@ import {
 } from "react";
 
 import {
-    useLocation
+    useLocation,
+    useNavigate
 } from "react-router-dom";
 
 import {
@@ -21,10 +22,12 @@ import {
     FaList,
     FaMoneyBillWave,
     FaPlus,
+    FaReceipt,
     FaSave,
     FaSearch,
     FaTimes,
-    FaUsers
+    FaUsers,
+    FaUtensils
 } from "react-icons/fa";
 
 import {
@@ -43,6 +46,7 @@ import {
 
 import {
     approveReservationRequest,
+    attendReservationRequest,
     cancelReservationRequest,
     checkReservationAvailabilityRequest,
     confirmReservationPaymentRequest,
@@ -70,7 +74,10 @@ const EMPTY_OPTIONS = {
     productos: [],
     horarios: [],
     tiposReserva: [],
-    duraciones: []
+    duraciones: [],
+    vendedores: [],
+    mozos: [],
+    cajasAbiertas: []
 };
 
 const EMPTY_PAGINATION = {
@@ -231,6 +238,8 @@ function ReservationsAdmin() {
 
     const location =
         useLocation();
+    const navigate =
+        useNavigate();
 
     const {
         token
@@ -238,7 +247,9 @@ function ReservationsAdmin() {
 
     const realtimeVersion =
         useRealtimeVersion([
-            "RESERVATIONS"
+            "RESERVATIONS",
+            "CASH",
+            "ORDERS"
         ]);
 
     const [
@@ -332,6 +343,20 @@ function ReservationsAdmin() {
     ] = useState(
         createEmptyPaymentForm
     );
+
+    const [
+        confirmationCashId,
+        setConfirmationCashId
+    ] = useState("");
+
+    const [
+        attendanceForm,
+        setAttendanceForm
+    ] = useState({
+        vendedorId: "",
+        mozoId: "",
+        observaciones: ""
+    });
 
     const [
         isLoadingOptions,
@@ -493,11 +518,21 @@ function ReservationsAdmin() {
                     await getReservationByIdRequest(
                         token,
                         notificationEntityId,
+                        controller.signal
+                    );
+
+                const branchOptions =
+                    await getReservationOptionsRequest(
+                        token,
                         {
+                            sucursalId:
+                                result.sucursal.id,
                             signal:
                                 controller.signal
                         }
                     );
+
+                setOptions(branchOptions);
 
                 setSelectedReservation(
                     result
@@ -656,6 +691,50 @@ function ReservationsAdmin() {
         return () =>
             controller.abort();
     }, [token]);
+
+    useEffect(() => {
+        if (
+            realtimeVersion === 0 ||
+            !filters.sucursalId
+        ) {
+            return undefined;
+        }
+
+        const controller =
+            new AbortController();
+
+        async function refreshOperationalOptions() {
+            try {
+                const result =
+                    await getReservationOptionsRequest(
+                        token,
+                        {
+                            sucursalId:
+                                filters.sucursalId,
+                            signal:
+                                controller.signal
+                        }
+                    );
+
+                setOptions(result);
+            } catch (requestError) {
+                if (!isAbortError(requestError)) {
+                    console.error(
+                        "No se pudieron actualizar las cajas y trabajadores disponibles:",
+                        requestError
+                    );
+                }
+            }
+        }
+
+        void refreshOperationalOptions();
+
+        return () => controller.abort();
+    }, [
+        realtimeVersion,
+        filters.sucursalId,
+        token
+    ]);
 
     useEffect(() => {
         const controller =
@@ -1355,6 +1434,22 @@ function ReservationsAdmin() {
                     reservationId
                 );
 
+            if (
+                reservation.sucursal.id !==
+                options.sucursalSeleccionadaId
+            ) {
+                const branchOptions =
+                    await getReservationOptionsRequest(
+                        token,
+                        {
+                            sucursalId:
+                                reservation.sucursal.id
+                        }
+                    );
+
+                setOptions(branchOptions);
+            }
+
             setSelectedReservation(
                 reservation
             );
@@ -1764,6 +1859,13 @@ function ReservationsAdmin() {
             return;
         }
 
+        if (!effectiveConfirmationCashId) {
+            setError(
+                "Abre o selecciona una caja de la sucursal antes de confirmar el adelanto."
+            );
+            return;
+        }
+
         const confirmed =
             window.confirm(
                 "¿Confirmar que este pago fue recibido?"
@@ -1782,7 +1884,10 @@ function ReservationsAdmin() {
                     token,
                     selectedReservation.id,
                     paymentId,
-                    {}
+                    {
+                        cajaId:
+                            effectiveConfirmationCashId
+                    }
                 );
 
             applyMutationResponse(
@@ -1794,6 +1899,46 @@ function ReservationsAdmin() {
                     requestError
                 ) ??
                 "No se pudo confirmar el pago."
+            );
+        } finally {
+            setIsSaving(false);
+        }
+    }
+
+    async function handleAttendReservation(
+        event
+    ) {
+        event.preventDefault();
+
+        if (!selectedReservation) {
+            return;
+        }
+
+        clearFeedback();
+        setIsSaving(true);
+
+        try {
+            const response =
+                await attendReservationRequest(
+                    token,
+                    selectedReservation.id,
+                    {
+                        vendedorId:
+                            attendanceForm.vendedorId || null,
+                        mozoId:
+                            attendanceForm.mozoId || null,
+                        observaciones:
+                            attendanceForm.observaciones.trim() || null
+                    }
+                );
+
+            applyMutationResponse(response);
+        } catch (requestError) {
+            setError(
+                getApiErrorMessage(
+                    requestError
+                ) ??
+                "No se pudo generar el pedido de la reserva."
             );
         } finally {
             setIsSaving(false);
@@ -1956,6 +2101,32 @@ function ReservationsAdmin() {
             selectedReservation
                 ?.estado
         );
+
+    const effectiveConfirmationCashId =
+        (options.cajasAbiertas ?? []).some(
+            (cash) =>
+                cash.id === confirmationCashId
+        )
+            ? confirmationCashId
+            : options.cajasAbiertas?.[0]?.id ?? "";
+
+    const reservationIsToday =
+        selectedReservation?.fechaReserva ===
+        new Intl.DateTimeFormat(
+            "en-CA",
+            {
+                timeZone: "America/Lima",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            }
+        ).format(new Date());
+
+    const canAttend =
+        selectedReservation?.estado ===
+            "CONFIRMADA" &&
+        !selectedReservation?.pedido &&
+        reservationIsToday;
 
     return (
         <section className="reservations-admin admin-page">
@@ -3397,6 +3568,27 @@ function ReservationsAdmin() {
                                 Cancelar reserva
                             </button>
                         )}
+
+                        {selectedReservation.pedido && (
+                            <button
+                                type="button"
+                                className="reservation-primary-button"
+                                onClick={() =>
+                                    navigate(
+                                        "/admin/pedidos",
+                                        {
+                                            state: {
+                                                orderId:
+                                                    selectedReservation.pedido.id
+                                            }
+                                        }
+                                    )
+                                }
+                            >
+                                <FaUtensils />
+                                Ver pedido {selectedReservation.pedido.codigo}
+                            </button>
+                        )}
                     </div>
 
                     <div className="reservation-detail-columns">
@@ -3779,6 +3971,154 @@ function ReservationsAdmin() {
                         </form>
                     )}
 
+                    {canAttend && (
+                        <form
+                            className="reservation-operation-card"
+                            onSubmit={
+                                handleAttendReservation
+                            }
+                        >
+                            <div className="reservation-section-heading">
+                                <div>
+                                    <h3>
+                                        Atender reserva
+                                    </h3>
+
+                                    <p>
+                                        Genera un solo pedido vinculado. Luego revísalo y envíalo para que aparezca en Caja.
+                                    </p>
+                                </div>
+
+                                <FaUtensils />
+                            </div>
+
+                            <div className="reservation-form-grid">
+                                <div className="reservation-field">
+                                    <label>
+                                        Vendedor
+                                    </label>
+
+                                    <select
+                                        value={
+                                            attendanceForm.vendedorId
+                                        }
+                                        onChange={(event) =>
+                                            setAttendanceForm(
+                                                (previous) => ({
+                                                    ...previous,
+                                                    vendedorId:
+                                                        event.target.value
+                                                })
+                                            )
+                                        }
+                                    >
+                                        <option value="">
+                                            Administrador actual
+                                        </option>
+                                        {(options.vendedores ?? []).map(
+                                            (seller) => (
+                                                <option
+                                                    key={seller.id}
+                                                    value={seller.id}
+                                                >
+                                                    {seller.nombreCompleto}
+                                                </option>
+                                            )
+                                        )}
+                                    </select>
+                                </div>
+
+                                <div className="reservation-field">
+                                    <label>
+                                        Mozo (opcional)
+                                    </label>
+
+                                    <select
+                                        value={
+                                            attendanceForm.mozoId
+                                        }
+                                        onChange={(event) =>
+                                            setAttendanceForm(
+                                                (previous) => ({
+                                                    ...previous,
+                                                    mozoId:
+                                                        event.target.value
+                                                })
+                                            )
+                                        }
+                                    >
+                                        <option value="">
+                                            Sin asignar
+                                        </option>
+                                        {(options.mozos ?? []).map(
+                                            (waiter) => (
+                                                <option
+                                                    key={waiter.id}
+                                                    value={waiter.id}
+                                                >
+                                                    {waiter.nombreCompleto}
+                                                </option>
+                                            )
+                                        )}
+                                    </select>
+                                </div>
+
+                                <div className="reservation-field reservation-field-full">
+                                    <label>
+                                        Observaciones
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        maxLength="2000"
+                                        value={
+                                            attendanceForm.observaciones
+                                        }
+                                        onChange={(event) =>
+                                            setAttendanceForm(
+                                                (previous) => ({
+                                                    ...previous,
+                                                    observaciones:
+                                                        event.target.value
+                                                })
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="reservation-form-actions">
+                                <button
+                                    type="submit"
+                                    className="reservation-primary-button"
+                                    disabled={isSaving}
+                                >
+                                    <FaUtensils />
+                                    Generar pedido
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    {selectedReservation.estado ===
+                        "CONFIRMADA" &&
+                        !selectedReservation.pedido &&
+                        !reservationIsToday && (
+                            <div className="reservation-operation-card">
+                                <div className="reservation-section-heading">
+                                    <div>
+                                        <h3>Reserva programada</h3>
+                                        <p>
+                                            El pedido podrá generarse el {formatDate(
+                                                selectedReservation.fechaReserva
+                                            )}, evitando enviarlo antes de que el cliente llegue.
+                                        </p>
+                                    </div>
+                                    <FaCalendarAlt />
+                                </div>
+                            </div>
+                        )}
+
                     {canReceivePayment && (
                         <form
                             className="reservation-operation-card payment"
@@ -3979,6 +4319,42 @@ function ReservationsAdmin() {
                             Pagos registrados
                         </h4>
 
+                        {selectedReservation.pagos.some(
+                            (payment) =>
+                                payment.estado === "PENDIENTE"
+                        ) && (
+                            <div className="reservation-field reservation-cash-validation">
+                                <label>
+                                    Caja que recibe el adelanto
+                                </label>
+
+                                <select
+                                    value={effectiveConfirmationCashId}
+                                    onChange={(event) =>
+                                        setConfirmationCashId(
+                                            event.target.value
+                                        )
+                                    }
+                                >
+                                    {(options.cajasAbiertas ?? []).length === 0 && (
+                                        <option value="">
+                                            No hay cajas abiertas en esta sucursal
+                                        </option>
+                                    )}
+                                    {(options.cajasAbiertas ?? []).map(
+                                        (cash) => (
+                                            <option
+                                                key={cash.id}
+                                                value={cash.id}
+                                            >
+                                                {cash.codigo} · {cash.vendedor.nombreCompleto}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </div>
+                        )}
+
                         {selectedReservation
                             .pagos.length ===
                             0 ? (
@@ -4037,6 +4413,21 @@ function ReservationsAdmin() {
                                                     >
                                                         <FaCheck />
                                                         Confirmar
+                                                    </button>
+                                                )}
+
+                                            {payment.estado ===
+                                                "CONFIRMADO" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/admin/reservas/${selectedReservation.id}/pagos/${payment.id}/constancia`
+                                                            )
+                                                        }
+                                                    >
+                                                        <FaReceipt />
+                                                        Constancia
                                                     </button>
                                                 )}
                                         </article>

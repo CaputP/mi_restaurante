@@ -30,10 +30,9 @@
 }
 
 .client-loyalty-eyebrow {
-    font-size: 0.68rem;
+    font-size: 0.6875rem;
     font-weight: 800;
     letter-spacing: 0.14em;
-    opacity: 0.8;
 }
 
 .client-loyalty-hero h2 {
@@ -45,7 +44,7 @@
     max-width: 600px;
     margin: 0;
 
-    color: rgba(255, 255, 255, 0.82);
+    color: #ffffff;
     line-height: 1.6;
     font-size: 0.84rem;
 }
@@ -67,6 +66,62 @@
 
 .client-loyalty-hero-icon svg {
     font-size: 2.2rem;
+}
+
+.client-loyalty-tabs {
+    width: 100%;
+    margin-top: 18px;
+    padding: 5px;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+
+    border: 1px solid #dfe5df;
+    border-radius: 13px;
+
+    background: #ffffff;
+}
+
+.client-loyalty-tab {
+    min-width: 0;
+    min-height: 43px;
+    padding: 9px 12px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: 1px solid transparent;
+    border-radius: 9px;
+
+    color: #68736b;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.client-loyalty-tab:hover {
+    background: #f4f7f4;
+    color: #355e3b;
+}
+
+.client-loyalty-tab.active {
+    border-color: #cbd9cd;
+    background: #edf4ee;
+    color: #355e3b;
+}
+
+.client-loyalty-tab svg {
+    flex-shrink: 0;
 }
 
 .client-loyalty-stats {
@@ -115,8 +170,8 @@
 }
 
 .client-loyalty-stats span {
-    color: #7a847c;
-    font-size: 0.65rem;
+    color: #59645b;
+    font-size: 0.75rem;
 }
 
 .client-loyalty-stats strong {
@@ -168,8 +223,8 @@
 
 .client-loyalty-section-heading p {
     margin: 3px 0 0;
-    color: #818982;
-    font-size: 0.66rem;
+    color: #59645b;
+    font-size: 0.75rem;
 }
 
 .client-loyalty-section-heading > span {
@@ -178,9 +233,9 @@
     border-radius: 20px;
 
     background: #f0f3f0;
-    color: #69736b;
+    color: #59645b;
 
-    font-size: 0.64rem;
+    font-size: 0.6875rem;
 }
 
 .client-loyalty-program-grid {
@@ -205,8 +260,8 @@
 }
 
 .client-loyalty-program-card header span {
-    color: #6b7d6e;
-    font-size: 0.58rem;
+    color: #59645b;
+    font-size: 0.6875rem;
     font-weight: 700;
     text-transform: uppercase;
 }
@@ -224,8 +279,8 @@
 .client-loyalty-program-card > p {
     min-height: 34px;
 
-    color: #7c857e;
-    font-size: 0.68rem;
+    color: #536057;
+    font-size: 0.8125rem;
     line-height: 1.5;
 }
 
@@ -235,9 +290,10 @@
 
     overflow: hidden;
 
+    border: 1px solid #c8d2ca;
     border-radius: 20px;
 
-    background: #e6ebe7;
+    background: #dfe6e1;
 }
 
 .client-loyalty-progress-bar > div {
@@ -271,13 +327,13 @@
 }
 
 .client-loyalty-program-progress span {
-    color: #818a83;
-    font-size: 0.56rem;
+    color: #59645b;
+    font-size: 0.6875rem;
 }
 
 .client-loyalty-program-progress strong {
     color: #405346;
-    font-size: 0.66rem;
+    font-size: 0.75rem;
 }
 
 .client-loyalty-program-card footer {
@@ -292,18 +348,18 @@
 }
 
 .client-loyalty-program-card footer span {
-    color: #8b928c;
-    font-size: 0.58rem;
+    color: #59645b;
+    font-size: 0.6875rem;
 }
 
 .client-loyalty-program-card footer strong {
     color: #6b580b;
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
 }
 
 .client-loyalty-program-card footer small {
-    color: #858d87;
-    font-size: 0.58rem;
+    color: #59645b;
+    font-size: 0.6875rem;
 }
 
 .client-loyalty-rewards-grid {
@@ -357,7 +413,7 @@
     background: #e8f5e9;
     color: #2e7d32;
 
-    font-size: 0.55rem;
+    font-size: 0.6875rem;
     font-weight: 700;
 }
 
@@ -370,14 +426,14 @@
 
 .client-loyalty-reward-content > strong {
     color: #355e3b;
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
 }
 
 .client-loyalty-reward-content p,
 .client-loyalty-reward-content small {
     margin: 0;
-    color: #837d66;
-    font-size: 0.61rem;
+    color: #655f4b;
+    font-size: 0.75rem;
 }
 
 .client-loyalty-history {
@@ -427,15 +483,15 @@
 
 .client-loyalty-history-main strong {
     color: #35473a;
-    font-size: 0.71rem;
+    font-size: 0.8125rem;
 }
 
 .client-loyalty-history-main p,
 .client-loyalty-history-main small {
     margin: 0;
 
-    color: #7e8680;
-    font-size: 0.61rem;
+    color: #59645b;
+    font-size: 0.75rem;
 }
 
 .client-loyalty-history-main span {
@@ -443,7 +499,7 @@
 
     border-radius: 20px;
 
-    font-size: 0.54rem;
+    font-size: 0.6875rem;
     font-weight: 700;
 }
 
@@ -471,13 +527,461 @@
 }
 
 .client-loyalty-history-sale strong {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
 }
 
 .client-loyalty-history-sale span {
     color: #355e3b;
-    font-size: 0.67rem;
+    font-size: 0.75rem;
     font-weight: 700;
+}
+
+.client-loyalty-list-limit {
+    grid-column: 1 / -1;
+    margin: 2px 0 0;
+    color: #59645b;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.client-benefits-view {
+    margin-top: 18px;
+    padding: 22px;
+
+    border: 1px solid #dfe5df;
+    border-radius: 15px;
+
+    background: #ffffff;
+}
+
+.client-benefits-view-heading {
+    margin-bottom: 18px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.client-benefits-view-heading > div {
+    min-width: 0;
+}
+
+.client-benefits-view-heading span {
+    color: #59645b;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.client-benefits-view-heading h2 {
+    margin: 5px 0 4px;
+    color: #304535;
+    font-size: 1.25rem;
+}
+
+.client-benefits-view-heading p {
+    max-width: 650px;
+    margin: 0;
+    color: #59645b;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+}
+
+.client-benefits-view-heading > strong {
+    flex-shrink: 0;
+    padding: 7px 10px;
+
+    border-radius: 20px;
+
+    background: #edf4ee;
+    color: #355e3b;
+
+    font-size: 0.75rem;
+}
+
+.client-benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.client-benefit-card {
+    min-width: 0;
+    padding: 18px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    border: 1px solid #dfe5df;
+    border-radius: 13px;
+
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(48, 69, 53, 0.055);
+}
+
+.client-benefit-card.program {
+    border-top: 4px solid #52785a;
+}
+
+.client-benefit-card.promotion {
+    border-top: 4px solid #b38a20;
+}
+
+.client-benefit-card-header {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.client-benefit-card-header > div:last-child {
+    min-width: 0;
+}
+
+.client-benefit-card-header h3 {
+    margin: 4px 0 0;
+    color: #304535;
+    font-size: 0.92rem;
+    overflow-wrap: anywhere;
+}
+
+.client-benefit-type {
+    color: #59645b;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.client-benefit-icon {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 11px;
+}
+
+.client-benefit-icon.program {
+    background: #edf4ee;
+    color: #355e3b;
+}
+
+.client-benefit-icon.promotion {
+    background: #fff6dc;
+    color: #856713;
+}
+
+.client-benefit-description {
+    margin: 0;
+    color: #536057;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+}
+
+.client-benefit-conditions {
+    margin: 0;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.client-benefit-conditions > div {
+    min-width: 0;
+    padding: 10px;
+
+    border: 1px solid #e5e9e5;
+    border-radius: 9px;
+
+    background: #f8faf8;
+}
+
+.client-benefit-conditions dt {
+    margin-bottom: 5px;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #59645b;
+    font-size: 0.6875rem;
+    font-weight: 700;
+}
+
+.client-benefit-conditions dt svg {
+    color: #52785a;
+}
+
+.client-benefit-conditions dd {
+    margin: 0;
+    color: #3d5042;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.client-program-progress {
+    margin-top: auto;
+    padding: 13px;
+
+    border: 1px solid #dbe5dc;
+    border-radius: 10px;
+
+    background: #f5f9f5;
+}
+
+.client-program-progress-heading {
+    margin-bottom: 9px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.client-program-progress-heading > div {
+    display: grid;
+    gap: 2px;
+}
+
+.client-program-progress-heading span {
+    color: #59645b;
+    font-size: 0.6875rem;
+}
+
+.client-program-progress-heading strong {
+    color: #355e3b;
+    font-size: 0.8125rem;
+}
+
+.client-program-cycles {
+    padding: 4px 7px;
+    border-radius: 20px;
+    background: #e8f5e9;
+    color: #2e7d32 !important;
+    font-weight: 700;
+}
+
+.client-program-progress-values {
+    margin-top: 8px;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 7px;
+
+    color: #536057;
+    font-size: 0.75rem;
+}
+
+.client-program-progress > p {
+    margin: 9px 0 0;
+    color: #536057;
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+.client-promotion-benefit {
+    padding: 13px;
+
+    display: grid;
+    gap: 4px;
+
+    border: 1px solid #eadcae;
+    border-radius: 10px;
+
+    background: #fffaf0;
+}
+
+.client-promotion-benefit span {
+    color: #6d5a22;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.client-promotion-benefit strong {
+    color: #765c14;
+    font-size: 1rem;
+}
+
+.client-promotion-notice {
+    margin-top: auto;
+    padding: 12px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+
+    border: 1px solid #cfe0d1;
+    border-radius: 10px;
+
+    background: #f1f8f2;
+    color: #355e3b;
+}
+
+.client-promotion-notice > svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.client-promotion-notice strong {
+    font-size: 0.8125rem;
+}
+
+.client-promotion-notice p {
+    margin: 3px 0 0;
+    color: #4f6052;
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+.client-promotion-footer {
+    padding-top: 11px;
+    border-top: 1px solid #e5e9e5;
+    color: #59645b;
+    font-size: 0.75rem;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 7px;
+}
+
+.client-promotion-footer strong {
+    color: #6d5a22;
+}
+
+.client-loyalty-state {
+    min-height: 250px;
+    padding: 35px 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    color: #59645b;
+    text-align: center;
+}
+
+.client-loyalty-state > svg {
+    font-size: 1.8rem;
+    color: #64806a;
+}
+
+.client-loyalty-state strong {
+    color: #435247;
+}
+
+.client-loyalty-state p {
+    max-width: 520px;
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.client-loyalty-state.error > svg,
+.client-loyalty-state.error strong {
+    color: #9a3038;
+}
+
+.client-loyalty-state button {
+    min-height: 40px;
+    margin-top: 7px;
+    padding: 9px 13px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: #355e3b;
+    color: #ffffff;
+
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.client-refresh-warning {
+    margin-bottom: 14px;
+    padding: 11px 12px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    border: 1px solid #e3cf93;
+    border-radius: 9px;
+
+    background: #fff9e8;
+    color: #604f1c;
+}
+
+.client-refresh-warning > svg {
+    flex-shrink: 0;
+}
+
+.client-refresh-warning p {
+    flex: 1;
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+}
+
+.client-refresh-warning button {
+    min-height: 36px;
+    padding: 7px 10px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    border: 1px solid #9b7a20;
+    border-radius: 7px;
+
+    background: #ffffff;
+    color: #604f1c;
+
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.client-refresh-warning button:disabled {
+    cursor: wait;
+    opacity: 0.72;
+}
+
+.client-loyalty-route-announcer {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.client-loyalty-inline-loader {
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+    color: #4f5d52;
+    font-size: 0.8125rem;
 }
 
 .client-loyalty-empty,
@@ -491,7 +995,7 @@
     justify-content: center;
     gap: 9px;
 
-    color: #748078;
+    color: #59645b;
 
     text-align: center;
 }
@@ -512,7 +1016,7 @@
     max-width: 500px;
     margin: 0;
 
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     line-height: 1.5;
 }
 
@@ -548,7 +1052,8 @@
     }
 
     .client-loyalty-program-grid,
-    .client-loyalty-rewards-grid {
+    .client-loyalty-rewards-grid,
+    .client-benefits-grid {
         grid-template-columns: 1fr;
     }
 }
@@ -575,8 +1080,29 @@
         grid-template-columns: 1fr;
     }
 
+    .client-loyalty-tabs {
+        grid-template-columns: 1fr;
+    }
+
+    .client-loyalty-tab {
+        justify-content: flex-start;
+    }
+
     .client-loyalty-section {
         padding: 15px;
+    }
+
+    .client-benefits-view {
+        padding: 15px;
+    }
+
+    .client-benefits-view-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .client-benefit-conditions {
+        grid-template-columns: 1fr;
     }
 
     .client-loyalty-section-heading {

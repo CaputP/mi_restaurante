@@ -9,15 +9,15 @@ Esta matriz conecta los bloques definidos inicialmente para El Vallecito de Choc
 | Sucursales y disponibilidad | Implementado | `/admin/sucursales` | Horarios, cierres, zonas, aforo y exclusión transaccional |
 | Catálogo | Implementado | `/admin/productos` | Categorías, productos, asignación por sucursal y estados |
 | Inventario | Implementado | `/admin/inventario` | Stock permanente/diario, movimientos, compromisos y constraints |
-| Reservas | Implementado | `/reservations`, `/admin/reservas` | Autoservicio, disponibilidad, calendario, pagos, aprobación, reprogramación, cancelación e historial |
-| Pedidos | Implementado | `/admin/pedidos`, `/operacion/pedidos` | Estados, detalles, reservas de stock y control concurrente |
+| Reservas | Implementado | `/reservations`, `/admin/reservas` | Autoservicio, disponibilidad, calendario, adelantos conciliados con caja, constancia imprimible, aprobación, reprogramación, cancelación e historial |
+| Pedidos | Implementado | `/admin/pedidos`, `/operacion/pedidos` | Conversión idempotente de la reserva atendida, estados, detalles, reservas de stock y control concurrente |
 | Comandas/cocina | Implementado | `/admin/comandas`, `/operacion/cocina` | Cola operativa, destinos, preparación y métricas con patrón común |
 | Entregas | Implementado | `/admin/entregas`, `/operacion/entregas` | Retiro, entrega, validación de estados e historial |
-| Caja, ventas y gastos | Implementado | `/admin/ventas`, `/operacion/ventas` | Una caja abierta, pagos idempotentes, cierre/reapertura, anulaciones reautenticadas y gastos |
+| Caja, ventas y gastos | Implementado | `/admin/ventas`, `/operacion/ventas` | Una caja abierta, adelantos separados de ventas, cobro del saldo, pagos idempotentes, cierre/reapertura, anulaciones reautenticadas y gastos |
 | Tickets | Implementado | `/admin/ventas/ticket/:id` | Datos fiscales disponibles, 58/80 mm y marca de reimpresión |
-| Fidelización y premios | Implementado | `/admin/fidelizacion`, `/fidelizacion` | Programas, niveles, clientes, puntos, canjes y navegación anidada coherente |
-| Promociones | Implementado | `/admin/promociones` | Vigencia, condiciones, productos y estados |
-| Reportes | Implementado | `/admin/reportes` | Resumen consolidado, filtros y exportación XLSX/PDF |
+| Fidelización y premios | Implementado | `/admin/fidelizacion`, `/fidelizacion`, `/fidelizacion/programas`; API `GET /api/v1/loyalty/programs/available` | Progreso por ciclo, premios disponibles, catálogo vigente aun sin progreso, alcance real por sucursal, DTO cliente mínimo y navegación anidada coherente |
+| Promociones | Implementado | `/admin/promociones`, `/fidelizacion/promociones`; API `GET /api/v1/promotions/available` | Solo promociones activas, automáticas, vigentes, no agotadas y aplicables a productos/sucursales disponibles; cupo interno no expuesto |
+| Reportes | Implementado | `/admin/reportes` | Resumen consolidado, adelantos/ventas sin duplicidad, trazabilidad por caja y constancia, filtros y exportación XLSX/PDF |
 | Auditoría y configuración | Implementado | `/admin/configuracion` | Registro de mutaciones, parámetros y datos sensibles censurados |
 | Respaldos | Implementado | `/admin/respaldos` | Programación, exclusión, checksum, retención y restauración fuera de HTTP |
 | API y salud | Implementado | `/api/v1`, `/api/v1/health`, `/api/v1/ready` | Versionado, compatibilidad temporal y readiness con PostgreSQL |

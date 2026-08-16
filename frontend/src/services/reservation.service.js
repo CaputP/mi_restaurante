@@ -305,6 +305,45 @@ export function cancelReservationRequest(
     );
 }
 
+export function attendReservationRequest(
+    token,
+    reservationId,
+    data = {}
+) {
+    return apiRequest(
+        `/admin/reservations/${reservationId}/attend`,
+        {
+            method: "POST",
+            token,
+            body: data
+        }
+    );
+}
+
+export async function getReservationPaymentReceiptRequest(
+    token,
+    reservationId,
+    paymentId,
+    {
+        client = false,
+        signal
+    } = {}
+) {
+    const basePath = client
+        ? "/reservations"
+        : "/admin/reservations";
+
+    const response = await apiRequest(
+        `${basePath}/${reservationId}/payments/${paymentId}/receipt`,
+        {
+            token,
+            signal
+        }
+    );
+
+    return response.data.constancia;
+}
+
 export async function getClientReservationOptionsRequest(
     token,
     {
