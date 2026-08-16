@@ -35,7 +35,7 @@ Mientras se use una dirección gratuita `gmail.com`, Brevo puede reemplazar temp
 
 ## 4. Reservar la URL del frontend
 
-Antes de crear el backend, importar el repositorio en Vercel, establecer **Root Directory** en `frontend` y asignar un nombre estable, por ejemplo `el-vallecito-demo`. El primer frontend puede publicarse aunque la API todavía no esté disponible. Copiar la URL final `https://...vercel.app`; será el valor de `FRONTEND_URL` en Render.
+El frontend ya está publicado en `https://mi-restaurante-psi.vercel.app`. Esta dirección, sin barra final, quedó configurada como `FRONTEND_URL` en `render.yaml`. El primer frontend puede estar disponible aunque la API todavía no exista.
 
 ## 5. Crear el backend en Render
 
@@ -48,7 +48,7 @@ El archivo `render.yaml` define el servicio. En Render:
 | Variable | Valor |
 | --- | --- |
 | `DATABASE_URL` | Session pooler de Supabase, puerto `5432` |
-| `FRONTEND_URL` | URL exacta de Vercel, por ejemplo `https://el-vallecito-demo.vercel.app` |
+| `FRONTEND_URL` | Ya configurada como `https://mi-restaurante-psi.vercel.app` |
 | `GOOGLE_CLIENT_ID` | ID OAuth Web ya utilizado por el sistema |
 | `SMTP_USER` | Login SMTP de Brevo |
 | `SMTP_PASSWORD` | Clave SMTP de Brevo |
@@ -92,7 +92,7 @@ La reescritura de Vercel mantiene navegador y API bajo el mismo origen visible. 
 
 ## 7. Configurar Google OAuth
 
-En Google Cloud Console, agregar la URL exacta de Vercel a **Authorized JavaScript origins**. No agregar rutas ni barra final. Conservar `http://localhost:5173` únicamente para desarrollo.
+En Google Cloud Console, agregar `https://mi-restaurante-psi.vercel.app` a **Authorized JavaScript origins**. No agregar rutas ni barra final. Conservar `http://localhost:5173` únicamente para desarrollo.
 
 ## 8. Pruebas obligatorias
 
